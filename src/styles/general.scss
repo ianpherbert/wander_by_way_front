@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&family=Oswald:wght@300&display=swap');
+@import "./constants.scss";
+
+h1,h2,h3,h4{
+  font-family: 'Oswald', sans-serif;
+}
+
+p, span, div{
+  font-family: 'Open Sans', sans-serif;
+}
+
+.teal{
+  background-color: $teal;
+}
+.yellow{
+  background-color: $yellow;
+}
+.red{
+  background-color: $red;
+}
+.lightTeal{
+  background-color: $lightTeal;
+ }

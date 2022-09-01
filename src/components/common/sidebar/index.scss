@@ -1,0 +1,19 @@
+@import "../../../styles/constants";
+
+
+#sideBar{
+  background-color: $lightTeal;
+  width: 50px;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  transition: ease-in-out .3s;
+  cursor: pointer;
+  z-index: 15;
+  box-shadow: $smallShadow;
+  &:hover{
+    width: 200px;
+    box-shadow: $shadow;
+  }
+}

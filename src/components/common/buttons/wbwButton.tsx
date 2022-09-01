@@ -1,0 +1,17 @@
+import React from "react";
+import "./index.scss"
+
+export const WBWButton=(props:{onClick?:()=>void, label: string})=>{
+    return(
+        <div className={"wbw-button"}>
+            <div className={"wbw-button-bg"}>
+                <div className={"wbw-button-bg-chevron red"}></div>
+                <div className={"wbw-button-bg-chevron yellow"}></div>
+                <div className={"wbw-button-bg-chevron teal"}></div>
+            </div>
+            <div className={"button-text"}>
+                <span>{props.label}</span>
+            </div>
+        </div>
+    )
+}

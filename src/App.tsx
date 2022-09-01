@@ -1,25 +1,19 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import "./styles/icofont/icofont.min.css"
+import Sidebar from "./components/common/sidebar";
+import Header from "./components/common/header"
+import Body from "./components/common/body";
+import {Languages} from "./utils/Languages";
 
 function App() {
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <body>
+        <Sidebar/>
+        <Header language={Languages.EN} connected={false}/>
+        <Body/>
+    </body>
   );
 }
 

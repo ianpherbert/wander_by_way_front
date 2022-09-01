@@ -1,0 +1,49 @@
+@import "../../../styles/constants";
+
+#loader{
+  height: 75px;
+  width: 300px;
+  border-radius: 11px;
+  margin: auto;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  &.solid{
+    background-color: $black;
+  }
+  .chevrons{
+    .chevron_spacer{
+      width: 280px;
+    }
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    bottom: 0;
+    animation: load 2s infinite;
+    animation-timing-function:linear;
+    .chevron{
+      clip-path: polygon(75% 0%, 100% 50%, 75% 100%, 0% 100%, 25% 50%, 0% 0%);
+      height: 100%;
+      width: 40px;
+      &.teal{
+        background-color: $teal;
+      }
+      &.yellow{
+        background-color: $yellow;
+      }
+      &.red{
+        background-color: $red;
+      }
+    }
+  }
+
+}
+@keyframes load {
+  0%{
+    left: -200%;
+  }
+  100%{
+    left: 102%;
+  }
+}
