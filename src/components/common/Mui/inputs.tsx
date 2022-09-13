@@ -1,23 +1,36 @@
-import React, {ChangeEvent, useEffect} from "react";
+import React, {ChangeEvent, useEffect, useState} from "react";
 import {styled} from "@mui/material/styles";
 import {Autocomplete, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField} from "@mui/material";
+import {PointSearchItem, PointSearchType} from "../../../utils/PointSearchItem";
 
-interface CustomTextInputProps{
+interface CustomTextInputProps {
     label: string,
-    onTextInput: (e: string)=> void
-    options: string[]
-    enterKey: ()=> void
+    onTextInput: (e: string) => void
+    options: PointSearchItem[]
+    enterKey: () => void
 }
 
-export const CustomAutocomplete=(props: CustomTextInputProps)=>{
-
-    const elevateTextInput= (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>)=>{
-        const input = e.target.value
-        props.onTextInput(input)
+export const CustomAutocomplete = (props: CustomTextInputProps) => {
+    const [options, setOptions] = useState<PointSearchItem[]>([])
+    const elevateTextInput = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+        const input = e.target.value || ""
+        // props.onTextInput(input)
+        setOptions(
+            [
+                new PointSearchItem("option1","123d",PointSearchType.CITY, 1),
+                new PointSearchItem("option2","123a",PointSearchType.CITY, .001),
+                new PointSearchItem("option3","123d",PointSearchType.CITY, .8),
+                new PointSearchItem("option4","123s",PointSearchType.CITY, .002),
+            ]
+        )
     }
 
-    const enter= (e: React.KeyboardEvent<HTMLDivElement>)=>{
-        if(e.key == "Enter"){
+    // useEffect(()=>{
+    //     setOptions(props.options || [])
+    // }, [props])
+
+    const enter = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === "Enter") {
             props.enterKey()
         }
     }
@@ -41,37 +54,45 @@ export const CustomAutocomplete=(props: CustomTextInputProps)=>{
         },
     });
 
-    return(
+    return (
         <FormControl size="small">
-        <Autocomplete
-
-            freeSolo
-            options={props.options}
-            renderInput={(params) => <CssTextField {...params} label={props.label} onChange={(e)=>elevateTextInput(e)} onKeyPress={(e)=>enter(e)}/>}
-        />
+            <Autocomplete
+                getOptionLabel={option => typeof option === "string" ? option : option.displayName}
+                freeSolo
+                options={options}
+                renderInput={
+                    (params) =>
+                        <CssTextField
+                            {...params}
+                            label={props.label}
+                            onChange={(e) => elevateTextInput(e)}
+                            onKeyPress={(e) => enter(e)}
+                        />}
+            />
         </FormControl>
     )
 }
 
-interface CustomSelectProps{
+interface CustomSelectProps {
     label: string,
-    onInput: (e: string|number)=> void
+    onInput: (e: string | number) => void
     options: SelectItem[]
 }
 
-export class SelectItem{
+export class SelectItem {
+    label: string;
+    value: string | number;
+
     constructor(label: string, value: string | number) {
         this.label = label;
         this.value = value;
     }
-    label: string;
-    value: string|number;
 
 }
 
-export const CustomSelect=(props: CustomSelectProps)=>{
+export const CustomSelect = (props: CustomSelectProps) => {
 
-    const elevateTextInput= (e: SelectChangeEvent<any>)=>{
+    const elevateTextInput = (e: SelectChangeEvent<any>) => {
         props.onInput(e.target.value)
 
     }
@@ -96,10 +117,10 @@ export const CustomSelect=(props: CustomSelectProps)=>{
     return (
         <FormControl size="small">
             <InputLabel>{props.label}</InputLabel>
-        <CssSelect label={props.label} onChange={(e)=>elevateTextInput(e)}>
-        {props.options.map(item=>(
-            <MenuItem value={item.value}>{item.label}</MenuItem>
-        ))}
-    </CssSelect>
+            <CssSelect label={props.label} onChange={(e) => elevateTextInput(e)}>
+                {props.options.map(item => (
+                    <MenuItem value={item.value}>{item.label}</MenuItem>
+                ))}
+            </CssSelect>
         </FormControl>)
 }
