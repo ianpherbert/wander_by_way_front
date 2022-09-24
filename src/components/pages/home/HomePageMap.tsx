@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from "react";
 import "./index.scss"
-import Map, {PointType} from "../../common/maps/Map";
+import Map, {Point, PointType} from "../../common/maps/Map";
 import {CustomAutocomplete, CustomSelect, SelectItem} from "../../common/Mui/inputs";
 import {ReverseButton} from "../../common/buttons/reverse";
 import {WBWButton} from "../../common/buttons/wbwButton";
 import {PointSearchItem, PointSearchType} from "../../../utils/PointSearchItem";
+import {RouteType} from "../../../trip/RouteType";
 
 class Inputs{
     constructor(to?: string, from?: string, reason?: string) {
@@ -72,14 +73,16 @@ const HomePageMap=()=>{
     }
 
     const route = [
-        {latitude: "47.2", longitude: "-1.31", type: PointType.ORIGIN, label: "Nantes"},
-        {latitude: "48", longitude: "7", type: PointType.INTERMEDIATE, label: "Strasbourg"},
-        {latitude: "49", longitude: "8", type: PointType.LAYOVER, label: "Mannheim"},
-        {latitude: "53.53", longitude: "9.72", type: PointType.INTERMEDIATE, label: "Hambourg"},
-        {latitude: "53.8", longitude: "10.85", type: PointType.INTERMEDIATE, label: "Lübeck"},
-        {latitude: "55", longitude: "13", type: PointType.INTERMEDIATE, label: "Malmö"},
-        {latitude: "59", longitude: "18", type: PointType.DESTINATION, label: "Stockholm"}
+        {latitude: "47.2", longitude: "-1.31", type: PointType.ORIGIN, label: "Nantes", routeType: RouteType.PLANE},
+        {latitude: "48", longitude: "7", type: PointType.INTERMEDIATE, label: "Strasbourg", routeType: RouteType.TRAIN},
+        {latitude: "49", longitude: "8", type: PointType.LAYOVER, label: "Mannheim", routeType: RouteType.BUS},
+        {latitude: "53.53", longitude: "9.72", type: PointType.INTERMEDIATE, label: "Hambourg", routeType: RouteType.TRAIN},
+        {latitude: "53.8", longitude: "10.85", type: PointType.INTERMEDIATE, label: "Lübeck", routeType: RouteType.BOAT},
+        {latitude: "55", longitude: "13", type: PointType.INTERMEDIATE, label: "Malmö", routeType: RouteType.CAR},
+        {latitude: "59", longitude: "18", type: PointType.DESTINATION, label: "Stockholm", routeType: RouteType.OTHER}
     ]
+
+
 
     return(
         <div id={"homepageMap"}>

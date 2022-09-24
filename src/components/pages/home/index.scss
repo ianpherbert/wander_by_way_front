@@ -9,36 +9,7 @@
   background-color: $lightTeal;
   position: relative;
   box-shadow: $shadow;
-  .welcome-card-bg{
-    z-index: 1;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    .welcome-card-bg-chevron{
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      clip-path: polygon(0% 0%, 75% 0%, 100% 50%, 75% 100%, 0% 100%);
-      &.teal{
-        border-radius: 11px 0 0 11px;
-        background-color: $teal;
-        left: 0;
-        right: 25%;
-      }
-      &.yellow{
-        background-color: $yellow;
-        left: 10%;
-        right: 15%;
-      }
-      &.red{
-        background-color: $red;
-        left: 20%;
-        right: 5%;
-      }
-    }
-  }
+
   .welcome-card-text{
     position: absolute;
     top: 0;
@@ -88,10 +59,11 @@
       }
     }
     .map-wrapper{
+      position: relative;
       height: 80vh;
       width: 90%;
       padding: 10px;
-      margin: auto;
+      margin: 10px auto;
     }
   }
 }

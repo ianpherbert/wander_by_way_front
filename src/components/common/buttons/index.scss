@@ -125,3 +125,33 @@
     }
   }
 }
+
+.roundClose{
+  background-color: #91989b;
+  height: 30px;
+  width: 30px;
+  width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: ease-in-out .3s;
+  cursor: pointer;
+  box-shadow: $smallShadow;
+  position: absolute;
+  top: 7px;
+  z-index: 500;
+  &:hover{
+    background-color: #a8b8c0;
+  }
+  &:active{
+    background-color: #92bece;
+    font-weight: bold;
+  }
+  &.left{
+    left: 7px;
+  }
+  &.right{
+    right: 7px;
+  }
+}

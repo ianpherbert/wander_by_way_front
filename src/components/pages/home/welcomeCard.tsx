@@ -1,5 +1,6 @@
 import React from "react";
 import "./index.scss"
+import {Chevron} from "../../common/chevron/Chevron";
 
 const WelcomeCard = () => {
     return (
@@ -16,11 +17,7 @@ const WelcomeCard = () => {
                     keta. Breizh un dija Pembo stlakañ naon bag lenn livañ, maneg oaled egistout.
                 </p>
             </div>
-            <div className={"welcome-card-bg"}>
-                <div className={"welcome-card-bg-chevron red"}></div>
-                <div className={"welcome-card-bg-chevron yellow"}></div>
-                <div className={"welcome-card-bg-chevron teal"}></div>
-            </div>
+            <Chevron/>
         </div>
     )
 }
