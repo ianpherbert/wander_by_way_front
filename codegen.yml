@@ -1,0 +1,11 @@
+overwrite: true
+schema: "http://localhost:8000/graphql"
+generates:
+  src/graphql/model.tsx:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-react-apollo"
+    config:
+      maybeValue: 'T extends PromiseLike<infer U> ? Promise<U | null> : T | null'
+

@@ -1,20 +1,14 @@
 import React, {useEffect, useState} from "react";
 import "./index.scss"
-import Map, {Point, PointType} from "../../common/maps/Map";
-import {CustomAutocomplete, CustomSelect, SelectItem} from "../../common/Mui/inputs";
+import MapDisplay, {Point, PointType} from "../../common/maps/MapDisplay";
+import {CssTextField} from "../../common/Mui/inputs";
 import {ReverseButton} from "../../common/buttons/reverse";
 import {WBWButton} from "../../common/buttons/wbwButton";
-import {PointSearchItem, PointSearchType} from "../../../utils/PointSearchItem";
-import {RouteType} from "../../../trip/RouteType";
-
-class Inputs{
-    constructor(to?: string, from?: string, reason?: string) {
-        this.to = to;
-        this.from = from;
-    }
-    to?: string;
-    from?: string;
-}
+import {RouteType} from "../../../core/trip/RouteType";
+import {CitySearchOutput, CityType, QuerySearchCityArgs} from "../../../graphql/model";
+import {Autocomplete, FormControl} from "@mui/material";
+import {useQuery} from "@apollo/client";
+import {SEARCH_CITY, SearchCityData} from "../../../graphql/queries";
 
 enum InputType{
     TO,
@@ -22,67 +16,86 @@ enum InputType{
     REASON
 }
 
-class SearchOptions{
-    constructor(toOptions: PointSearchItem[], fromOptions: PointSearchItem[]) {
-        this.toOptions = toOptions?.sort((a,b)=> a.matchCoefficient > b.matchCoefficient ? 1 : -1) || [];
-        this.fromOptions = fromOptions?.sort((a,b)=> a.matchCoefficient > b.matchCoefficient ? 1 : -1) || [];
-    }
-    toOptions: PointSearchItem[];
-    fromOptions: PointSearchItem[];
+interface SearchItems{
+    toOptions: CitySearchOutput[],
+    fromOptions: CitySearchOutput[]
+}
+
+interface SelectedItems{
+    to: CitySearchOutput | null,
+    from: CitySearchOutput | null
 }
 
 const HomePageMap=()=>{
-    const [routeTerm, setRouteTerm] = useState<Inputs>(new Inputs());
-    const [searchItems, setSearchItems] = useState<SearchOptions>()
+    const [toTerm, setToTerm] = useState<string>("");
+    const [fromTerm, setFromTerm] = useState<string>("");
+    const [searchTerm, setSearchTerm] = useState<string>("");
+    const [selectedItems, setSelectedItems] = useState<SelectedItems>({to: null, from: null});
+    const [points, setPoints] = useState<Point[]>([])
+
+    const { loading, error, data } = useQuery(SEARCH_CITY, {
+        variables: { query: searchTerm },
+    });
 
     const submit=()=>{
-        alert("submit");
+        alert(`/${selectedItems.from?.id}/${selectedItems.to?.id || "anywhere"}`);
     }
 
     const swapInputs=()=>{
-        setRouteTerm(new Inputs(routeTerm.from,routeTerm.to))
+        let tempSelect = selectedItems;
+        let tempToTerm = toTerm;
+        let tempFromTerm = fromTerm;
+        setFromTerm(tempToTerm);
+        setToTerm(tempFromTerm);
+        setSelectedItems({
+            to: tempSelect.from,
+            from: tempSelect.to
+        })
     }
 
-    const buildRouteTerm=(value: string, input: InputType)=>{
-        let term = routeTerm;
-        switch (input){
+    useEffect(()=>{
+        const route = [];
+        if(selectedItems.from !== null){
+            route.push({latitude: selectedItems.from.latitude, longitude: selectedItems.from.longitude, type: PointType.ORIGIN, label: selectedItems.from.name, routeType: RouteType.ORIGIN})
+        }
+        if(selectedItems.to !== null){
+            route.push({latitude: selectedItems.to.latitude, longitude: selectedItems.to.longitude, type: PointType.DESTINATION, label: selectedItems.to.name, routeType: RouteType.DESTINATION})
+        }
+        setPoints(route);
+    },[selectedItems.to,selectedItems.from])
+
+
+    const elevateTextInput = (e: any, type: InputType) => {
+        const input = e.target.value || ""
+        setSearchTerm(input);
+        switch (type){
             case InputType.FROM:
-                term.from = value;
+                setFromTerm(input);
                 break;
             case InputType.TO:
-                term.to = value;
+                setToTerm(input);
                 break;
         }
-        setRouteTerm(term);
-        //Search
-        const options = new SearchOptions(
-            [
-                new PointSearchItem("option1","123",PointSearchType.CITY, .20),
-                new PointSearchItem("option2","1234",PointSearchType.CITY, .12),
-                new PointSearchItem("option3","1233",PointSearchType.CITY, 1),
-                new PointSearchItem("option4","1231",PointSearchType.CITY, .77),
-            ],
-            [
-                new PointSearchItem("option1","123d",PointSearchType.CITY, 1),
-                new PointSearchItem("option2","123a",PointSearchType.CITY, .001),
-                new PointSearchItem("option3","123d",PointSearchType.CITY, .8),
-                new PointSearchItem("option4","123s",PointSearchType.CITY, .002),
-            ]
-        )
-        setSearchItems(options)
     }
 
-    const route = [
-        {latitude: "47.2", longitude: "-1.31", type: PointType.ORIGIN, label: "Nantes", routeType: RouteType.PLANE},
-        {latitude: "48", longitude: "7", type: PointType.INTERMEDIATE, label: "Strasbourg", routeType: RouteType.TRAIN},
-        {latitude: "49", longitude: "8", type: PointType.LAYOVER, label: "Mannheim", routeType: RouteType.BUS},
-        {latitude: "53.53", longitude: "9.72", type: PointType.INTERMEDIATE, label: "Hambourg", routeType: RouteType.TRAIN},
-        {latitude: "53.8", longitude: "10.85", type: PointType.INTERMEDIATE, label: "Lübeck", routeType: RouteType.BOAT},
-        {latitude: "55", longitude: "13", type: PointType.INTERMEDIATE, label: "Malmö", routeType: RouteType.CAR},
-        {latitude: "59", longitude: "18", type: PointType.DESTINATION, label: "Stockholm", routeType: RouteType.OTHER}
-    ]
-
-
+    const selectItem=(reason: string, item: string | CitySearchOutput | null, type: InputType)=>{
+        let temp = selectedItems;
+        if(typeof item === "string"){
+            item = null
+        }
+        let displayName = "";
+        if(item !== null){
+            displayName = `${item?.name}, ${item?.country}`;
+        }
+        if(type === InputType.FROM){
+            setFromTerm(displayName);
+            temp.from = item;
+        }else{
+            setToTerm(displayName);
+            temp.to = item;
+        }
+        setSelectedItems(temp);
+    }
 
     return(
         <div id={"homepageMap"}>
@@ -90,14 +103,48 @@ const HomePageMap=()=>{
             <div className={"map-navigation-wrapper"}>
                 <div className={"navigation"}>
                     <div className={"place-input"}>
-                        <CustomAutocomplete label={"From"} onTextInput={(inputText)=>buildRouteTerm(inputText, InputType.FROM)} options={searchItems?.fromOptions!!} enterKey={submit}/>
-                            <ReverseButton onToggle={()=>console.log("toggle")}/>
-                        <CustomAutocomplete label={"To"} onTextInput={(inputText)=>buildRouteTerm(inputText,InputType.TO)} options={searchItems?.toOptions!!} enterKey={submit}/>
+                        <FormControl size="small">
+                            <Autocomplete
+                                id={"input-from"}
+                                getOptionLabel={option => typeof option === "string" ? option : `${option.name}, ${option.country}` }
+                                freeSolo
+                                inputValue={fromTerm || ""}
+                                options={data?.searchCity || []}
+                                onChange={(e: any, value: string | CitySearchOutput | null, reason: string)=> selectItem(reason, value, InputType.FROM)}
+                                renderInput={
+                                    (params) =>
+                                        <CssTextField
+                                            onBlur={()=>{selectedItems.from && setFromTerm(`${selectedItems.from.name}, ${selectedItems.from.country}`)}}
+                                            {...params}
+                                            label={"From"}
+                                            onInputCapture={(e)=> elevateTextInput(e, InputType.FROM)}
+                                        />}
+                            />
+                        </FormControl>
+                            <ReverseButton onToggle={swapInputs}/>
+                        <FormControl size="small">
+                            <Autocomplete
+                                id={"input-to"}
+                                getOptionLabel={option => typeof option === "string" ? option : `${option.name}, ${option.country}` }
+                                freeSolo
+                                inputValue={toTerm || ""}
+                                options={data?.searchCity || []}
+                                onChange={(e: any, value: string | CitySearchOutput | null, reason: string)=> selectItem(reason, value, InputType.TO)}
+                                renderInput={
+                                    (params) =>
+                                        <CssTextField
+                                            {...params}
+                                            label={"To"}
+                                            onInputCapture={(e)=> elevateTextInput(e, InputType.TO)}
+                                            onBlur={()=>{selectedItems.to && setToTerm(`${selectedItems.to.name}, ${selectedItems.to.country}`)}}
+                                        />}
+                            />
+                        </FormControl>
                     </div>
-                        <WBWButton label={"Let's go"}/>
+                        <WBWButton label={"Let's go"} onNext={()=>{submit()}}/>
                 </div>
                 <div className={"map-wrapper"}>
-                    <Map points={route}/>
+                    <MapDisplay points={points}/>
                 </div>
             </div>
         </div>

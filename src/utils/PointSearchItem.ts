@@ -1,4 +1,4 @@
-import {Point} from "../components/common/maps/Map";
+import {Point} from "../components/common/maps/MapDisplay";
 
 export class PointSearchItem{
     constructor(displayName: string, id: string, type: PointSearchType, matchCoefficient: number) {

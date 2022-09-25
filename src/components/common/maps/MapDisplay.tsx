@@ -2,7 +2,8 @@ import React, {useEffect, useState} from "react";
 import "./map.scss"
 import {RoundCloseButton} from "../buttons/roundCloseButton";
 import {Button} from "@mui/material";
-import {RouteType} from "../../../trip/RouteType";
+import {RouteType} from "../../../core/trip/RouteType";
+import {calculateDistance} from "../../../utils/calculateDistance";
 
 interface MapProps {
     points: Point[],
@@ -25,62 +26,80 @@ export enum PointType {
 }
 
 
-const Map = (props: MapProps) => {
+const MapDisplay = (props: MapProps) => {
     const mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
     mapboxgl.accessToken = 'pk.eyJ1Ijoid2FuZGVyYnl3YXkiLCJhIjoiY2w3MXpoaGxqMHJkbzQxc2JxMDF6cGV1ZSJ9.hfHBDo0Zv31hoaWuRGMvhA';
 
     const [sideBar, setSideBar] = useState<Point | null>(null)
+    const [map, setMap] = useState()
+    const [markers, setMarkers] = useState<any[]>([])
 
     useEffect(() => {
-        const map = new mapboxgl.Map({
+        setMap(new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/wanderbyway/cl71zld5d000h14qp4orozrsy',
-        });
-        props.points.forEach((point) => {
+        }));
+    }, []);
 
-            let color;
-            let scale;
+    useEffect(() => {
+        markers.forEach(it => it.remove())
+        const tempMarkers : any[] = [];
+
+        props.points.forEach((point) => {
+            let color : string;
+            let scale : number;
+            let body : string;
             switch (point.type) {
                 case PointType.ORIGIN:
                     color = "#da4167";
                     scale = 1.5;
+                    body = originPopup(point)
                     break;
                 case PointType.LAYOVER:
                     color = "#D9E2E8";
                     scale = .8;
+                    body = stopPopup(point)
                     break;
                 case PointType.DESTINATION:
                     color = "#f5cb5c";
                     scale = 1.5;
+                    body = destinationPopup(point, props.points.find(it=> it.type == PointType.ORIGIN))
                     break;
                 case PointType.INTERMEDIATE:
                     color = "#38e4ae";
                     scale = 1;
+                    body = stopPopup(point)
                     break;
             }
 
-            const pointPopup = new mapboxgl
-                .Popup()
-                .setHTML(popup(point))
-            pointPopup.on("open", () => {
-                setSideBar(point)
-            })
-            pointPopup.on("close", () => {
-                setSideBar(null)
-            })
-            new mapboxgl.Marker({
+            const pointPopup = ()=>{
+                const popup = new mapboxgl
+                    .Popup()
+                    .setHTML(body);
+                if(point.type !== PointType.DESTINATION && point.type  !== PointType.ORIGIN){
+                    popup.on("open", () => {
+                        setSideBar(point)
+                    });
+                    popup.on("close", () => {
+                        setSideBar(null)
+                    });
+                }
+                return popup;
+            }
+            const marker = new mapboxgl.Marker({
                 color: color,
                 draggable: false,
                 scale: scale
-            })
-                .setLngLat({lon: point.longitude, lat: point.latitude})
-                .addTo(map)
-                .setPopup(pointPopup)
+            });
+                marker.setLngLat({lon: point.longitude, lat: point.latitude});
+                marker.addTo(map);
+                marker.setPopup(pointPopup());
+            tempMarkers.push(marker);
         })
+        setMarkers(tempMarkers);
+    }, [props.points]);
 
-    }, []);
-
-    const popup = (point: Point) => {
+    const stopPopup = (point: Point) => {
         return `<div class="point-popup">
                     <div class="point-popup-header">
                         <h4>${point.label}</h4>
@@ -88,6 +107,33 @@ const Map = (props: MapProps) => {
                     <div  class="point-popup-body">
                         <div>2 routes found</div>
                         <div>1:40 average</div>
+                    </div>
+                </div>`
+    }
+
+    const originPopup=(point: Point)=>{
+        return `<div class="point-popup">
+                    <div class="point-popup-header">
+                        <h4>${point.label}</h4>
+                    </div>
+                    <div  class="point-popup-body">
+                        <div>Origin</div>
+                    </div>
+                </div>`
+    }
+
+    const destinationPopup=(point: Point, originPoint: Point | undefined)=>{
+        let distance = "";
+            if(originPoint){
+                distance = `<div>${Math.floor(calculateDistance(parseInt(point.latitude), parseInt(point.longitude), parseInt(originPoint.latitude), parseInt(originPoint.longitude)))}km from destination</div>`
+            }
+        return `<div class="point-popup">
+                    <div class="point-popup-header">
+                        <h4>${point.label}</h4>
+                    </div>
+                    <div  class="point-popup-body">
+                        <div>Destination</div>
+                        ${distance}
                     </div>
                 </div>`
     }
@@ -132,7 +178,7 @@ const Map = (props: MapProps) => {
 
     const MapSideBar = () => {
         return (
-            <div className={`map-sidebar ${sideBar ? "open" : "closed"}`}>
+            <div className={`map-sidebar ${sideBar ? "open" : "closed"}`} hidden={!sideBar}>
                 <RoundCloseButton onClose={() => {
                     setSideBar(null)
                 }} left={false}/>
@@ -156,4 +202,4 @@ const Map = (props: MapProps) => {
 }
 
 
-export default Map
+export default MapDisplay

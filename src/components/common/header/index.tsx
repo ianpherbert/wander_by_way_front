@@ -10,10 +10,7 @@ interface HeaderProps{
 
 const Header = (props: HeaderProps) => {
 
-    console.log(props)
-
     const flagLink = props.language == Languages.FR ? "/languageIcons/FR.png" : "/languageIcons/EN.png"
-
     return(
         <div id={"header"}>
             <a className={"title"} href="/home">
