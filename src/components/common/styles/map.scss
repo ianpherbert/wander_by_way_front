@@ -1,0 +1,32 @@
+@import "../../../styles/constants";
+
+.map-navigation-wrapper{
+  width: 100%;
+  background-color: $lightTeal;
+  border-radius: 11px;
+  box-shadow: $shadow;
+  padding: 25px 0 25px 0;
+  .navigation{
+    height: 100px;
+    border-radius: 11px;
+    background-color: $yellow;
+    width: 90%;
+    margin: auto;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    .place-input{
+      display: flex;
+      width: 70%;
+      padding-right: 2%;
+      justify-content: space-between;
+    }
+  }
+  .map-wrapper{
+    position: relative;
+    height: 80vh;
+    width: 90%;
+    padding: 10px;
+    margin: 10px auto;
+  }
+}

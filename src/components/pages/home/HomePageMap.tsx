@@ -1,14 +1,16 @@
 import React, {useEffect, useState} from "react";
 import "./index.scss"
+import "../../common/styles/map.scss"
 import MapDisplay, {Point, PointType} from "../../common/maps/MapDisplay";
 import {CssTextField} from "../../common/Mui/inputs";
 import {ReverseButton} from "../../common/buttons/reverse";
 import {WBWButton} from "../../common/buttons/wbwButton";
 import {RouteType} from "../../../core/trip/RouteType";
-import {CitySearchOutput, CityType, QuerySearchCityArgs} from "../../../graphql/model";
 import {Autocomplete, FormControl} from "@mui/material";
 import {useQuery} from "@apollo/client";
-import {SEARCH_CITY, SearchCityData} from "../../../graphql/queries";
+import {SEARCH_CITY} from "../../../graphql/queries";
+import {SearchCity, SearchCity_searchCity, SearchCityVariables} from "../../../graphql/model/SearchCity";
+import {GetRoutesFromCity_findAllRoutesFromCity_routes} from "../../../graphql/model/GetRoutesFromCity";
 
 enum InputType{
     TO,
@@ -16,14 +18,9 @@ enum InputType{
     REASON
 }
 
-interface SearchItems{
-    toOptions: CitySearchOutput[],
-    fromOptions: CitySearchOutput[]
-}
-
 interface SelectedItems{
-    to: CitySearchOutput | null,
-    from: CitySearchOutput | null
+    to: SearchCity_searchCity | null,
+    from: SearchCity_searchCity | null
 }
 
 const HomePageMap=()=>{
@@ -33,12 +30,14 @@ const HomePageMap=()=>{
     const [selectedItems, setSelectedItems] = useState<SelectedItems>({to: null, from: null});
     const [points, setPoints] = useState<Point[]>([])
 
-    const { loading, error, data } = useQuery(SEARCH_CITY, {
-        variables: { query: searchTerm },
-    });
+    const citySearch = useQuery<SearchCity, SearchCityVariables>(SEARCH_CITY,{
+        variables: {
+            query: searchTerm
+        }
+    })
 
     const submit=()=>{
-        alert(`/${selectedItems.from?.id}/${selectedItems.to?.id || "anywhere"}`);
+        window.location.href = `/routefinder/${selectedItems.from?.id}/${selectedItems.to?.id || "anywhere"}`;
     }
 
     const swapInputs=()=>{
@@ -56,18 +55,18 @@ const HomePageMap=()=>{
     useEffect(()=>{
         const route = [];
         if(selectedItems.from !== null){
-            route.push({latitude: selectedItems.from.latitude, longitude: selectedItems.from.longitude, type: PointType.ORIGIN, label: selectedItems.from.name, routeType: RouteType.ORIGIN})
+            route.push({latitude: selectedItems.from.latitude, longitude: selectedItems.from.longitude, type: PointType.ORIGIN, label: selectedItems.from.name, routeInfo: null})
         }
         if(selectedItems.to !== null){
-            route.push({latitude: selectedItems.to.latitude, longitude: selectedItems.to.longitude, type: PointType.DESTINATION, label: selectedItems.to.name, routeType: RouteType.DESTINATION})
+            route.push({latitude: selectedItems.to.latitude, longitude: selectedItems.to.longitude, type: PointType.DESTINATION, label: selectedItems.to.name, routeInfo: null})
         }
         setPoints(route);
     },[selectedItems.to,selectedItems.from])
 
 
-    const elevateTextInput = (e: any, type: InputType) => {
+    const elevateTextInput = async (e: any, type: InputType) => {
         const input = e.target.value || ""
-        setSearchTerm(input);
+
         switch (type){
             case InputType.FROM:
                 setFromTerm(input);
@@ -76,9 +75,11 @@ const HomePageMap=()=>{
                 setToTerm(input);
                 break;
         }
+        await setSearchTerm(input);
+        await citySearch.refetch();
     }
 
-    const selectItem=(reason: string, item: string | CitySearchOutput | null, type: InputType)=>{
+    const selectItem=(reason: string, item: string | SearchCity_searchCity | null, type: InputType)=>{
         let temp = selectedItems;
         if(typeof item === "string"){
             item = null
@@ -99,6 +100,7 @@ const HomePageMap=()=>{
 
     return(
         <div id={"homepageMap"}>
+
             <h3>Where do you want to wander?</h3>
             <div className={"map-navigation-wrapper"}>
                 <div className={"navigation"}>
@@ -106,11 +108,11 @@ const HomePageMap=()=>{
                         <FormControl size="small">
                             <Autocomplete
                                 id={"input-from"}
-                                getOptionLabel={option => typeof option === "string" ? option : `${option.name}, ${option.country}` }
+                                getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}` }
                                 freeSolo
                                 inputValue={fromTerm || ""}
-                                options={data?.searchCity || []}
-                                onChange={(e: any, value: string | CitySearchOutput | null, reason: string)=> selectItem(reason, value, InputType.FROM)}
+                                options={citySearch.data?.searchCity || []}
+                                onChange={(e: any, value: string | SearchCity_searchCity | null, reason: string)=> selectItem(reason, value, InputType.FROM)}
                                 renderInput={
                                     (params) =>
                                         <CssTextField
@@ -125,11 +127,11 @@ const HomePageMap=()=>{
                         <FormControl size="small">
                             <Autocomplete
                                 id={"input-to"}
-                                getOptionLabel={option => typeof option === "string" ? option : `${option.name}, ${option.country}` }
+                                getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}` }
                                 freeSolo
                                 inputValue={toTerm || ""}
-                                options={data?.searchCity || []}
-                                onChange={(e: any, value: string | CitySearchOutput | null, reason: string)=> selectItem(reason, value, InputType.TO)}
+                                options={citySearch.data?.searchCity || []}
+                                onChange={(e: any, value: string | SearchCity_searchCity | null, reason: string)=> selectItem(reason, value, InputType.TO)}
                                 renderInput={
                                     (params) =>
                                         <CssTextField
@@ -144,7 +146,7 @@ const HomePageMap=()=>{
                         <WBWButton label={"Let's go"} onNext={()=>{submit()}}/>
                 </div>
                 <div className={"map-wrapper"}>
-                    <MapDisplay points={points}/>
+                    <MapDisplay points={points} onAddStop={(route: GetRoutesFromCity_findAllRoutesFromCity_routes)=>{}}/>
                 </div>
             </div>
         </div>

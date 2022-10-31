@@ -7,5 +7,4 @@ generates:
       - "typescript-operations"
       - "typescript-react-apollo"
     config:
-      maybeValue: 'T extends PromiseLike<infer U> ? Promise<U | null> : T | null'
-
+      maybeValue: 'T | null | undefined'

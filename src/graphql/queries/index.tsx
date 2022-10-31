@@ -1,12 +1,4 @@
 import {gql} from '@apollo/client';
-import {CitySearchOutput, RouteSearchOutput} from "../model";
-
-
-
-
-export interface SearchCityData{
-    searchCity : CitySearchOutput[]
-}
 
 export const SEARCH_CITY = gql`
                 query SearchCity($query: String!){
@@ -21,9 +13,6 @@ export const SEARCH_CITY = gql`
                     }
                 }`;
 
-export interface GetRoutesFromCityData{
-    findAllRoutesFromCity: RouteSearchOutput[]
-}
 
 export const GET_ROUTES_FROM_CITY = gql`
                query GetRoutesFromCity($cityId: String!) {
@@ -39,6 +28,11 @@ export const GET_ROUTES_FROM_CITY = gql`
                                 latitude
                                 longitude
                             }
+                            from{
+                                name
+                                latitude
+                                longitude
+                            }
                             type
                             durationTotal
                             durationMinutes
@@ -50,6 +44,17 @@ export const GET_ROUTES_FROM_CITY = gql`
                     }
 
                }`
+
+export const FIND_CITY_BY_ID = gql`
+    query FindCityById($cityId: String!){
+        findCityById(cityId: $cityId){
+            name
+            type
+            latitude
+            longitude
+        }
+    }
+`
 
 
 

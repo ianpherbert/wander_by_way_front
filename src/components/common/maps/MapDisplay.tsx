@@ -2,12 +2,14 @@ import React, {useEffect, useState} from "react";
 import "./map.scss"
 import {RoundCloseButton} from "../buttons/roundCloseButton";
 import {Button} from "@mui/material";
-import {RouteType} from "../../../core/trip/RouteType";
 import {calculateDistance} from "../../../utils/calculateDistance";
+import {mapTripIcons} from "../../../utils/mapTripIcons";
+import {GetRoutesFromCity_findAllRoutesFromCity_routes} from "../../../graphql/model/GetRoutesFromCity";
+import {formatTime} from "../../../utils/timeFormatter";
 
 interface MapProps {
     points: Point[],
-    connected?: boolean
+    onAddStop: (route: GetRoutesFromCity_findAllRoutesFromCity_routes) => void
 }
 
 export interface Point {
@@ -15,14 +17,19 @@ export interface Point {
     latitude: string,
     type: PointType,
     label: string
-    routeType: RouteType
+    routeInfo?: {
+        routes: GetRoutesFromCity_findAllRoutesFromCity_routes[],
+        durationAverage : number,
+        lineDistanceAverage: number
+    } | null
 }
 
 export enum PointType {
     ORIGIN,
     DESTINATION,
     INTERMEDIATE,
-    LAYOVER
+    LAYOVER,
+    SEARCH_ITEM
 }
 
 
@@ -30,7 +37,7 @@ const MapDisplay = (props: MapProps) => {
     const mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
     mapboxgl.accessToken = 'pk.eyJ1Ijoid2FuZGVyYnl3YXkiLCJhIjoiY2w3MXpoaGxqMHJkbzQxc2JxMDF6cGV1ZSJ9.hfHBDo0Zv31hoaWuRGMvhA';
 
-    const [sideBar, setSideBar] = useState<Point | null>(null)
+    const [selectedDestination, setSelectedDestination] = useState<Point | null>(null)
     const [map, setMap] = useState()
     const [markers, setMarkers] = useState<any[]>([])
 
@@ -50,9 +57,14 @@ const MapDisplay = (props: MapProps) => {
             let scale : number;
             let body : string;
             switch (point.type) {
+                case PointType.SEARCH_ITEM:
+                    color = "#ff0000";
+                    scale = .5;
+                    body = stopPopup(point)
+                    break;
                 case PointType.ORIGIN:
                     color = "#da4167";
-                    scale = 1.5;
+                    scale = 1;
                     body = originPopup(point)
                     break;
                 case PointType.LAYOVER:
@@ -62,7 +74,7 @@ const MapDisplay = (props: MapProps) => {
                     break;
                 case PointType.DESTINATION:
                     color = "#f5cb5c";
-                    scale = 1.5;
+                    scale = 1;
                     body = destinationPopup(point, props.points.find(it=> it.type == PointType.ORIGIN))
                     break;
                 case PointType.INTERMEDIATE:
@@ -78,10 +90,10 @@ const MapDisplay = (props: MapProps) => {
                     .setHTML(body);
                 if(point.type !== PointType.DESTINATION && point.type  !== PointType.ORIGIN){
                     popup.on("open", () => {
-                        setSideBar(point)
+                        setSelectedDestination(point)
                     });
                     popup.on("close", () => {
-                        setSideBar(null)
+                        setSelectedDestination(null)
                     });
                 }
                 return popup;
@@ -97,7 +109,7 @@ const MapDisplay = (props: MapProps) => {
             tempMarkers.push(marker);
         })
         setMarkers(tempMarkers);
-    }, [props.points]);
+    }, [props.points, map]);
 
     const stopPopup = (point: Point) => {
         return `<div class="point-popup">
@@ -105,8 +117,8 @@ const MapDisplay = (props: MapProps) => {
                         <h4>${point.label}</h4>
                     </div>
                     <div  class="point-popup-body">
-                        <div>2 routes found</div>
-                        <div>1:40 average</div>
+                        <div>${point?.routeInfo?.routes?.length} routes found</div>
+                        <div>${point?.routeInfo?.durationAverage} minutes average</div>
                     </div>
                 </div>`
     }
@@ -138,55 +150,34 @@ const MapDisplay = (props: MapProps) => {
                 </div>`
     }
 
-    const SidebarItem = () => {
-        function mapTripIcons(type: RouteType): string {
-            let iconClass;
-            switch (type) {
-                case RouteType.BUS:
-                    iconClass = "icofont-bus"
-                    break;
-                case RouteType.TRAIN:
-                    iconClass = "icofont-train-line"
-                    break;
-                case RouteType.PLANE:
-                    iconClass = "icofont-airplane"
-                    break;
-                case RouteType.BOAT:
-                    iconClass = "icofont-sail-boat"
-                    break;
-                case RouteType.CAR:
-                    iconClass = "icofont-car-alt-4"
-                    break
-                default:
-                    iconClass = "icofont-runner-alt-1"
-            }
-            return iconClass
-        }
-
+    const SidebarItem = (routeInfo:{routeInfo: GetRoutesFromCity_findAllRoutesFromCity_routes}) => {
         return (<div className={"sidebar-destination"}>
             <div className={"sidebar-destination-icon"}>
-                <i className={mapTripIcons(sideBar?.routeType!!)}></i>
+                <i className={mapTripIcons(routeInfo.routeInfo.type)}></i>
             </div>
-            <h3>Gare de Nantes</h3>
-            <div>From: Gare de strasbourg</div>
+            <h3>{routeInfo.routeInfo.to.name}</h3>
+            <div>From: {routeInfo.routeInfo.from.name}</div>
             <div className={"sidebar-destination-details"}>
-                <div className={"time"}>1:56</div>
-                <Button>Add to trip</Button>
+                <div className={"time"}>{formatTime(routeInfo?.routeInfo?.durationTotal || 0)}</div>
+                <Button onClick={()=>{props?.onAddStop(routeInfo.routeInfo)}}>Add to trip</Button>
             </div>
         </div>)
     }
 
     const MapSideBar = () => {
         return (
-            <div className={`map-sidebar ${sideBar ? "open" : "closed"}`} hidden={!sideBar}>
+            <div className={`map-sidebar ${selectedDestination ? "open" : "closed"}`} hidden={!selectedDestination}>
                 <RoundCloseButton onClose={() => {
-                    setSideBar(null)
+                    setSelectedDestination(null)
                 }} left={false}/>
                 <div className={"map-sidebar-header"}>
-                    <h2>{sideBar?.label}</h2>
+                    <h2>{selectedDestination?.label}</h2>
                 </div>
                 <div className={"map-sidebar-body"}>
-                    <SidebarItem/>
+                    {selectedDestination?.routeInfo?.routes.map((item: GetRoutesFromCity_findAllRoutesFromCity_routes) => (
+                        <SidebarItem routeInfo={item}/>
+                    ))}
+                    {/*<SidebarItem/>*/}
                 </div>
             </div>
         )

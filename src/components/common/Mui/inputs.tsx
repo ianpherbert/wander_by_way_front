@@ -1,18 +1,17 @@
 import React, {ChangeEvent, useEffect, useState} from "react";
 import {styled} from "@mui/material/styles";
 import {Autocomplete, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField} from "@mui/material";
-import {PointSearchItem, PointSearchType} from "../../../utils/PointSearchItem";
-import {CitySearchOutput, CityType, Scalars} from "../../../graphql/model";
+import {SearchCity_searchCity} from "../../../graphql/model/SearchCity";
 
 interface CustomTextInputProps {
     label: string,
     onTextInput: (e: string) => void
-    options: CitySearchOutput[]
+    options: SearchCity_searchCity[]
     enterKey: () => void
 }
 
 export const CustomAutocomplete = (props: CustomTextInputProps) => {
-    const [options, setOptions] = useState<CitySearchOutput[]>([])
+    const [options, setOptions] = useState<SearchCity_searchCity[]>([])
 
 
     const enter = (e: React.KeyboardEvent<HTMLDivElement>) => {

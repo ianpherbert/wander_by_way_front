@@ -1,11 +1,13 @@
 import React from "react";
+import {useParams} from "react-router-dom";
+import {RouteFinderMap} from "./RouteFinderMap";
 
 const RouteFinderPage=()=>{
 
     return(
-        <>
-        RouteFinder
-        </>
+        <div>
+        <RouteFinderMap/>
+        </div>
     )
 }
 
