@@ -14,6 +14,8 @@ export interface GetRoutesFromCity_findAllRoutesFromCity_routes_to {
   name: string | null;
   latitude: string | null;
   longitude: string | null;
+  id: string | null;
+  country: string | null;
 }
 
 export interface GetRoutesFromCity_findAllRoutesFromCity_routes_from {
@@ -21,6 +23,8 @@ export interface GetRoutesFromCity_findAllRoutesFromCity_routes_from {
   name: string | null;
   latitude: string | null;
   longitude: string | null;
+  id: string | null;
+  country: string | null;
 }
 
 export interface GetRoutesFromCity_findAllRoutesFromCity_routes {
@@ -37,6 +41,7 @@ export interface GetRoutesFromCity_findAllRoutesFromCity_routes {
 export interface GetRoutesFromCity_findAllRoutesFromCity {
   __typename: "RouteSearchOutput";
   destinationName: string;
+  destinationId: string;
   latitude: string | null;
   longitude: string | null;
   routes: GetRoutesFromCity_findAllRoutesFromCity_routes[];

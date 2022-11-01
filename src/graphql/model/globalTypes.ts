@@ -25,6 +25,14 @@ export enum RouteType {
   TRAIN = "TRAIN",
 }
 
+export enum StationType {
+  AIRPORT = "AIRPORT",
+  BUS = "BUS",
+  FERRY = "FERRY",
+  OTHER = "OTHER",
+  TRAIN = "TRAIN",
+}
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================

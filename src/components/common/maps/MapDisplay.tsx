@@ -6,6 +6,14 @@ import {calculateDistance} from "../../../utils/calculateDistance";
 import {mapTripIcons} from "../../../utils/mapTripIcons";
 import {GetRoutesFromCity_findAllRoutesFromCity_routes} from "../../../graphql/model/GetRoutesFromCity";
 import {formatTime} from "../../../utils/timeFormatter";
+import {useQuery} from "@apollo/client";
+import {
+    FindAllCitiesFromAssociatedTransit,
+    FindAllCitiesFromAssociatedTransitVariables
+} from "../../../graphql/model/FindAllCitiesFromAssociatedTransit";
+import {FIND_ALL_CITIES_FROM_ASSOCIATED_TRANSIT} from "../../../graphql/queries";
+import {RouteType} from "../../../graphql/model/globalTypes";
+import {routeToStation} from "../../../utils/routeStationTranslator";
 
 interface MapProps {
     points: Point[],
@@ -40,6 +48,8 @@ const MapDisplay = (props: MapProps) => {
     const [selectedDestination, setSelectedDestination] = useState<Point | null>(null)
     const [map, setMap] = useState()
     const [markers, setMarkers] = useState<any[]>([])
+
+    const associatedCities = useQuery<FindAllCitiesFromAssociatedTransit, FindAllCitiesFromAssociatedTransitVariables>(FIND_ALL_CITIES_FROM_ASSOCIATED_TRANSIT)
 
     useEffect(() => {
         setMap(new mapboxgl.Map({
@@ -165,19 +175,25 @@ const MapDisplay = (props: MapProps) => {
     }
 
     const MapSideBar = () => {
+        associatedCities.refetch({
+            id: selectedDestination?.routeInfo?.routes[0]?.to?.id || "",
+            transitType: routeToStation(selectedDestination?.routeInfo?.routes[0]?.type || RouteType.OTHER),
+            name: selectedDestination?.routeInfo?.routes[0]?.to?.name || ""
+        }).then(result => {
+            console.log(result)
+        });
         return (
             <div className={`map-sidebar ${selectedDestination ? "open" : "closed"}`} hidden={!selectedDestination}>
                 <RoundCloseButton onClose={() => {
                     setSelectedDestination(null)
                 }} left={false}/>
                 <div className={"map-sidebar-header"}>
-                    <h2>{selectedDestination?.label}</h2>
+                    <h2>{associatedCities?.data?.findAllCitiesFromAssociatedTransit?.at(0)?.name || selectedDestination?.label || "null"}</h2>
                 </div>
                 <div className={"map-sidebar-body"}>
                     {selectedDestination?.routeInfo?.routes.map((item: GetRoutesFromCity_findAllRoutesFromCity_routes) => (
                         <SidebarItem routeInfo={item}/>
                     ))}
-                    {/*<SidebarItem/>*/}
                 </div>
             </div>
         )

@@ -15,6 +15,7 @@ import {Stop} from "../../../core/trip/Stop";
 import {mapTripIcons} from "../../../utils/mapTripIcons";
 import {RouteType} from "../../../graphql/model/globalTypes";
 import {formatTime} from "../../../utils/timeFormatter";
+import Loader from "../../common/loader";
 
 
 export const RouteFinderMap = () => {
@@ -127,10 +128,10 @@ export const RouteFinderMap = () => {
                     </div>
                 </div>
                 <div className={"trip-preview"}>
-
                 </div>
                 <div className={"map-wrapper"}>
                     <MapDisplay points={searchPoints} onAddStop={addStop}/>
+                    {searchPoints.length < 1 && <Loader/>}
                 </div>
             </div>
         </div>

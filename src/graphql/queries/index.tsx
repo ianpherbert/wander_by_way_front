@@ -20,6 +20,7 @@ export const GET_ROUTES_FROM_CITY = gql`
                         cityId : $cityId
                     ){
                         destinationName
+                        destinationId
                         latitude
                         longitude
                         routes{
@@ -27,11 +28,15 @@ export const GET_ROUTES_FROM_CITY = gql`
                                 name
                                 latitude
                                 longitude
+                                id
+                                country
                             }
                             from{
                                 name
                                 latitude
                                 longitude
+                                id
+                                country
                             }
                             type
                             durationTotal
@@ -55,6 +60,26 @@ export const FIND_CITY_BY_ID = gql`
         }
     }
 `
-
+export const FIND_ALL_CITIES_FROM_ASSOCIATED_TRANSIT = gql`
+    query FindAllCitiesFromAssociatedTransit(
+        $id: String!,
+        $transitType: StationType!,
+        $name: String!
+    ){
+        findAllCitiesFromAssociatedTransit(
+            transitSearchInput: {
+                id: $id,
+                transitType: $transitType,
+                name: $name
+            }
+        ){
+            name
+            type
+            latitude
+            longitude
+        }
+    }
+`
+    // findAllCitiesFromAssociatedTransit
 
 
