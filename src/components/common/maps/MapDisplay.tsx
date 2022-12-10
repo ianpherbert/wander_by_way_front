@@ -17,7 +17,7 @@ import {routeToStation} from "../../../utils/routeStationTranslator";
 
 interface MapProps {
     points: Point[],
-    onAddStop: (route: GetRoutesFromCity_findAllRoutesFromCity_routes) => void
+    onAddStop: (route: GetRoutesFromCity_findAllRoutesFromCity_routes, addId: string) => void
 }
 
 export interface Point {
@@ -30,6 +30,11 @@ export interface Point {
         durationAverage : number,
         lineDistanceAverage: number
     } | null
+    stopRouteInfo?:{
+        durationMinutes: number,
+        fromName: string,
+        type: RouteType
+    }
 }
 
 export enum PointType {
@@ -50,6 +55,10 @@ const MapDisplay = (props: MapProps) => {
     const [markers, setMarkers] = useState<any[]>([])
 
     const associatedCities = useQuery<FindAllCitiesFromAssociatedTransit, FindAllCitiesFromAssociatedTransitVariables>(FIND_ALL_CITIES_FROM_ASSOCIATED_TRANSIT)
+    const mainCity = () =>{
+        const cities = associatedCities?.data?.findAllCitiesFromAssociatedTransit || [];
+        return cities[0]
+    }
 
     useEffect(() => {
         setMap(new mapboxgl.Map({
@@ -70,7 +79,7 @@ const MapDisplay = (props: MapProps) => {
                 case PointType.SEARCH_ITEM:
                     color = "#ff0000";
                     scale = .5;
-                    body = stopPopup(point)
+                    body = searchItemPopup(point)
                     break;
                 case PointType.ORIGIN:
                     color = "#da4167";
@@ -121,7 +130,7 @@ const MapDisplay = (props: MapProps) => {
         setMarkers(tempMarkers);
     }, [props.points, map]);
 
-    const stopPopup = (point: Point) => {
+    const searchItemPopup = (point: Point) => {
         return `<div class="point-popup">
                     <div class="point-popup-header">
                         <h4>${point.label}</h4>
@@ -129,6 +138,19 @@ const MapDisplay = (props: MapProps) => {
                     <div  class="point-popup-body">
                         <div>${point?.routeInfo?.routes?.length} routes found</div>
                         <div>${point?.routeInfo?.durationAverage} minutes average</div>
+                    </div>
+                </div>`
+    }
+
+    const stopPopup = (point: Point) => {
+        return `<div class="point-popup">
+                    <div class="point-popup-header">
+                        <h4>${point.label}</h4>
+                    </div>
+                    <div  class="point-popup-body">
+                        <div>From: ${point?.stopRouteInfo?.fromName}</div>
+                        <div>${point?.stopRouteInfo?.durationMinutes}</div>
+                        <i class=${mapTripIcons(point?.stopRouteInfo?.type || RouteType.OTHER)}></i>
                     </div>
                 </div>`
     }
@@ -165,11 +187,11 @@ const MapDisplay = (props: MapProps) => {
             <div className={"sidebar-destination-icon"}>
                 <i className={mapTripIcons(routeInfo.routeInfo.type)}></i>
             </div>
-            <h3>{routeInfo.routeInfo.to.name}</h3>
+            <h3>{mainCity()?.name || routeInfo.routeInfo.to.name}</h3>
             <div>From: {routeInfo.routeInfo.from.name}</div>
             <div className={"sidebar-destination-details"}>
                 <div className={"time"}>{formatTime(routeInfo?.routeInfo?.durationTotal || 0)}</div>
-                <Button onClick={()=>{props?.onAddStop(routeInfo.routeInfo)}}>Add to trip</Button>
+                <Button onClick={()=>{props?.onAddStop(routeInfo.routeInfo, mainCity()?.id!!)}}>Add to trip</Button>
             </div>
         </div>)
     }
@@ -179,9 +201,7 @@ const MapDisplay = (props: MapProps) => {
             id: selectedDestination?.routeInfo?.routes[0]?.to?.id || "",
             transitType: routeToStation(selectedDestination?.routeInfo?.routes[0]?.type || RouteType.OTHER),
             name: selectedDestination?.routeInfo?.routes[0]?.to?.name || ""
-        }).then(result => {
-            console.log(result)
-        });
+        })
         return (
             <div className={`map-sidebar ${selectedDestination ? "open" : "closed"}`} hidden={!selectedDestination}>
                 <RoundCloseButton onClose={() => {

@@ -11,6 +11,7 @@ import { StationType, CityType } from "./globalTypes";
 
 export interface FindAllCitiesFromAssociatedTransit_findAllCitiesFromAssociatedTransit {
   __typename: "CityOutput";
+  id: string;
   name: string;
   type: CityType;
   latitude: string;

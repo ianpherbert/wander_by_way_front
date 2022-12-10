@@ -73,6 +73,7 @@ export const FIND_ALL_CITIES_FROM_ASSOCIATED_TRANSIT = gql`
                 name: $name
             }
         ){
+            id
             name
             type
             latitude

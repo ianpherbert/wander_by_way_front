@@ -5,5 +5,8 @@ export interface Stop{
     routeType: RouteType,
     origin: boolean,
     destination: boolean,
-    duration: string
+    duration: string,
+    latitude: string,
+    longitude: string
+    from?: string
 }

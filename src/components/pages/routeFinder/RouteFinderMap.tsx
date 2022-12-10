@@ -20,8 +20,14 @@ import Loader from "../../common/loader";
 
 export const RouteFinderMap = () => {
     const {fromId, toId} = useParams();
+
+    const [searchPoints, setPoints] = useState<Point[]>([]);
+    const [stops, setStops] = useState<Stop[]>([]);
+    const [trip, setTrip] = useState<Stop[]>([]);
+    const [searchCity, setSearchCity] = useState<string | undefined>(fromId)
+
     const routesFromCity = useQuery<GetRoutesFromCity, GetRoutesFromCityVariables>(GET_ROUTES_FROM_CITY, {
-        variables: { cityId:  fromId || ""},
+        variables: { cityId:  searchCity || ""},
     });
     const originCity = useQuery<FindCityById, FindCityByIdVariables>(FIND_CITY_BY_ID,{
         variables: { cityId:  fromId || ""}
@@ -30,41 +36,51 @@ export const RouteFinderMap = () => {
         variables: { cityId:  toId === "anywhere" ? "" : toId || ""}
     })
 
-    const [searchPoints, setSearchPoints] = useState<Point[]>([]);
-    const [stops, setStops] = useState<Stop[]>([]);
-    const [trip, setTrip] = useState<Stop[]>([]);
-
     useEffect(()=>{
-        if(routesFromCity.loading == false){
-            const routes = routesFromCity.data?.findAllRoutesFromCity?.map((item)=>
-                (
-                    {longitude: item?.longitude || "",
-                        latitude: item?.latitude|| "",
-                        type: PointType.SEARCH_ITEM,
-                        label: item?.destinationName || "",
-                        routeInfo: {
-                            routes: item?.routes || [],
-                            durationAverage: item?.durationAverage || 0,
-                            lineDistanceAverage: item?.lineDistanceAverage || 0
-                        }
+        const searchRoutes = routesFromCity.data?.findAllRoutesFromCity?.map((item)=>
+            (
+                {longitude: item?.longitude || "",
+                    latitude: item?.latitude|| "",
+                    type: PointType.SEARCH_ITEM,
+                    label: item?.destinationName || "",
+                    routeInfo: {
+                        routes: item?.routes || [],
+                        durationAverage: item?.durationAverage || 0,
+                        lineDistanceAverage: item?.lineDistanceAverage || 0
                     }
-                )
-            ) || []
-            const origin = {
-                longitude: originCity.data?.findCityById?.longitude || "",
-                latitude: originCity.data?.findCityById?.latitude|| "",
-                type: PointType.ORIGIN,
-                label: originCity.data?.findCityById?.name || ""
-            }
-            const destination = {
-                longitude: destinationCity.data?.findCityById?.longitude || "",
-                latitude: destinationCity.data?.findCityById?.latitude|| "",
-                type: PointType.DESTINATION,
-                label: destinationCity.data?.findCityById?.name || ""
-            }
-            setSearchPoints([...routes,origin,destination]);
+                }
+            )
+        ) || []
+        const origin = {
+            longitude: originCity.data?.findCityById?.longitude || "",
+            latitude: originCity.data?.findCityById?.latitude|| "",
+            type: PointType.ORIGIN,
+            label: originCity.data?.findCityById?.name || ""
         }
-    },[routesFromCity.loading])
+        const routeStops = stops.map(stop=> (
+            {longitude: stop.longitude,
+                latitude: stop.latitude,
+                type: PointType.INTERMEDIATE,
+                label: stop.name,
+                stopRouteInfo: {
+                    durationMinutes:stop?.duration,
+                    fromName: stop?.from,
+                    type: stop?.routeType
+                }
+            }
+        ))
+        const destination = {
+            longitude: destinationCity.data?.findCityById?.longitude || "",
+            latitude: destinationCity.data?.findCityById?.latitude|| "",
+            type: PointType.DESTINATION,
+            label: destinationCity.data?.findCityById?.name || ""
+        }
+        if(routesFromCity.loading == false){
+            setPoints([...searchRoutes,origin,...routeStops,destination]);
+        }else{
+            setPoints([origin,...routeStops,destination])
+        }
+    },[routesFromCity.loading, stops])
 
     useEffect(()=>{
         if(originCity.loading === false && destinationCity.loading === false){
@@ -72,7 +88,7 @@ export const RouteFinderMap = () => {
         }
     },[originCity.loading, destinationCity.loading])
 
-    const addStop = (route: GetRoutesFromCity_findAllRoutesFromCity_routes | null) =>{
+    const addStop = (route: GetRoutesFromCity_findAllRoutesFromCity_routes | null, addId?: string) =>{
         const tempTrip = []
         if(originCity?.data?.findCityById !== undefined){
             tempTrip.push({
@@ -80,7 +96,9 @@ export const RouteFinderMap = () => {
                 routeType: RouteType.OTHER,
                 origin: true,
                 destination: false,
-                duration: "0:00"
+                duration: "0:00",
+                latitude: originCity.data?.findCityById?.latitude || "0",
+                longitude: originCity.data?.findCityById?.longitude || "0"
             })
         }
         if(route !== null){
@@ -89,10 +107,14 @@ export const RouteFinderMap = () => {
                 routeType: route?.type || RouteType.OTHER,
                 origin: false,
                 destination: false,
-                duration: formatTime(route?.durationTotal || 0)
+                duration: formatTime(route?.durationTotal || 0),
+                latitude: route.to?.latitude || "0",
+                longitude: route.to?.longitude || "0",
+                from: route.from?.name || ""
             }
             tempTrip.push(...stops,newStop);
-            setStops([...stops,newStop])
+            setStops([...stops,newStop]);
+            setSearchCity(addId);
         }
         if(destinationCity?.data?.findCityById !== undefined){
             tempTrip.push({
@@ -100,7 +122,9 @@ export const RouteFinderMap = () => {
                 routeType: RouteType.OTHER,
                 origin: false,
                 destination: true,
-                duration: "0:00"
+                duration: "0:00",
+                latitude: destinationCity.data?.findCityById?.latitude || "0",
+                longitude: destinationCity.data?.findCityById?.longitude || "0"
             })
         }
         setTrip(tempTrip);
@@ -131,7 +155,7 @@ export const RouteFinderMap = () => {
                 </div>
                 <div className={"map-wrapper"}>
                     <MapDisplay points={searchPoints} onAddStop={addStop}/>
-                    {searchPoints.length < 1 && <Loader/>}
+                    {routesFromCity.loading && <Loader/>}
                 </div>
             </div>
         </div>
