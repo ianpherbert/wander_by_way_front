@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@apollo/client": "^3.6.9",
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
     "@mui/material": "^5.10.1",
@@ -13,6 +14,7 @@
     "@types/node": "^16.11.51",
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
+    "graphql": "16.6.0",
     "mapbox-gl": "^2.9.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -20,13 +22,15 @@
     "react-scripts": "5.0.1",
     "sass": "^1.54.5",
     "typescript": "^4.7.4",
+    "util": "^0.12.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "apollo:generate-entities": "apollo codegen:generate --target typescript --excludes=node_modules/* --includes=src/graphql/queries/*.tsx --endpoint http://localhost:8000/graphql --tagName=gql --outputFlat src/graphql/model --passthroughCustomScalars --customScalarsPrefix herbert"
   },
   "eslintConfig": {
     "extends": [
@@ -45,5 +49,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "devDependencies": {
+    "@types/graphql": "^14.5.0",
+    "apollo": "^2.34.0"
+  },
+  "preinstall": "npx npm-force-resolutions"
 }

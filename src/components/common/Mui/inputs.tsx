@@ -1,33 +1,18 @@
 import React, {ChangeEvent, useEffect, useState} from "react";
 import {styled} from "@mui/material/styles";
 import {Autocomplete, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField} from "@mui/material";
-import {PointSearchItem, PointSearchType} from "../../../utils/PointSearchItem";
+import {SearchCity_searchCity} from "../../../graphql/model/SearchCity";
 
 interface CustomTextInputProps {
     label: string,
     onTextInput: (e: string) => void
-    options: PointSearchItem[]
+    options: SearchCity_searchCity[]
     enterKey: () => void
 }
 
 export const CustomAutocomplete = (props: CustomTextInputProps) => {
-    const [options, setOptions] = useState<PointSearchItem[]>([])
-    const elevateTextInput = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-        const input = e.target.value || ""
-        // props.onTextInput(input)
-        setOptions(
-            [
-                new PointSearchItem("option1","123d",PointSearchType.CITY, 1),
-                new PointSearchItem("option2","123a",PointSearchType.CITY, .001),
-                new PointSearchItem("option3","123d",PointSearchType.CITY, .8),
-                new PointSearchItem("option4","123s",PointSearchType.CITY, .002),
-            ]
-        )
-    }
+    const [options, setOptions] = useState<SearchCity_searchCity[]>([])
 
-    // useEffect(()=>{
-    //     setOptions(props.options || [])
-    // }, [props])
 
     const enter = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key === "Enter") {
@@ -35,44 +20,43 @@ export const CustomAutocomplete = (props: CustomTextInputProps) => {
         }
     }
 
-    const CssTextField = styled(TextField)({
-        width: "20vw",
-        maxWidth: "350px",
-        fontFamily: "font-family: 'Open Sans', sans-serif",
-        color: "#333533",
-        '& .MuiInput-underline:after': {
-            borderBottomColor: '#D9E2E8',
-        },
-        '& .MuiOutlinedInput-root': {
-            background: "#D9E2E8",
-            '&:hover fieldset': {
-                borderColor: '#333533',
-            },
-            '&.Mui-focused fieldset': {
-                borderColor: '#38e4ae',
-            },
-        },
-    });
-
     return (
         <FormControl size="small">
             <Autocomplete
-                getOptionLabel={option => typeof option === "string" ? option : option.displayName}
+                id={"tags-standard"}
+                getOptionLabel={option => typeof option === "string" ? option : option.name}
                 freeSolo
-                options={options}
+                options={props.options}
+
                 renderInput={
                     (params) =>
                         <CssTextField
                             {...params}
                             label={props.label}
-                            onChange={(e) => elevateTextInput(e)}
                             onKeyPress={(e) => enter(e)}
                         />}
             />
         </FormControl>
     )
 }
-
+export const CssTextField = styled(TextField)({
+    width: "20vw",
+    maxWidth: "350px",
+    fontFamily: "font-family: 'Open Sans', sans-serif",
+    color: "#333533",
+    '& .MuiInput-underline:after': {
+        borderBottomColor: '#D9E2E8',
+    },
+    '& .MuiOutlinedInput-root': {
+        background: "#D9E2E8",
+        '&:hover fieldset': {
+            borderColor: '#333533',
+        },
+        '&.Mui-focused fieldset': {
+            borderColor: '#38e4ae',
+        },
+    },
+});
 interface CustomSelectProps {
     label: string,
     onInput: (e: string | number) => void
