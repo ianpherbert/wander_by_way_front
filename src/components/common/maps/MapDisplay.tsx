@@ -48,7 +48,7 @@ export enum PointType {
 
 const MapDisplay = (props: MapProps) => {
     const mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
-    mapboxgl.accessToken = 'pk.eyJ1Ijoid2FuZGVyYnl3YXkiLCJhIjoiY2w3MXpoaGxqMHJkbzQxc2JxMDF6cGV1ZSJ9.hfHBDo0Zv31hoaWuRGMvhA';
+    mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY;
 
     const [selectedDestination, setSelectedDestination] = useState<Point | null>(null)
     const [map, setMap] = useState()
@@ -63,7 +63,7 @@ const MapDisplay = (props: MapProps) => {
     useEffect(() => {
         setMap(new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/wanderbyway/cl71zld5d000h14qp4orozrsy',
+            style: process.env.REACT_APP_MAPBOX_STYLE,
         }));
     }, []);
 
