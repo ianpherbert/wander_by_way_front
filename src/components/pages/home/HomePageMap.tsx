@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
-import "./index.scss"
-import "../../common/styles/map.scss"
+import "./index.scss";
+import "../../common/styles/map.scss";
 import MapDisplay, {Point, PointType} from "../../common/maps/MapDisplay";
 import {ReverseButton} from "../../common/buttons/reverse";
 import {WBWButton} from "../../common/buttons/wbwButton";
@@ -27,17 +27,17 @@ const HomePageMap=()=>{
     const [fromTerm, setFromTerm] = useState<string>("");
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [selectedItems, setSelectedItems] = useState<SelectedItems>({to: null, from: null});
-    const [points, setPoints] = useState<Point[]>([])
+    const [points, setPoints] = useState<Point[]>([]);
 
     const citySearch = useQuery<SearchCity, SearchCityVariables>(SEARCH_CITY,{
         variables: {
             query: searchTerm
         }
-    })
+    });
 
     const submit=()=>{
         window.location.href = `/routefinder/${selectedItems.from?.id}/${selectedItems.to?.id || "anywhere"}`;
-    }
+    };
 
     const swapInputs=()=>{
         const tempSelect = selectedItems;
@@ -48,40 +48,40 @@ const HomePageMap=()=>{
         setSelectedItems({
             to: tempSelect.from,
             from: tempSelect.to
-        })
-    }
+        });
+    };
 
     useEffect(()=>{
         const route = [];
         if(selectedItems.from !== null){
-            route.push({latitude: parseFloat(selectedItems.from.latitude), longitude: parseFloat(selectedItems.from.longitude), type: PointType.ORIGIN, label: selectedItems.from.name, routeInfo: null})
+            route.push({latitude: parseFloat(selectedItems.from.latitude), longitude: parseFloat(selectedItems.from.longitude), type: PointType.ORIGIN, label: selectedItems.from.name, routeInfo: null});
         }
         if(selectedItems.to !== null){
-            route.push({latitude: parseFloat(selectedItems.to.latitude), longitude: parseFloat(selectedItems.to.longitude), type: PointType.DESTINATION, label: selectedItems.to.name, routeInfo: null})
+            route.push({latitude: parseFloat(selectedItems.to.latitude), longitude: parseFloat(selectedItems.to.longitude), type: PointType.DESTINATION, label: selectedItems.to.name, routeInfo: null});
         }
         setPoints(route);
-    },[selectedItems.to,selectedItems.from])
+    },[selectedItems.to,selectedItems.from]);
 
 
     const elevateTextInput = async (e: any, type: InputType) => {
-        const input = e.target.value || ""
+        const input = e.target.value || "";
 
         switch (type){
-            case InputType.FROM:
-                setFromTerm(input);
-                break;
-            case InputType.TO:
-                setToTerm(input);
-                break;
+        case InputType.FROM:
+            setFromTerm(input);
+            break;
+        case InputType.TO:
+            setToTerm(input);
+            break;
         }
         await setSearchTerm(input);
         await citySearch.refetch();
-    }
+    };
 
     const selectItem=(reason: string, item: string | SearchCity_searchCity | null, type: InputType)=>{
         const temp = selectedItems;
         if(typeof item === "string"){
-            item = null
+            item = null;
         }
         let displayName = "";
         if(item !== null){
@@ -95,7 +95,7 @@ const HomePageMap=()=>{
             temp.to = item;
         }
         setSelectedItems(temp);
-    }
+    };
 
     return(
         <div id={"homepageMap"}>
@@ -115,14 +115,14 @@ const HomePageMap=()=>{
                                 renderInput={
                                     (params) =>
                                         <CssTextField
-                                            onBlur={()=>{selectedItems.from && setFromTerm(`${selectedItems.from.name}, ${selectedItems.from.country}`)}}
+                                            onBlur={()=>{selectedItems.from && setFromTerm(`${selectedItems.from.name}, ${selectedItems.from.country}`);}}
                                             {...params}
                                             label={"From"}
                                             onInputCapture={(e)=> elevateTextInput(e, InputType.FROM)}
                                         />}
                             />
                         </FormControl>
-                            <ReverseButton onToggle={swapInputs}/>
+                        <ReverseButton onToggle={swapInputs}/>
                         <FormControl size="small">
                             <Autocomplete
                                 id={"input-to"}
@@ -137,19 +137,19 @@ const HomePageMap=()=>{
                                             {...params}
                                             label={"To"}
                                             onInputCapture={(e)=> elevateTextInput(e, InputType.TO)}
-                                            onBlur={()=>{selectedItems.to && setToTerm(`${selectedItems.to.name}, ${selectedItems.to.country}`)}}
+                                            onBlur={()=>{selectedItems.to && setToTerm(`${selectedItems.to.name}, ${selectedItems.to.country}`);}}
                                         />}
                             />
                         </FormControl>
                     </div>
-                        <WBWButton label={"Let's go"} onNext={()=>{submit()}}/>
+                    <WBWButton label={"Let's go"} onNext={()=>{submit();}}/>
                 </div>
                 <div className={"map-wrapper"}>
                     <MapDisplay points={points}/>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default HomePageMap
+export default HomePageMap;

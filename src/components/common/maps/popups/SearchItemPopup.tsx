@@ -9,7 +9,7 @@ const SearchItemPopup = (point: Point) => {
                         <div>${point?.routeInfo?.routes?.length} routes found</div>
                         <div>${point?.routeInfo?.durationAverage} minutes average</div>
                     </div>
-                </div>`
-}
+                </div>`;
+};
 
-export default SearchItemPopup
+export default SearchItemPopup;

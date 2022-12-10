@@ -4,7 +4,7 @@ import {Point} from "../MapDisplay";
 const DestinationPopup=(point: Point, originPoint: Point | undefined)=>{
     let distance = "";
     if(originPoint){
-        distance = `<div>${Math.floor(calculateDistance(point.latitude, point.longitude, originPoint.latitude, originPoint.longitude))}km from destination</div>`
+        distance = `<div>${Math.floor(calculateDistance(point.latitude, point.longitude, originPoint.latitude, originPoint.longitude))}km from destination</div>`;
     }
     return `<div class="point-popup">
                     <div class="point-popup-header">
@@ -14,7 +14,7 @@ const DestinationPopup=(point: Point, originPoint: Point | undefined)=>{
                         <div>Destination</div>
                         ${distance}
                     </div>
-                </div>`
-}
+                </div>`;
+};
 
-export default DestinationPopup
+export default DestinationPopup;

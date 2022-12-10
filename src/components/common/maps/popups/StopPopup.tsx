@@ -12,7 +12,7 @@ const StopPopup = (point: Point) => {
                         <div>${point?.stopRouteInfo?.durationMinutes}</div>
                         <i class=${mapTripIcons(point?.stopRouteInfo?.type || RouteType.OTHER)}></i>
                     </div>
-                </div>`
-}
+                </div>`;
+};
 
-export default StopPopup
+export default StopPopup;

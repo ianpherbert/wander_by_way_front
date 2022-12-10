@@ -8,7 +8,7 @@ const OriginPopup=(point: Point)=>{
                     <div  class="point-popup-body">
                         <div>Origin</div>
                     </div>
-                </div>`
-}
+                </div>`;
+};
 
-export default OriginPopup
+export default OriginPopup;
