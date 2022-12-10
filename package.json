@@ -57,7 +57,10 @@
     "@typescript-eslint/parser": "^5.46.0",
     "apollo": "^2.34.0",
     "eslint": "^8.29.0",
-    "eslint-plugin-react": "^7.31.11"
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.31.11",
+    "prettier": "2.8.1"
   },
   "preinstall": "npx npm-force-resolutions"
 }
