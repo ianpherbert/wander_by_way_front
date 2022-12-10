@@ -138,16 +138,16 @@ export const RouteFinderMap = () => {
                 <div className={"navigation"}>
                     <div className={"route-preview"}>
                         {trip.map(stop =>
-                            <div key={stop.longitude + stop.latitude}>
+                            <>
                                 {!stop.origin && <div className={"route-transit"}>
-                                    <i className={"icofont-double-right"}></i>
-                                    <i className={mapTripIcons(stop.routeType)}></i>
-                                    <i className={"icofont-double-right"}></i>
+                                    <i className={"icofont-double-right"}/>
+                                    <i className={mapTripIcons(stop.routeType)}/>
+                                    <i className={"icofont-double-right"}/>
                                 </div>}
                                 <div className={"route-preview-item"}>
                                     <h4>{stop.name}</h4>
                                 </div>
-                            </div>
+                            </>
                         )}
                     </div>
                 </div>

@@ -2,15 +2,14 @@ import React, {useEffect, useState} from "react";
 import "./index.scss"
 import "../../common/styles/map.scss"
 import MapDisplay, {Point, PointType} from "../../common/maps/MapDisplay";
-import {CssTextField} from "../../common/Mui/inputs";
 import {ReverseButton} from "../../common/buttons/reverse";
 import {WBWButton} from "../../common/buttons/wbwButton";
-import {RouteType} from "../../../core/trip/RouteType";
 import {Autocomplete, FormControl} from "@mui/material";
 import {useQuery} from "@apollo/client";
 import {SEARCH_CITY} from "../../../graphql/queries";
 import {SearchCity, SearchCity_searchCity, SearchCityVariables} from "../../../graphql/model/SearchCity";
 import {GetRoutesFromCity_findAllRoutesFromCity_routes} from "../../../graphql/model/GetRoutesFromCity";
+import {CssTextField} from "../../common/mui/inputs";
 
 enum InputType{
     TO,
