@@ -1,16 +1,15 @@
 import React, {useEffect, useState} from "react";
-import "./index.scss"
-import "../../common/styles/map.scss"
+import "./index.scss";
+import "../../common/styles/map.scss";
 import MapDisplay, {Point, PointType} from "../../common/maps/MapDisplay";
-import {CssTextField} from "../../common/Mui/inputs";
 import {ReverseButton} from "../../common/buttons/reverse";
 import {WBWButton} from "../../common/buttons/wbwButton";
-import {RouteType} from "../../../core/trip/RouteType";
 import {Autocomplete, FormControl} from "@mui/material";
 import {useQuery} from "@apollo/client";
 import {SEARCH_CITY} from "../../../graphql/queries";
 import {SearchCity, SearchCity_searchCity, SearchCityVariables} from "../../../graphql/model/SearchCity";
 import {GetRoutesFromCity_findAllRoutesFromCity_routes} from "../../../graphql/model/GetRoutesFromCity";
+import {CssTextField} from "../../common/mui/inputs";
 
 enum InputType{
     TO,
@@ -28,61 +27,61 @@ const HomePageMap=()=>{
     const [fromTerm, setFromTerm] = useState<string>("");
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [selectedItems, setSelectedItems] = useState<SelectedItems>({to: null, from: null});
-    const [points, setPoints] = useState<Point[]>([])
+    const [points, setPoints] = useState<Point[]>([]);
 
     const citySearch = useQuery<SearchCity, SearchCityVariables>(SEARCH_CITY,{
         variables: {
             query: searchTerm
         }
-    })
+    });
 
     const submit=()=>{
         window.location.href = `/routefinder/${selectedItems.from?.id}/${selectedItems.to?.id || "anywhere"}`;
-    }
+    };
 
     const swapInputs=()=>{
-        let tempSelect = selectedItems;
-        let tempToTerm = toTerm;
-        let tempFromTerm = fromTerm;
+        const tempSelect = selectedItems;
+        const tempToTerm = toTerm;
+        const tempFromTerm = fromTerm;
         setFromTerm(tempToTerm);
         setToTerm(tempFromTerm);
         setSelectedItems({
             to: tempSelect.from,
             from: tempSelect.to
-        })
-    }
+        });
+    };
 
     useEffect(()=>{
         const route = [];
         if(selectedItems.from !== null){
-            route.push({latitude: selectedItems.from.latitude, longitude: selectedItems.from.longitude, type: PointType.ORIGIN, label: selectedItems.from.name, routeInfo: null})
+            route.push({latitude: parseFloat(selectedItems.from.latitude), longitude: parseFloat(selectedItems.from.longitude), type: PointType.ORIGIN, label: selectedItems.from.name, routeInfo: null});
         }
         if(selectedItems.to !== null){
-            route.push({latitude: selectedItems.to.latitude, longitude: selectedItems.to.longitude, type: PointType.DESTINATION, label: selectedItems.to.name, routeInfo: null})
+            route.push({latitude: parseFloat(selectedItems.to.latitude), longitude: parseFloat(selectedItems.to.longitude), type: PointType.DESTINATION, label: selectedItems.to.name, routeInfo: null});
         }
         setPoints(route);
-    },[selectedItems.to,selectedItems.from])
+    },[selectedItems.to,selectedItems.from]);
 
 
     const elevateTextInput = async (e: any, type: InputType) => {
-        const input = e.target.value || ""
+        const input = e.target.value || "";
 
         switch (type){
-            case InputType.FROM:
-                setFromTerm(input);
-                break;
-            case InputType.TO:
-                setToTerm(input);
-                break;
+        case InputType.FROM:
+            setFromTerm(input);
+            break;
+        case InputType.TO:
+            setToTerm(input);
+            break;
         }
         await setSearchTerm(input);
         await citySearch.refetch();
-    }
+    };
 
     const selectItem=(reason: string, item: string | SearchCity_searchCity | null, type: InputType)=>{
-        let temp = selectedItems;
+        const temp = selectedItems;
         if(typeof item === "string"){
-            item = null
+            item = null;
         }
         let displayName = "";
         if(item !== null){
@@ -96,7 +95,7 @@ const HomePageMap=()=>{
             temp.to = item;
         }
         setSelectedItems(temp);
-    }
+    };
 
     return(
         <div id={"homepageMap"}>
@@ -116,14 +115,14 @@ const HomePageMap=()=>{
                                 renderInput={
                                     (params) =>
                                         <CssTextField
-                                            onBlur={()=>{selectedItems.from && setFromTerm(`${selectedItems.from.name}, ${selectedItems.from.country}`)}}
+                                            onBlur={()=>{selectedItems.from && setFromTerm(`${selectedItems.from.name}, ${selectedItems.from.country}`);}}
                                             {...params}
                                             label={"From"}
                                             onInputCapture={(e)=> elevateTextInput(e, InputType.FROM)}
                                         />}
                             />
                         </FormControl>
-                            <ReverseButton onToggle={swapInputs}/>
+                        <ReverseButton onToggle={swapInputs}/>
                         <FormControl size="small">
                             <Autocomplete
                                 id={"input-to"}
@@ -138,19 +137,19 @@ const HomePageMap=()=>{
                                             {...params}
                                             label={"To"}
                                             onInputCapture={(e)=> elevateTextInput(e, InputType.TO)}
-                                            onBlur={()=>{selectedItems.to && setToTerm(`${selectedItems.to.name}, ${selectedItems.to.country}`)}}
+                                            onBlur={()=>{selectedItems.to && setToTerm(`${selectedItems.to.name}, ${selectedItems.to.country}`);}}
                                         />}
                             />
                         </FormControl>
                     </div>
-                        <WBWButton label={"Let's go"} onNext={()=>{submit()}}/>
+                    <WBWButton label={"Let's go"} onNext={()=>{submit();}}/>
                 </div>
                 <div className={"map-wrapper"}>
-                    <MapDisplay points={points} onAddStop={(route: GetRoutesFromCity_findAllRoutesFromCity_routes)=>{}}/>
+                    <MapDisplay points={points}/>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default HomePageMap
+export default HomePageMap;

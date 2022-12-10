@@ -103,7 +103,7 @@ export const CustomSelect = (props: CustomSelectProps) => {
             <InputLabel>{props.label}</InputLabel>
             <CssSelect label={props.label} onChange={(e) => elevateTextInput(e)}>
                 {props.options.map(item => (
-                    <MenuItem value={item.value}>{item.label}</MenuItem>
+                    <MenuItem value={item.value} key={item.value}>{item.label}</MenuItem>
                 ))}
             </CssSelect>
         </FormControl>)
