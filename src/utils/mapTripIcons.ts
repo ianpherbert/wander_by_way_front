@@ -19,9 +19,6 @@ export function mapTripIcons(type: RouteType): string {
         case RouteType.CAR:
             iconClass = "icofont-car-alt-4"
             break
-        // case RouteType.ORIGIN:
-        //     iconClass = "icofont-flag-alt-2";
-        //     break;
         default:
             iconClass = "icofont-travelling"
     }

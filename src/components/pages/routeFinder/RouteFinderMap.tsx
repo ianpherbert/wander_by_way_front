@@ -39,8 +39,8 @@ export const RouteFinderMap = () => {
     useEffect(()=>{
         const searchRoutes = routesFromCity.data?.findAllRoutesFromCity?.map((item)=>
             (
-                {longitude: item?.longitude || "",
-                    latitude: item?.latitude|| "",
+                {longitude: parseFloat(item?.longitude || "0"),
+                    latitude: parseFloat(item?.latitude|| "0"),
                     type: PointType.SEARCH_ITEM,
                     label: item?.destinationName || "",
                     routeInfo: {
@@ -52,14 +52,14 @@ export const RouteFinderMap = () => {
             )
         ) || []
         const origin = {
-            longitude: originCity.data?.findCityById?.longitude || "",
-            latitude: originCity.data?.findCityById?.latitude|| "",
+            longitude: parseFloat(originCity.data?.findCityById?.longitude || "0"),
+            latitude: parseFloat(originCity.data?.findCityById?.latitude|| "0"),
             type: PointType.ORIGIN,
             label: originCity.data?.findCityById?.name || ""
         }
         const routeStops = stops.map(stop=> (
-            {longitude: stop.longitude,
-                latitude: stop.latitude,
+            {longitude: parseFloat(stop.longitude),
+                latitude: parseFloat(stop.latitude),
                 type: PointType.INTERMEDIATE,
                 label: stop.name,
                 stopRouteInfo: {
@@ -70,8 +70,8 @@ export const RouteFinderMap = () => {
             }
         ))
         const destination = {
-            longitude: destinationCity.data?.findCityById?.longitude || "",
-            latitude: destinationCity.data?.findCityById?.latitude|| "",
+            longitude: parseFloat(destinationCity.data?.findCityById?.longitude || "0"),
+            latitude: parseFloat(destinationCity.data?.findCityById?.latitude|| "0"),
             type: PointType.DESTINATION,
             label: destinationCity.data?.findCityById?.name || ""
         }
@@ -138,7 +138,7 @@ export const RouteFinderMap = () => {
                 <div className={"navigation"}>
                     <div className={"route-preview"}>
                         {trip.map(stop =>
-                            <>
+                            <div key={stop.longitude + stop.latitude}>
                                 {!stop.origin && <div className={"route-transit"}>
                                     <i className={"icofont-double-right"}></i>
                                     <i className={mapTripIcons(stop.routeType)}></i>
@@ -147,7 +147,7 @@ export const RouteFinderMap = () => {
                                 <div className={"route-preview-item"}>
                                     <h4>{stop.name}</h4>
                                 </div>
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>

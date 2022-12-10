@@ -1,4 +1,4 @@
-import {CityType, RouteType} from "../../graphql/model/globalTypes";
+import {RouteType} from "../../graphql/model/globalTypes";
 
 export interface Stop{
     name: string,

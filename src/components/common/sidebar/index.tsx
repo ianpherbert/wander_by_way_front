@@ -2,16 +2,16 @@ import React from "react";
 import "./index.scss"
 
 interface SidebarProps{
-
+    auth: boolean
 }
 
 const Sidebar=(props: SidebarProps)=>{
     return (
-        <div id={"sideBar"}>
+        <aside id={"sideBar"}>
             <div>
-                
+
             </div>
-        </div>
+        </aside>
     )
 }
 

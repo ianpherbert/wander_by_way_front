@@ -15,14 +15,16 @@ import {FIND_ALL_CITIES_FROM_ASSOCIATED_TRANSIT} from "../../../graphql/queries"
 import {RouteType} from "../../../graphql/model/globalTypes";
 import {routeToStation} from "../../../utils/routeStationTranslator";
 
+import mapboxgl from "mapbox-gl";
+
 interface MapProps {
     points: Point[],
-    onAddStop: (route: GetRoutesFromCity_findAllRoutesFromCity_routes, addId: string) => void
+    onAddStop?: (route: GetRoutesFromCity_findAllRoutesFromCity_routes, addId: string) => void
 }
 
 export interface Point {
-    longitude: string,
-    latitude: string,
+    longitude: number,
+    latitude: number,
     type: PointType,
     label: string
     routeInfo?: {
@@ -47,12 +49,11 @@ export enum PointType {
 
 
 const MapDisplay = (props: MapProps) => {
-    const mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
-    mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY;
+    mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY || "";
 
     const [selectedDestination, setSelectedDestination] = useState<Point | null>(null)
-    const [map, setMap] = useState()
-    const [markers, setMarkers] = useState<any[]>([])
+    const [map, setMap] = useState<mapboxgl.Map>()
+    const [markers, setMarkers] = useState<mapboxgl.Marker[]>([])
 
     const associatedCities = useQuery<FindAllCitiesFromAssociatedTransit, FindAllCitiesFromAssociatedTransitVariables>(FIND_ALL_CITIES_FROM_ASSOCIATED_TRANSIT)
     const mainCity = () =>{
@@ -62,72 +63,73 @@ const MapDisplay = (props: MapProps) => {
 
     useEffect(() => {
         setMap(new mapboxgl.Map({
-            container: 'map',
-            style: process.env.REACT_APP_MAPBOX_STYLE,
+            style: process.env.REACT_APP_MAPBOX_STYLE || "",
+            container: "map",
         }));
     }, []);
 
     useEffect(() => {
         markers.forEach(it => it.remove())
-        const tempMarkers : any[] = [];
-
-        props.points.forEach((point) => {
-            let color : string;
-            let scale : number;
-            let body : string;
-            switch (point.type) {
-                case PointType.SEARCH_ITEM:
-                    color = "#ff0000";
-                    scale = .5;
-                    body = searchItemPopup(point)
-                    break;
-                case PointType.ORIGIN:
-                    color = "#da4167";
-                    scale = 1;
-                    body = originPopup(point)
-                    break;
-                case PointType.LAYOVER:
-                    color = "#D9E2E8";
-                    scale = .8;
-                    body = stopPopup(point)
-                    break;
-                case PointType.DESTINATION:
-                    color = "#f5cb5c";
-                    scale = 1;
-                    body = destinationPopup(point, props.points.find(it=> it.type == PointType.ORIGIN))
-                    break;
-                case PointType.INTERMEDIATE:
-                    color = "#38e4ae";
-                    scale = 1;
-                    body = stopPopup(point)
-                    break;
-            }
-
-            const pointPopup = ()=>{
-                const popup = new mapboxgl
-                    .Popup()
-                    .setHTML(body);
-                if(point.type !== PointType.DESTINATION && point.type  !== PointType.ORIGIN){
-                    popup.on("open", () => {
-                        setSelectedDestination(point)
-                    });
-                    popup.on("close", () => {
-                        setSelectedDestination(null)
-                    });
+        if(map !== undefined){
+            const tempMarkers : mapboxgl.Marker[] = [];
+            props.points.forEach((point) => {
+                let color : string;
+                let scale : number;
+                let body : string;
+                switch (point.type) {
+                    case PointType.SEARCH_ITEM:
+                        color = "#ff0000";
+                        scale = .5;
+                        body = searchItemPopup(point)
+                        break;
+                    case PointType.ORIGIN:
+                        color = "#da4167";
+                        scale = 1;
+                        body = originPopup(point)
+                        break;
+                    case PointType.LAYOVER:
+                        color = "#D9E2E8";
+                        scale = .8;
+                        body = stopPopup(point)
+                        break;
+                    case PointType.DESTINATION:
+                        color = "#f5cb5c";
+                        scale = 1;
+                        body = destinationPopup(point, props.points.find(it=> it.type == PointType.ORIGIN))
+                        break;
+                    case PointType.INTERMEDIATE:
+                        color = "#38e4ae";
+                        scale = 1;
+                        body = stopPopup(point)
+                        break;
                 }
-                return popup;
-            }
-            const marker = new mapboxgl.Marker({
-                color: color,
-                draggable: false,
-                scale: scale
-            });
+
+                const pointPopup = ()=>{
+                    const popup = new mapboxgl
+                        .Popup()
+                        .setHTML(body);
+                    if(point.type !== PointType.DESTINATION && point.type  !== PointType.ORIGIN){
+                        popup.on("open", () => {
+                            setSelectedDestination(point)
+                        });
+                        popup.on("close", () => {
+                            setSelectedDestination(null)
+                        });
+                    }
+                    return popup;
+                }
+                const marker = new mapboxgl.Marker({
+                    color: color,
+                    draggable: false,
+                    scale: scale
+                });
                 marker.setLngLat({lon: point.longitude, lat: point.latitude});
                 marker.addTo(map);
                 marker.setPopup(pointPopup());
-            tempMarkers.push(marker);
-        })
-        setMarkers(tempMarkers);
+                tempMarkers.push(marker);
+            })
+            setMarkers(tempMarkers);
+        }
     }, [props.points, map]);
 
     const searchItemPopup = (point: Point) => {
@@ -169,7 +171,7 @@ const MapDisplay = (props: MapProps) => {
     const destinationPopup=(point: Point, originPoint: Point | undefined)=>{
         let distance = "";
             if(originPoint){
-                distance = `<div>${Math.floor(calculateDistance(parseInt(point.latitude), parseInt(point.longitude), parseInt(originPoint.latitude), parseInt(originPoint.longitude)))}km from destination</div>`
+                distance = `<div>${Math.floor(calculateDistance(point.latitude, point.longitude, originPoint.latitude, originPoint.longitude))}km from destination</div>`
             }
         return `<div class="point-popup">
                     <div class="point-popup-header">
@@ -185,13 +187,13 @@ const MapDisplay = (props: MapProps) => {
     const SidebarItem = (routeInfo:{routeInfo: GetRoutesFromCity_findAllRoutesFromCity_routes}) => {
         return (<div className={"sidebar-destination"}>
             <div className={"sidebar-destination-icon"}>
-                <i className={mapTripIcons(routeInfo.routeInfo.type)}></i>
+                <i className={mapTripIcons(routeInfo.routeInfo.type)}/>
             </div>
             <h3>{mainCity()?.name || routeInfo.routeInfo.to.name}</h3>
             <div>From: {routeInfo.routeInfo.from.name}</div>
             <div className={"sidebar-destination-details"}>
                 <div className={"time"}>{formatTime(routeInfo?.routeInfo?.durationTotal || 0)}</div>
-                <Button onClick={()=>{props?.onAddStop(routeInfo.routeInfo, mainCity()?.id!!)}}>Add to trip</Button>
+                    <Button onClick={()=>{props.onAddStop?.(routeInfo.routeInfo, mainCity()?.id || routeInfo.routeInfo.to.id || "")}}>Add to trip</Button>
             </div>
         </div>)
     }
@@ -212,7 +214,7 @@ const MapDisplay = (props: MapProps) => {
                 </div>
                 <div className={"map-sidebar-body"}>
                     {selectedDestination?.routeInfo?.routes.map((item: GetRoutesFromCity_findAllRoutesFromCity_routes) => (
-                        <SidebarItem routeInfo={item}/>
+                        <SidebarItem routeInfo={item} key={item.from.id || "" + item.to.id}/>
                     ))}
                 </div>
             </div>

@@ -41,9 +41,9 @@ const HomePageMap=()=>{
     }
 
     const swapInputs=()=>{
-        let tempSelect = selectedItems;
-        let tempToTerm = toTerm;
-        let tempFromTerm = fromTerm;
+        const tempSelect = selectedItems;
+        const tempToTerm = toTerm;
+        const tempFromTerm = fromTerm;
         setFromTerm(tempToTerm);
         setToTerm(tempFromTerm);
         setSelectedItems({
@@ -55,10 +55,10 @@ const HomePageMap=()=>{
     useEffect(()=>{
         const route = [];
         if(selectedItems.from !== null){
-            route.push({latitude: selectedItems.from.latitude, longitude: selectedItems.from.longitude, type: PointType.ORIGIN, label: selectedItems.from.name, routeInfo: null})
+            route.push({latitude: parseFloat(selectedItems.from.latitude), longitude: parseFloat(selectedItems.from.longitude), type: PointType.ORIGIN, label: selectedItems.from.name, routeInfo: null})
         }
         if(selectedItems.to !== null){
-            route.push({latitude: selectedItems.to.latitude, longitude: selectedItems.to.longitude, type: PointType.DESTINATION, label: selectedItems.to.name, routeInfo: null})
+            route.push({latitude: parseFloat(selectedItems.to.latitude), longitude: parseFloat(selectedItems.to.longitude), type: PointType.DESTINATION, label: selectedItems.to.name, routeInfo: null})
         }
         setPoints(route);
     },[selectedItems.to,selectedItems.from])
@@ -80,7 +80,7 @@ const HomePageMap=()=>{
     }
 
     const selectItem=(reason: string, item: string | SearchCity_searchCity | null, type: InputType)=>{
-        let temp = selectedItems;
+        const temp = selectedItems;
         if(typeof item === "string"){
             item = null
         }
@@ -146,7 +146,7 @@ const HomePageMap=()=>{
                         <WBWButton label={"Let's go"} onNext={()=>{submit()}}/>
                 </div>
                 <div className={"map-wrapper"}>
-                    <MapDisplay points={points} onAddStop={(route: GetRoutesFromCity_findAllRoutesFromCity_routes)=>{}}/>
+                    <MapDisplay points={points}/>
                 </div>
             </div>
         </div>

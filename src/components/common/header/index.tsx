@@ -27,7 +27,7 @@ const Header = (props: HeaderProps) => {
                     </a>
                 </div>
                 <div className={"flag-link"}>
-                    <img src={flagLink} />
+                    <img src={flagLink} alt={props.language == Languages.FR ? "drapeau français" : "british flag"}/>
                 </div>
             </div>
         </div>
