@@ -139,20 +139,30 @@ export const RouteFinderMap = () => {
                     <div className={"route-preview"}>
                         {trip.map(stop =>
                             <>
+                                {console.log(stop)}
                                 {!stop.origin && <div className={"route-transit"}>
                                     <i className={"icofont-double-right"}/>
                                     <i className={mapTripIcons(stop.routeType)}/>
                                     <i className={"icofont-double-right"}/>
                                 </div>}
-                                {stop.destination ?
-                                    <div className={"route-preview-item preview-destination"}>
+                                {
+                                    stop.origin && <div className={"route-preview-item preview-origin"}>
                                         <i className="icofont-google-map"/>
-                                        <h4>{stop.name || "Anywhere"}</h4>
+                                        <h4>{stop.name}</h4>
                                     </div>
-                                    :
+                                }
+                                {
+                                    !stop.destination && !stop.origin &&
                                     <div className={"route-preview-item preview-stop"}>
                                         <i className="icofont-google-map"/>
                                         <h4>{stop.name}</h4>
+                                    </div>
+                                }
+                                {
+                                    stop.destination &&
+                                    <div className={"route-preview-item preview-destination"}>
+                                        <i className="icofont-racing-flag"></i>
+                                        <h4>{stop.name || "Anywhere"}</h4>
                                     </div>
                                 }
                             </>
