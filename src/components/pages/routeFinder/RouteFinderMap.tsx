@@ -151,8 +151,6 @@ export const RouteFinderMap = () => {
                         )}
                     </div>
                 </div>
-                <div className={"trip-preview"}>
-                </div>
                 <div className={"map-wrapper"}>
                     <MapDisplay points={searchPoints} onAddStop={addStop}/>
                     {routesFromCity.loading && <Loader/>}
