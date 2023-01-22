@@ -75,7 +75,7 @@ export const RouteFinderMap = () => {
             type: PointType.DESTINATION,
             label: destinationCity.data?.findCityById?.name || ""
         };
-        if(routesFromCity.loading == false){
+        if(!routesFromCity.loading){
             setPoints([...searchRoutes,origin,...routeStops,destination]);
         }else{
             setPoints([origin,...routeStops,destination]);
@@ -83,7 +83,7 @@ export const RouteFinderMap = () => {
     },[routesFromCity.loading, stops]);
 
     useEffect(()=>{
-        if(originCity.loading === false && destinationCity.loading === false){
+        if(!originCity.loading && !destinationCity.loading){
             addStop(null);
         }
     },[originCity.loading, destinationCity.loading]);
@@ -139,7 +139,6 @@ export const RouteFinderMap = () => {
                     <div className={"route-preview"}>
                         {trip.map(stop =>
                             <>
-                                {console.log(stop)}
                                 {!stop.origin && <div className={"route-transit"}>
                                     <i className={"icofont-double-right"}/>
                                     <i className={mapTripIcons(stop.routeType)}/>
