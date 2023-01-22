@@ -35,6 +35,7 @@ export const RouteFinderMap = () => {
     const destinationCity = useQuery<FindCityById, FindCityByIdVariables>(FIND_CITY_BY_ID,{
         variables: { cityId:  toId === "anywhere" ? "" : toId || ""}
     });
+    const [destination, setDestination] = useState<string | null>(null);
 
     useEffect(()=>{
         const searchRoutes = routesFromCity.data?.findAllRoutesFromCity?.map((item)=>
@@ -75,7 +76,7 @@ export const RouteFinderMap = () => {
             type: PointType.DESTINATION,
             label: destinationCity.data?.findCityById?.name || ""
         };
-        if(!routesFromCity.loading){
+        if(!routesFromCity.loading || destination){
             setPoints([...searchRoutes,origin,...routeStops,destination]);
         }else{
             setPoints([origin,...routeStops,destination]);
@@ -84,39 +85,51 @@ export const RouteFinderMap = () => {
 
     useEffect(()=>{
         if(!originCity.loading && !destinationCity.loading){
+            //Once loading is done, load the initial data
             addStop(null);
         }
     },[originCity.loading, destinationCity.loading]);
 
-    const addStop = (route: GetRoutesFromCity_findAllRoutesFromCity_routes | null, addId?: string) =>{
+    const addStop = (route: GetRoutesFromCity_findAllRoutesFromCity_routes | null, addId?: string, destination?: boolean) =>{
         const tempTrip = [];
+        // Add origin city from originCity Query
         if(originCity?.data?.findCityById !== undefined){
             tempTrip.push({
                 name: originCity.data?.findCityById?.name || "",
                 routeType: RouteType.OTHER,
                 origin: true,
-                destination: false,
+                destination:false,
                 duration: "0:00",
                 latitude: originCity.data?.findCityById?.latitude || "0",
                 longitude: originCity.data?.findCityById?.longitude || "0"
             });
         }
+        // Add new stop
         if(route !== null){
             const newStop = {
                 name: route?.to?.name || "",
                 routeType: route?.type || RouteType.OTHER,
                 origin: false,
-                destination: false,
+                destination: destination || false,
                 duration: formatTime(route?.durationTotal || 0),
                 latitude: route.to?.latitude || "0",
                 longitude: route.to?.longitude || "0",
                 from: route.from?.name || ""
             };
             tempTrip.push(...stops,newStop);
+            // Add new stop to stops
             setStops([...stops,newStop]);
-            setSearchCity(addId);
+            if(destination){
+                // If the destination has been reached do not refetch
+                setDestination(route?.to?.name);
+                setSearchCity(undefined);
+            }else{
+                // Search new points from new stop
+                setSearchCity(addId);
+            }
         }
-        if(destinationCity?.data?.findCityById !== undefined){
+        // Add destination
+        if(destinationCity?.data?.findCityById !== undefined && !destination){
             tempTrip.push({
                 name: destinationCity.data?.findCityById?.name || "",
                 routeType: RouteType.OTHER,
@@ -133,7 +146,7 @@ export const RouteFinderMap = () => {
 
     return (
         <div id={"routeFinderMap"}>
-            <h3>{originCity.data?.findCityById?.name} to {destinationCity.data?.findCityById?.name || "Anywhere"}</h3>
+            <h3>{originCity.data?.findCityById?.name} to {destination || destinationCity.data?.findCityById?.name || "Anywhere"}</h3>
             <div className={"map-navigation-wrapper"}>
                 <div className={"navigation"}>
                     <div className={"route-preview"}>
