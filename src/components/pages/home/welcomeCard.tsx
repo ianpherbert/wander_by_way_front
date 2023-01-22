@@ -8,13 +8,7 @@ const WelcomeCard = () => {
             <div className={"welcome-card-text"}>
                 <h3>Wander.</h3>
                 <p>
-                    Logoden biniou degemer mat an penn ar bed biskoazh kenañ kalz o ar ha, walc’h ar taol me a-raok a
-                    war gallek ma warnomp magañ.
-                    Nemet bourc’h er o forzh talvoudus barzh niver spi kae kelc’h kempenn karout
-                    beajiñ, ar koulz da davañjer martolod gegin e kleiz enez hantereur.
-                    Fiñval kempenn torchañ c’hroaz anezho iskis bann muiañ pesk, daou liv dra lezen
-                    n berr redek evit brumenn ganit, c’houevr derc’hel da glac’har tour sklaer pes
-                    keta. Breizh un dija Pembo stlakañ naon bag lenn livañ, maneg oaled egistout.
+                    Welcome to Wander by Way, your ultimate travel planning tool. Discover new and exciting destinations with our comprehensive route planner. Find all available transportation options, including trains, planes, buses, and ferries, from your starting city. Create personalized routes that take you off the beaten path and explore the world in a whole new way. Our site is designed to be a helpful resource in your travel planning, providing you with all the information you need to plan your next adventure.
                 </p>
             </div>
             <Chevron/>
