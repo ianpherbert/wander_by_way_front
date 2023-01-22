@@ -144,9 +144,17 @@ export const RouteFinderMap = () => {
                                     <i className={mapTripIcons(stop.routeType)}/>
                                     <i className={"icofont-double-right"}/>
                                 </div>}
-                                <div className={"route-preview-item"}>
-                                    <h4>{stop.name}</h4>
-                                </div>
+                                {stop.destination ?
+                                    <div className={"route-preview-item preview-destination"}>
+                                        <i className="icofont-google-map"/>
+                                        <h4>{stop.name || "Anywhere"}</h4>
+                                    </div>
+                                    :
+                                    <div className={"route-preview-item preview-stop"}>
+                                        <i className="icofont-google-map"/>
+                                        <h4>{stop.name}</h4>
+                                    </div>
+                                }
                             </>
                         )}
                     </div>
