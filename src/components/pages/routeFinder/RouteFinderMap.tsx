@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import MapDisplay, {Point, PointType} from "../../common/maps/MapDisplay";
-import "./index.scss"
+import "./index.scss";
 
 import {useQuery} from "@apollo/client";
 import {FIND_CITY_BY_ID, GET_ROUTES_FROM_CITY} from "../../../graphql/queries";
@@ -24,17 +24,17 @@ export const RouteFinderMap = () => {
     const [searchPoints, setPoints] = useState<Point[]>([]);
     const [stops, setStops] = useState<Stop[]>([]);
     const [trip, setTrip] = useState<Stop[]>([]);
-    const [searchCity, setSearchCity] = useState<string | undefined>(fromId)
+    const [searchCity, setSearchCity] = useState<string | undefined>(fromId);
 
     const routesFromCity = useQuery<GetRoutesFromCity, GetRoutesFromCityVariables>(GET_ROUTES_FROM_CITY, {
         variables: { cityId:  searchCity || ""},
     });
     const originCity = useQuery<FindCityById, FindCityByIdVariables>(FIND_CITY_BY_ID,{
         variables: { cityId:  fromId || ""}
-    })
+    });
     const destinationCity = useQuery<FindCityById, FindCityByIdVariables>(FIND_CITY_BY_ID,{
         variables: { cityId:  toId === "anywhere" ? "" : toId || ""}
-    })
+    });
 
     useEffect(()=>{
         const searchRoutes = routesFromCity.data?.findAllRoutesFromCity?.map((item)=>
@@ -50,13 +50,13 @@ export const RouteFinderMap = () => {
                     }
                 }
             )
-        ) || []
+        ) || [];
         const origin = {
             longitude: parseFloat(originCity.data?.findCityById?.longitude || "0"),
             latitude: parseFloat(originCity.data?.findCityById?.latitude|| "0"),
             type: PointType.ORIGIN,
             label: originCity.data?.findCityById?.name || ""
-        }
+        };
         const routeStops = stops.map(stop=> (
             {longitude: parseFloat(stop.longitude),
                 latitude: parseFloat(stop.latitude),
@@ -68,28 +68,28 @@ export const RouteFinderMap = () => {
                     type: stop?.routeType
                 }
             }
-        ))
+        ));
         const destination = {
             longitude: parseFloat(destinationCity.data?.findCityById?.longitude || "0"),
             latitude: parseFloat(destinationCity.data?.findCityById?.latitude|| "0"),
             type: PointType.DESTINATION,
             label: destinationCity.data?.findCityById?.name || ""
-        }
+        };
         if(routesFromCity.loading == false){
             setPoints([...searchRoutes,origin,...routeStops,destination]);
         }else{
-            setPoints([origin,...routeStops,destination])
+            setPoints([origin,...routeStops,destination]);
         }
-    },[routesFromCity.loading, stops])
+    },[routesFromCity.loading, stops]);
 
     useEffect(()=>{
         if(originCity.loading === false && destinationCity.loading === false){
-            addStop(null)
+            addStop(null);
         }
-    },[originCity.loading, destinationCity.loading])
+    },[originCity.loading, destinationCity.loading]);
 
     const addStop = (route: GetRoutesFromCity_findAllRoutesFromCity_routes | null, addId?: string) =>{
-        const tempTrip = []
+        const tempTrip = [];
         if(originCity?.data?.findCityById !== undefined){
             tempTrip.push({
                 name: originCity.data?.findCityById?.name || "",
@@ -99,7 +99,7 @@ export const RouteFinderMap = () => {
                 duration: "0:00",
                 latitude: originCity.data?.findCityById?.latitude || "0",
                 longitude: originCity.data?.findCityById?.longitude || "0"
-            })
+            });
         }
         if(route !== null){
             const newStop = {
@@ -111,7 +111,7 @@ export const RouteFinderMap = () => {
                 latitude: route.to?.latitude || "0",
                 longitude: route.to?.longitude || "0",
                 from: route.from?.name || ""
-            }
+            };
             tempTrip.push(...stops,newStop);
             setStops([...stops,newStop]);
             setSearchCity(addId);
@@ -125,10 +125,10 @@ export const RouteFinderMap = () => {
                 duration: "0:00",
                 latitude: destinationCity.data?.findCityById?.latitude || "0",
                 longitude: destinationCity.data?.findCityById?.longitude || "0"
-            })
+            });
         }
         setTrip(tempTrip);
-    }
+    };
 
 
     return (
@@ -159,5 +159,5 @@ export const RouteFinderMap = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
