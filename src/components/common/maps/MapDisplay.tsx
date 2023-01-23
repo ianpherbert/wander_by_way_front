@@ -101,7 +101,7 @@ const MapDisplay = (props: MapProps) => {
                 };
             }
             return {
-                color: "#ff0000",
+                color: "#DA4167FF",
                 scale: 0.5,
                 body: SearchItemPopup(point, false),
             };

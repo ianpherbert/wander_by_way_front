@@ -17,6 +17,7 @@ import {RouteType} from "../../../graphql/model/globalTypes";
 import {formatTime} from "../../../utils/timeFormatter";
 import Loader from "../../common/loader";
 import matchRoutes from "./routeMatcher";
+import TripOverviewItem from "./TripOverviewItem";
 
 
 export const RouteFinderMap = () => {
@@ -130,10 +131,11 @@ export const RouteFinderMap = () => {
                 longitude: originCity.data?.findCityById?.longitude || "0"
             });
         }
+        tempTrip.push(...stops);
         // Add new stop
         if(route !== null){
             const newStop = {
-                id: route?.to?.id,
+                id: addId || route?.to?.id,
                 name: route?.to?.name || "",
                 routeType: route?.type || RouteType.OTHER,
                 origin: false,
@@ -143,7 +145,7 @@ export const RouteFinderMap = () => {
                 longitude: route.to?.longitude || "0",
                 from: route.from?.name || ""
             };
-            tempTrip.push(...stops,newStop);
+            tempTrip.push(newStop);
             // Add new stop to stops
             setStops([...stops,newStop]);
             if(destination){
@@ -171,6 +173,19 @@ export const RouteFinderMap = () => {
         setTrip(tempTrip);
     };
 
+    const resetStops=(stop: Stop)=>{
+        setSearchCity(stop?.id || "");
+        const tempStops = stops;
+        const index = tempStops.indexOf(stop);
+        if(index === -1){
+            setStops([]);
+        }else{
+            tempStops.splice(index+1);
+            setStops(tempStops);
+        }
+        addStop(null);
+    };
+
 
     return (
         <div id={"routeFinderMap"}>
@@ -185,26 +200,7 @@ export const RouteFinderMap = () => {
                                     <i className={mapTripIcons(stop.routeType)}/>
                                     <i className={"icofont-double-right"}/>
                                 </div>}
-                                {
-                                    stop.origin && <div className={"route-preview-item preview-origin"}>
-                                        <i className="icofont-google-map"/>
-                                        <h4>{stop.name}</h4>
-                                    </div>
-                                }
-                                {
-                                    !stop.destination && !stop.origin &&
-                                    <div className={"route-preview-item preview-stop"}>
-                                        <i className="icofont-google-map"/>
-                                        <h4>{stop.name}</h4>
-                                    </div>
-                                }
-                                {
-                                    stop.destination &&
-                                    <div className={"route-preview-item preview-destination"}>
-                                        <i className="icofont-racing-flag"></i>
-                                        <h4>{stop.name || "Anywhere"}</h4>
-                                    </div>
-                                }
+                                <TripOverviewItem stop={stop} key={stop.id} restart={resetStops}/>
                             </>
                         )}
                     </div>
