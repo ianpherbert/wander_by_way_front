@@ -36,6 +36,7 @@ interface PointInfo {
 }
 
 export interface Point {
+    id: string;
   longitude: number;
   latitude: number;
   type: PointType;
@@ -50,6 +51,7 @@ export interface Point {
     fromName: string;
     type: RouteType;
   };
+  match?: boolean
 }
 
 export enum PointType {
@@ -91,11 +93,19 @@ const MapDisplay = (props: MapProps) => {
     const mapPointInfo = (point: Point): PointInfo => {
         switch (point.type) {
         case PointType.SEARCH_ITEM:
+            if(point.match){
+                return {
+                    color: "#66ff00",
+                    scale: .6,
+                    body: SearchItemPopup(point, true),
+                };
+            }
             return {
                 color: "#ff0000",
                 scale: 0.5,
-                body: SearchItemPopup(point),
+                body: SearchItemPopup(point, false),
             };
+            
         case PointType.ORIGIN:
             return { color: "#da4167", scale: 1, body: OriginPopup(point) };
         case PointType.LAYOVER:

@@ -16,6 +16,7 @@ import {mapTripIcons} from "../../../utils/mapTripIcons";
 import {RouteType} from "../../../graphql/model/globalTypes";
 import {formatTime} from "../../../utils/timeFormatter";
 import Loader from "../../common/loader";
+import matchRoutes from "./routeMatcher";
 
 
 export const RouteFinderMap = () => {
@@ -29,6 +30,9 @@ export const RouteFinderMap = () => {
     const routesFromCity = useQuery<GetRoutesFromCity, GetRoutesFromCityVariables>(GET_ROUTES_FROM_CITY, {
         variables: { cityId:  searchCity || ""},
     });
+    const routesFromDestinationCity = useQuery<GetRoutesFromCity, GetRoutesFromCityVariables>(GET_ROUTES_FROM_CITY, {
+        variables: { cityId:  toId || ""},
+    });
     const originCity = useQuery<FindCityById, FindCityByIdVariables>(FIND_CITY_BY_ID,{
         variables: { cityId:  fromId || ""}
     });
@@ -38,9 +42,27 @@ export const RouteFinderMap = () => {
     const [destination, setDestination] = useState<string | null>(null);
 
     useEffect(()=>{
+        if(routesFromDestinationCity.data && routesFromCity.data){
+            const matches = matchRoutes(routesFromDestinationCity.data , routesFromCity.data);
+            console.log(searchPoints);
+            if(matches.length > 0) {
+                const matchedPoints = searchPoints.map(point => {
+                    if(matches.includes(point.label)){
+                        point.match = true;
+                    }
+                    return point;
+                });
+                setPoints(matchedPoints);
+            }
+        }
+    }, [routesFromDestinationCity.loading, routesFromCity.loading]);
+
+    useEffect(()=>{
         const searchRoutes = routesFromCity.data?.findAllRoutesFromCity?.map((item)=>
             (
-                {longitude: parseFloat(item?.longitude || "0"),
+                {
+                    id: stop.name,
+                    longitude: parseFloat(item?.longitude || "0"),
                     latitude: parseFloat(item?.latitude|| "0"),
                     type: PointType.SEARCH_ITEM,
                     label: item?.destinationName || "",
@@ -53,13 +75,16 @@ export const RouteFinderMap = () => {
             )
         ) || [];
         const origin = {
+            id: stop.name,
             longitude: parseFloat(originCity.data?.findCityById?.longitude || "0"),
             latitude: parseFloat(originCity.data?.findCityById?.latitude|| "0"),
             type: PointType.ORIGIN,
             label: originCity.data?.findCityById?.name || ""
         };
         const routeStops = stops.map(stop=> (
-            {longitude: parseFloat(stop.longitude),
+            {
+                id: stop.name,
+                longitude: parseFloat(stop.longitude),
                 latitude: parseFloat(stop.latitude),
                 type: PointType.INTERMEDIATE,
                 label: stop.name,
@@ -71,6 +96,7 @@ export const RouteFinderMap = () => {
             }
         ));
         const destination = {
+            id: stop.name,
             longitude: parseFloat(destinationCity.data?.findCityById?.longitude || "0"),
             latitude: parseFloat(destinationCity.data?.findCityById?.latitude|| "0"),
             type: PointType.DESTINATION,
@@ -95,6 +121,7 @@ export const RouteFinderMap = () => {
         // Add origin city from originCity Query
         if(originCity?.data?.findCityById !== undefined){
             tempTrip.push({
+                id: fromId,
                 name: originCity.data?.findCityById?.name || "",
                 routeType: RouteType.OTHER,
                 origin: true,
@@ -107,6 +134,7 @@ export const RouteFinderMap = () => {
         // Add new stop
         if(route !== null){
             const newStop = {
+                id: route?.to?.id,
                 name: route?.to?.name || "",
                 routeType: route?.type || RouteType.OTHER,
                 origin: false,
@@ -131,6 +159,7 @@ export const RouteFinderMap = () => {
         // Add destination
         if(destinationCity?.data?.findCityById !== undefined && !destination){
             tempTrip.push({
+                id: toId,
                 name: destinationCity.data?.findCityById?.name || "",
                 routeType: RouteType.OTHER,
                 origin: false,

@@ -16,12 +16,22 @@
   width: 150px;
   border-radius: 5px;
   overflow: hidden;
+  position: relative;
   .point-popup-header{
     width: 150px;
     background-color: $red;
+    height: 20px;
     h4{
       font-size: 13px;
       margin: 0;
+    }
+    i{
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      bottom: 10px;
+      font-size: 20px;
+      color: $greenSuccess;
     }
     padding: 5px;
   }
