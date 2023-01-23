@@ -44,7 +44,6 @@ export const RouteFinderMap = () => {
     useEffect(()=>{
         if(routesFromDestinationCity.data && routesFromCity.data){
             const matches = matchRoutes(routesFromDestinationCity.data , routesFromCity.data);
-            console.log(searchPoints);
             if(matches.length > 0) {
                 const matchedPoints = searchPoints.map(point => {
                     if(matches.includes(point.label)){
