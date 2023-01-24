@@ -43,6 +43,10 @@ export const RouteFinderMap = () => {
     const [destinationName, setDestinationName] = useState<string | null>(null);
 
     useEffect(()=>{
+        console.log(routesFromDestinationCity.loading);
+    }, [routesFromDestinationCity.loading]);
+
+    useEffect(()=>{
         if(routesFromDestinationCity.data && routesFromCity.data){
             const matches = matchRoutes(routesFromDestinationCity.data , routesFromCity.data);
             if(matches.length > 0) {
@@ -207,6 +211,9 @@ export const RouteFinderMap = () => {
                     </div>
                 </div>
                 <div className={"map-wrapper"}>
+                    {routesFromDestinationCity.loading && <div className={"map-notification"}>
+                        <p>Searching from {destinationName || destinationCity.data?.findCityById?.name}</p>
+                    </div>}
                     <MapDisplay points={searchPoints} onAddStop={addStop}/>
                     {routesFromCity.loading && <Loader/>}
                 </div>

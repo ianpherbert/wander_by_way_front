@@ -30,5 +30,40 @@
     margin: 10px auto;
     display: flex;
     align-items: center;
+    .map-blinder{
+      z-index: 100;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: rgba(3, 18, 44, 0.4);
+    }
+    .map-notification{
+      overflow: hidden;
+      z-index: 100;
+      position: absolute;
+      bottom: 5px;
+      width: 30%;
+      padding: 5px 5px 5px 10px;
+      right: 5px;
+      border-radius: 5px;
+      background-color: rgb(3, 3, 3);
+      color: white;
+      opacity: .8;
+      display: flex;
+      justify-content: left;
+      align-content: center;
+      flex-wrap: wrap;
+      p:after {
+        overflow: hidden;
+        display: inline-block;
+        vertical-align: bottom;
+        -webkit-animation: ellipsis steps(4,end) 900ms infinite;
+        animation: ellipsis steps(4,end) 900ms infinite;
+        content: "\2026"; /* ascii code for the ellipsis character */
+        width: 0px;
+      }
+    }
   }
 }
