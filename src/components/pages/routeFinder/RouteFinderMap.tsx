@@ -40,7 +40,7 @@ export const RouteFinderMap = () => {
     const destinationCity = useQuery<FindCityById, FindCityByIdVariables>(FIND_CITY_BY_ID,{
         variables: { cityId:  toId === "anywhere" ? "" : toId || ""}
     });
-    const [destination, setDestination] = useState<string | null>(null);
+    const [destinationName, setDestinationName] = useState<string | null>(null);
 
     useEffect(()=>{
         if(routesFromDestinationCity.data && routesFromCity.data){
@@ -149,15 +149,15 @@ export const RouteFinderMap = () => {
             // Add new stop to stops
             setStops([...stops,newStop]);
             if(destination){
-                // If the destination has been reached do not refetch
-                setDestination(route?.to?.name);
+                // If the destinationName has been reached do not refetch
+                setDestinationName(route?.to?.name);
                 setSearchCity(undefined);
             }else{
                 // Search new points from new stop
                 setSearchCity(addId);
             }
         }
-        // Add destination
+        // Add destinationName
         if(destinationCity?.data?.findCityById !== undefined && !destination){
             tempTrip.push({
                 id: toId,
@@ -174,22 +174,23 @@ export const RouteFinderMap = () => {
     };
 
     const resetStops= async (stop: Stop)=>{
-        setSearchCity(stop?.id || "");
+        const index = stops.indexOf(stop);
+        setDestinationName(null);
         const tempStops = stops;
-        const index = tempStops.indexOf(stop);
         if(index === -1){
-            setStops([]);
+            tempStops.splice(0);
         }else{
             tempStops.splice(index+1);
-            setStops(tempStops);
         }
+        setStops(tempStops);
         addStop(null);
+        setSearchCity(stop?.id || "");
     };
 
 
     return (
         <div id={"routeFinderMap"}>
-            <h3>{originCity.data?.findCityById?.name} to {destination || destinationCity.data?.findCityById?.name || "Anywhere"}</h3>
+            <h3>{originCity.data?.findCityById?.name} to {destinationName || destinationCity.data?.findCityById?.name || "Anywhere"}</h3>
             <div className={"map-navigation-wrapper"}>
                 <div className={"navigation"}>
                     <div className={"route-preview"}>
