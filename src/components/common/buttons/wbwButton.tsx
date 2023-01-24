@@ -1,5 +1,5 @@
 import React from "react";
-import "./index.scss"
+import "./index.scss";
 
 export const WBWButton=(props:{onNext?:()=>void, label: string})=>{
     return(
@@ -13,5 +13,5 @@ export const WBWButton=(props:{onNext?:()=>void, label: string})=>{
                 <span>{props.label}</span>
             </div>
         </div>
-    )
-}
+    );
+};

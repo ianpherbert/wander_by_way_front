@@ -27,6 +27,7 @@ export const RouteFinderMap = () => {
     const [stops, setStops] = useState<Stop[]>([]);
     const [trip, setTrip] = useState<Stop[]>([]);
     const [searchCity, setSearchCity] = useState<string | undefined>(fromId);
+    const [update, setUpdate] = useState<boolean>(false);
 
     const routesFromCity = useQuery<GetRoutesFromCity, GetRoutesFromCityVariables>(GET_ROUTES_FROM_CITY, {
         variables: { cityId:  searchCity || ""},
@@ -43,11 +44,7 @@ export const RouteFinderMap = () => {
     const [destinationName, setDestinationName] = useState<string | null>(null);
 
     useEffect(()=>{
-        console.log(routesFromDestinationCity.loading);
-    }, [routesFromDestinationCity.loading]);
-
-    useEffect(()=>{
-        if(routesFromDestinationCity.data && routesFromCity.data){
+        if(routesFromDestinationCity.data && routesFromCity.data && searchPoints.length > 0 && update){
             const matches = matchRoutes(routesFromDestinationCity.data , routesFromCity.data);
             if(matches.length > 0) {
                 const matchedPoints = searchPoints.map(point => {
@@ -57,11 +54,13 @@ export const RouteFinderMap = () => {
                     return point;
                 });
                 setPoints(matchedPoints);
+                setUpdate(false);
             }
         }
-    }, [routesFromDestinationCity.loading, routesFromCity.loading]);
+    }, [searchPoints]);
 
     useEffect(()=>{
+        setUpdate(true);
         const searchRoutes = routesFromCity.data?.findAllRoutesFromCity?.map((item)=>
             (
                 {
@@ -99,7 +98,13 @@ export const RouteFinderMap = () => {
                 }
             }
         ));
-        const destination = {
+        const destination = destinationName ? {
+            id: stops?.at(-1)?.id || "",
+            longitude: parseFloat(stops?.at(-1)?.longitude || "0"),
+            latitude: parseFloat(stops?.at(-1)?.latitude || "0"),
+            type: PointType.DESTINATION,
+            label: destinationName
+        } : {
             id: stop.name,
             longitude: parseFloat(destinationCity.data?.findCityById?.longitude || "0"),
             latitude: parseFloat(destinationCity.data?.findCityById?.latitude|| "0"),

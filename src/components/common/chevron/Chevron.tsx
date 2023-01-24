@@ -1,5 +1,5 @@
 import React from "react";
-import "./index.scss"
+import "./index.scss";
 
 
 export const Chevron=()=>{
@@ -9,5 +9,5 @@ export const Chevron=()=>{
             <div className={"chevron-bg-chevron yellow"}/>
             <div className={"chevron-bg-chevron teal"}/>
         </div>
-    )
-}
+    );
+};
