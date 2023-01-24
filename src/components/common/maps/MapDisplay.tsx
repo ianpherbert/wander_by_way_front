@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./map.scss";
 import { RoundCloseButton } from "../buttons/roundCloseButton";
-import { Button } from "@mui/material";
-import { calculateDistance } from "../../../utils/calculateDistance";
+import {Button, Tooltip} from "@mui/material";
 import { mapTripIcons } from "../../../utils/mapTripIcons";
 import { GetRoutesFromCity_findAllRoutesFromCity_routes } from "../../../graphql/model/GetRoutesFromCity";
 import { formatTime } from "../../../utils/timeFormatter";
@@ -25,7 +24,8 @@ interface MapProps {
   points: Point[];
   onAddStop?: (
     route: GetRoutesFromCity_findAllRoutesFromCity_routes,
-    addId: string
+    addId: string,
+    destination: boolean
   ) => void;
 }
 
@@ -36,6 +36,7 @@ interface PointInfo {
 }
 
 export interface Point {
+    id: string;
   longitude: number;
   latitude: number;
   type: PointType;
@@ -50,6 +51,7 @@ export interface Point {
     fromName: string;
     type: RouteType;
   };
+  match?: boolean
 }
 
 export enum PointType {
@@ -63,7 +65,7 @@ export enum PointType {
 const MapDisplay = (props: MapProps) => {
     mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY || "";
 
-    const [selectedDestination, setSelectedDestination] = useState<Point | null>(
+    const [selectedPoint, setSelectedPoint] = useState<Point | null>(
         null
     );
     const [map, setMap] = useState<mapboxgl.Map>();
@@ -91,11 +93,19 @@ const MapDisplay = (props: MapProps) => {
     const mapPointInfo = (point: Point): PointInfo => {
         switch (point.type) {
         case PointType.SEARCH_ITEM:
+            if(point.match){
+                return {
+                    color: "#66ff00",
+                    scale: .6,
+                    body: SearchItemPopup(point, true),
+                };
+            }
             return {
-                color: "#ff0000",
+                color: "#DA4167FF",
                 scale: 0.5,
-                body: SearchItemPopup(point),
+                body: SearchItemPopup(point, false),
             };
+            
         case PointType.ORIGIN:
             return { color: "#da4167", scale: 1, body: OriginPopup(point) };
         case PointType.LAYOVER:
@@ -137,10 +147,10 @@ const MapDisplay = (props: MapProps) => {
             point.type !== PointType.ORIGIN
                     ) {
                         popup.on("open", () => {
-                            setSelectedDestination(point);
+                            setSelectedPoint(point);
                         });
                         popup.on("close", () => {
-                            setSelectedDestination(null);
+                            setSelectedPoint(null);
                         });
                     }
                     return popup;
@@ -164,25 +174,48 @@ const MapDisplay = (props: MapProps) => {
   }) => {
         return (
             <div className={"sidebar-destination"}>
-                <div className={"sidebar-destination-icon"}>
-                    <i className={mapTripIcons(routeInfo.routeInfo.type)} />
-                </div>
+
                 <h3>{mainCity()?.name || routeInfo.routeInfo.to.name}</h3>
                 <div>From: {routeInfo.routeInfo.from.name}</div>
-                <div className={"sidebar-destination-details"}>
-                    <div className={"time"}>
-                        {formatTime(routeInfo?.routeInfo?.durationTotal || 0)}
+                <div className={"sidebar-destination-icon"}>
+                    <i className={mapTripIcons(routeInfo.routeInfo.type)} />
+                    {formatTime(routeInfo?.routeInfo?.durationTotal || 0)}
+                </div>
+                <div className={"add-to-trip-wrapper"}>
+                    <div className={"add-to-trip-button-wrapper"}>
+                        <Tooltip title={"Add to trip"}>
+                            <Button
+                                size={"medium"}
+                                variant="outlined"
+                                onClick={() => {
+                                    props.onAddStop?.(
+                                        routeInfo.routeInfo,
+                                        mainCity()?.id || routeInfo.routeInfo.to.id || "",
+                                        false
+                                    );
+                                }}
+                            >
+                                <i className="icofont-ui-add"></i>
+                            </Button>
+                        </Tooltip>
                     </div>
-                    <Button
-                        onClick={() => {
-                            props.onAddStop?.(
-                                routeInfo.routeInfo,
-                                mainCity()?.id || routeInfo.routeInfo.to.id || ""
-                            );
-                        }}
-                    >
-            Add to trip
-                    </Button>
+                    <div className={"add-to-trip-button-wrapper"}>
+                        <Tooltip title={"Add as destination"}>
+                            <Button
+                                size={"medium"}
+                                variant="outlined"
+                                onClick={() => {
+                                    props.onAddStop?.(
+                                        routeInfo.routeInfo,
+                                        mainCity()?.id || routeInfo.routeInfo.to.id || "",
+                                        true
+                                    );
+                                }}
+                            >
+                                <i className="icofont-flag-alt-2"></i>
+                            </Button>
+                        </Tooltip>
+                    </div>
                 </div>
             </div>
         );
@@ -190,20 +223,20 @@ const MapDisplay = (props: MapProps) => {
 
     const MapSideBar = () => {
         associatedCities.refetch({
-            id: selectedDestination?.routeInfo?.routes[0]?.to?.id || "",
+            id: selectedPoint?.routeInfo?.routes[0]?.to?.id || "",
             transitType: routeToStation(
-                selectedDestination?.routeInfo?.routes[0]?.type || RouteType.OTHER
+                selectedPoint?.routeInfo?.routes[0]?.type || RouteType.OTHER
             ),
-            name: selectedDestination?.routeInfo?.routes[0]?.to?.name || "",
+            name: selectedPoint?.routeInfo?.routes[0]?.to?.name || "",
         });
         return (
             <div
-                className={`map-sidebar ${selectedDestination ? "open" : "closed"}`}
-                hidden={!selectedDestination}
+                className={`map-sidebar ${selectedPoint ? "open" : "closed"}`}
+                hidden={!selectedPoint}
             >
                 <RoundCloseButton
                     onClose={() => {
-                        setSelectedDestination(null);
+                        setSelectedPoint(null);
                     }}
                     left={false}
                 />
@@ -211,12 +244,12 @@ const MapDisplay = (props: MapProps) => {
                     <h2>
                         {associatedCities?.data?.findAllCitiesFromAssociatedTransit?.at(0)
                             ?.name ||
-              selectedDestination?.label ||
+              selectedPoint?.label ||
               "null"}
                     </h2>
                 </div>
                 <div className={"map-sidebar-body"}>
-                    {selectedDestination?.routeInfo?.routes.map(
+                    {selectedPoint?.routeInfo?.routes.map(
                         (item: GetRoutesFromCity_findAllRoutesFromCity_routes) => (
                             <SidebarItem
                                 routeInfo={item}

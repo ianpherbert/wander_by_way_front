@@ -54,10 +54,10 @@ const HomePageMap=()=>{
     useEffect(()=>{
         const route = [];
         if(selectedItems.from !== null){
-            route.push({latitude: parseFloat(selectedItems.from.latitude), longitude: parseFloat(selectedItems.from.longitude), type: PointType.ORIGIN, label: selectedItems.from.name, routeInfo: null});
+            route.push({id: selectedItems.from.id,latitude: parseFloat(selectedItems.from.latitude), longitude: parseFloat(selectedItems.from.longitude), type: PointType.ORIGIN, label: selectedItems.from.name, routeInfo: null});
         }
         if(selectedItems.to !== null){
-            route.push({latitude: parseFloat(selectedItems.to.latitude), longitude: parseFloat(selectedItems.to.longitude), type: PointType.DESTINATION, label: selectedItems.to.name, routeInfo: null});
+            route.push({id: selectedItems.to.id, latitude: parseFloat(selectedItems.to.latitude), longitude: parseFloat(selectedItems.to.longitude), type: PointType.DESTINATION, label: selectedItems.to.name, routeInfo: null});
         }
         setPoints(route);
     },[selectedItems.to,selectedItems.from]);
