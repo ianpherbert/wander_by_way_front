@@ -98,7 +98,7 @@ export const RouteFinderMap = () => {
                 }
             }
         ));
-        const destination = destinationName ? {
+        const destination = destinationName !== null ? {
             id: stops?.at(-1)?.id || "",
             longitude: parseFloat(stops?.at(-1)?.longitude || "0"),
             latitude: parseFloat(stops?.at(-1)?.latitude || "0"),
