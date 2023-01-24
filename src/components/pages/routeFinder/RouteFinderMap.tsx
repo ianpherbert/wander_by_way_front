@@ -107,7 +107,7 @@ export const RouteFinderMap = () => {
         }else{
             setPoints([origin,...routeStops,destination]);
         }
-    },[routesFromCity.loading, stops]);
+    },[routesFromCity.data, stops]);
 
     useEffect(()=>{
         if(!originCity.loading && !destinationCity.loading){
@@ -173,7 +173,7 @@ export const RouteFinderMap = () => {
         setTrip(tempTrip);
     };
 
-    const resetStops=(stop: Stop)=>{
+    const resetStops= async (stop: Stop)=>{
         setSearchCity(stop?.id || "");
         const tempStops = stops;
         const index = tempStops.indexOf(stop);
