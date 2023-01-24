@@ -195,14 +195,14 @@ export const RouteFinderMap = () => {
                 <div className={"navigation"}>
                     <div className={"route-preview"}>
                         {trip.map(stop =>
-                            <>
+                            <React.Fragment key={stop.id}>
                                 {!stop.origin && <div className={"route-transit"}>
                                     <i className={"icofont-double-right"}/>
                                     <i className={mapTripIcons(stop.routeType)}/>
                                     <i className={"icofont-double-right"}/>
                                 </div>}
-                                <TripOverviewItem stop={stop} key={stop.id} restart={resetStops}/>
-                            </>
+                                <TripOverviewItem stop={stop} restart={resetStops}/>
+                            </React.Fragment>
                         )}
                     </div>
                 </div>
