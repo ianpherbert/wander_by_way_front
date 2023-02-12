@@ -1,0 +1,19 @@
+@import "../../../../../styles/constants";
+
+.skipFinder{
+  background-color: $white;
+  height: 0;
+  width: 100%;
+  overflow: hidden;
+  transition: .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &.open{
+    height: 100px;
+  }
+  >div{
+    width: 90%;
+    display: flex;
+  }
+}

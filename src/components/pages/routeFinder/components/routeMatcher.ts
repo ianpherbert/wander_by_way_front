@@ -1,4 +1,4 @@
-import {GetRoutesFromCity} from "../../../graphql/model/GetRoutesFromCity";
+import {GetRoutesFromCity} from "../../../../graphql/model/GetRoutesFromCity";
 
 const matchRoutes=(from: GetRoutesFromCity, to: GetRoutesFromCity) : string[]=>{
     const toNames = to.findAllRoutesFromCity.map((it) => it?.destinationName);

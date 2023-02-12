@@ -1,5 +1,5 @@
 import React from "react";
-import {RouteFinderMap} from "./RouteFinderMap";
+import {RouteFinderMap} from "./components/RouteFinderMap";
 
 const RouteFinderPage=()=>{
 

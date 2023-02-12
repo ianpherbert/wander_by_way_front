@@ -1,23 +1,25 @@
 import React, {useEffect, useState} from "react";
-import MapDisplay, {Point, PointType} from "../../common/maps/MapDisplay";
-import "./index.scss";
+import MapDisplay, {Point, PointType} from "../../../common/maps/MapDisplay";
+import "../index.scss";
 
 import {useQuery} from "@apollo/client";
-import {FIND_CITY_BY_ID, GET_ROUTES_FROM_CITY} from "../../../graphql/queries";
+import {FIND_CITY_BY_ID, GET_ROUTES_FROM_CITY} from "../../../../graphql/queries";
 import {useParams} from "react-router-dom";
 import {
     GetRoutesFromCity,
     GetRoutesFromCity_findAllRoutesFromCity_routes,
     GetRoutesFromCityVariables
-} from "../../../graphql/model/GetRoutesFromCity";
-import {FindCityById, FindCityByIdVariables} from "../../../graphql/model/FindCityById";
-import {Stop} from "../../../core/trip/Stop";
-import {mapTripIcons} from "../../../utils/mapTripIcons";
-import {RouteType} from "../../../graphql/model/globalTypes";
-import {formatTime} from "../../../utils/timeFormatter";
-import Loader from "../../common/loader";
+} from "../../../../graphql/model/GetRoutesFromCity";
+import {FindCityById, FindCityByIdVariables} from "../../../../graphql/model/FindCityById";
+import {Stop} from "../../../../core/trip/Stop";
+import {mapTripIcons} from "../../../../utils/mapTripIcons";
+import {RouteType} from "../../../../graphql/model/globalTypes";
+import {formatTime} from "../../../../utils/timeFormatter";
+import Loader from "../../../common/loader";
 import matchRoutes from "./routeMatcher";
 import TripOverviewItem from "./TripOverviewItem";
+import SkipFinder from "./skipFinder/SkipFinder";
+import mapRouteToStop from "../utils/mapRouteToStop";
 
 
 export const RouteFinderMap = () => {
@@ -28,6 +30,7 @@ export const RouteFinderMap = () => {
     const [trip, setTrip] = useState<Stop[]>([]);
     const [searchCity, setSearchCity] = useState<string | undefined>(fromId);
     const [update, setUpdate] = useState<boolean>(false);
+    const [popup, setPopup] = useState<boolean>(false);
 
     const routesFromCity = useQuery<GetRoutesFromCity, GetRoutesFromCityVariables>(GET_ROUTES_FROM_CITY, {
         variables: { cityId:  searchCity || ""},
@@ -59,6 +62,7 @@ export const RouteFinderMap = () => {
         }
     }, [searchPoints]);
 
+    // Set points from stops and search points
     useEffect(()=>{
         setUpdate(true);
         const searchRoutes = routesFromCity.data?.findAllRoutesFromCity?.map((item)=>
@@ -118,6 +122,7 @@ export const RouteFinderMap = () => {
         }
     },[routesFromCity.data, stops]);
 
+    //Initialize page once the origin and destination cities are loaded
     useEffect(()=>{
         if(!originCity.loading && !destinationCity.loading){
             //Once loading is done, load the initial data
@@ -128,35 +133,19 @@ export const RouteFinderMap = () => {
     const addStop = (route: GetRoutesFromCity_findAllRoutesFromCity_routes | null, addId?: string, destination?: boolean) =>{
         const tempTrip = [];
         // Add origin city from originCity Query
-        if(originCity?.data?.findCityById !== undefined){
-            tempTrip.push({
-                id: fromId,
-                name: originCity.data?.findCityById?.name || "",
-                routeType: RouteType.OTHER,
-                origin: true,
-                destination:false,
-                duration: "0:00",
-                latitude: originCity.data?.findCityById?.latitude || "0",
-                longitude: originCity.data?.findCityById?.longitude || "0"
-            });
+        const origin = buildOrigin();
+        if(origin){
+            tempTrip.push(origin);
         }
+
         tempTrip.push(...stops);
         // Add new stop
         if(route !== null){
-            const newStop = {
-                id: addId || route?.to?.id,
-                name: route?.to?.name || "",
-                routeType: route?.type || RouteType.OTHER,
-                origin: false,
-                destination: destination || false,
-                duration: formatTime(route?.durationTotal || 0),
-                latitude: route.to?.latitude || "0",
-                longitude: route.to?.longitude || "0",
-                from: route.from?.name || ""
-            };
+            const newStop = mapRouteToStop(route, addId, destination);
             tempTrip.push(newStop);
-            // Add new stop to stops
+            // Add new stop to "stops"
             setStops([...stops,newStop]);
+
             if(destination){
                 // If the destinationName has been reached do not refetch
                 setDestinationName(route?.to?.name);
@@ -167,8 +156,32 @@ export const RouteFinderMap = () => {
             }
         }
         // Add destinationName
-        if(destinationCity?.data?.findCityById !== undefined && !destination){
-            tempTrip.push({
+        const destinationStop = buildDestination();
+        if(destinationStop){
+            tempTrip.push(destinationStop);
+        }
+        setTrip(tempTrip);
+    };
+
+    const buildOrigin = (): Stop | null  => {
+        if(originCity?.data?.findCityById !== undefined){
+            return {
+                id: fromId,
+                name: originCity.data?.findCityById?.name || "",
+                routeType: RouteType.OTHER,
+                origin: true,
+                destination:false,
+                duration: "0:00",
+                latitude: originCity.data?.findCityById?.latitude || "0",
+                longitude: originCity.data?.findCityById?.longitude || "0"
+            };
+        }
+        return null;
+    };
+
+    const buildDestination = (): Stop | null =>{
+        if(destinationCity?.data?.findCityById !== undefined){
+            return {
                 id: toId,
                 name: destinationCity.data?.findCityById?.name || "",
                 routeType: RouteType.OTHER,
@@ -177,7 +190,27 @@ export const RouteFinderMap = () => {
                 duration: "0:00",
                 latitude: destinationCity.data?.findCityById?.latitude || "0",
                 longitude: destinationCity.data?.findCityById?.longitude || "0"
-            });
+            };
+        }
+        return null;
+    };
+
+    const addCustomStop = (stop: Stop) =>{
+        const tempTrip = [];
+        // Add origin city from originCity Query
+        const origin = buildOrigin();
+        if(origin){
+            tempTrip.push(origin);
+        }
+        tempTrip.push(...stops, stop);
+        setSearchCity(stop.id || "");
+        // Add new stop to "stops"
+        setStops([...stops,stop]);
+        // Add new stop
+        // Add destinationName
+        const destination = buildDestination();
+        if(destination){
+            tempTrip.push(destination);
         }
         setTrip(tempTrip);
     };
@@ -207,14 +240,20 @@ export const RouteFinderMap = () => {
                             <React.Fragment key={stop.id}>
                                 {!stop.origin && <div className={"route-transit"}>
                                     <i className={"icofont-double-right"}/>
-                                    <i className={mapTripIcons(stop.routeType)}/>
+                                    <i
+                                        className={`${mapTripIcons(stop.routeType)} ${stop.routeType === RouteType.OTHER && "skip-stop"}`}
+                                        onClick={()=>{setPopup(stop.routeType === RouteType.OTHER && !popup);}}
+                                    />
                                     <i className={"icofont-double-right"}/>
                                 </div>}
                                 <TripOverviewItem stop={stop} restart={resetStops}/>
                             </React.Fragment>
                         )}
+
                     </div>
+                    <SkipFinder open={popup} onAddStop={addCustomStop} from={"nantes"}/>
                 </div>
+
                 <div className={"map-wrapper"}>
                     {routesFromDestinationCity.loading && <div className={"map-notification"}>
                         <p>Searching from {destinationName || destinationCity.data?.findCityById?.name}</p>

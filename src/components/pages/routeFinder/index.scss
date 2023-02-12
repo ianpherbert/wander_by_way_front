@@ -100,3 +100,16 @@
     }
   }
 }
+
+.skip-stop{
+  border-radius: 5px;
+  transition: .3s;
+  cursor: pointer;
+  &:hover{
+    box-shadow: $smallShadow;
+  }
+  &:active{
+    box-shadow: 2px 2px 8px -2px #1E1A1AE2;
+    background-color: rgba(30, 26, 26, 0.22);
+  }
+}

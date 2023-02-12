@@ -6,6 +6,7 @@
   border-radius: 11px;
   box-shadow: $shadow;
   padding: 25px 0 25px 0;
+
   .navigation{
     min-height: 100px;
     border-radius: 11px;
@@ -15,6 +16,8 @@
     display: flex;
     justify-content: space-evenly;
     align-items: center;
+    flex-wrap: wrap;
+    overflow: hidden;
     .place-input{
       display: flex;
       width: 70%;
