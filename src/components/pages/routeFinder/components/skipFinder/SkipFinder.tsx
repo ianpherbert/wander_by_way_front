@@ -7,6 +7,7 @@ import {useQuery} from "@apollo/client";
 import {SEARCH_CITY} from "../../../../../graphql/queries";
 import {Stop} from "../../../../../core/trip/Stop";
 import {RouteType} from "../../../../../graphql/model/globalTypes";
+import {WBWButton} from "../../../../common/buttons/wbwButton";
 
 interface SkipFinderProps{
     open: boolean;
@@ -74,11 +75,12 @@ const SkipFinder =(props: SkipFinderProps)=>{
                             (params) =>
                                 <CssTextField
                                     {...params}
-                                    label={"From"}
+                                    label={"Where to?"}
                                 />}
                     />
                 </FormControl>
-                {selectedItem && <Button onClick={addStop}>Add {selectedItem?.name}</Button>}
+                {selectedItem && <WBWButton label={`Add ${selectedItem?.name}`} onNext={addStop}/>}
+                {/*{selectedItem && <Button onClick={addStop}></Button>}*/}
             </div>
         </div>
     );

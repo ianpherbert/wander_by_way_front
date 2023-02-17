@@ -30,7 +30,7 @@ export const RouteFinderMap = () => {
     const [trip, setTrip] = useState<Stop[]>([]);
     const [searchCity, setSearchCity] = useState<string | undefined>(fromId);
     const [update, setUpdate] = useState<boolean>(false);
-    const [popup, setPopup] = useState<boolean>(false);
+    const [customDropDown, setCustomDropDown] = useState<boolean>(false);
 
     const routesFromCity = useQuery<GetRoutesFromCity, GetRoutesFromCityVariables>(GET_ROUTES_FROM_CITY, {
         variables: { cityId:  searchCity || ""},
@@ -156,9 +156,8 @@ export const RouteFinderMap = () => {
             }
         }
         // Add destinationName
-        const destinationStop = buildDestination();
-        if(destinationStop){
-            tempTrip.push(destinationStop);
+        if(!destination){
+            tempTrip.push(buildDestination());
         }
         setTrip(tempTrip);
     };
@@ -179,20 +178,17 @@ export const RouteFinderMap = () => {
         return null;
     };
 
-    const buildDestination = (): Stop | null =>{
-        if(destinationCity?.data?.findCityById !== undefined){
-            return {
-                id: toId,
-                name: destinationCity.data?.findCityById?.name || "",
-                routeType: RouteType.OTHER,
-                origin: false,
-                destination: true,
-                duration: "0:00",
-                latitude: destinationCity.data?.findCityById?.latitude || "0",
-                longitude: destinationCity.data?.findCityById?.longitude || "0"
-            };
-        }
-        return null;
+    const buildDestination = (): Stop=>{
+        return {
+            id: toId,
+            name: destinationCity.data?.findCityById?.name || "",
+            routeType: RouteType.OTHER,
+            origin: false,
+            destination: true,
+            duration: "0:00",
+            latitude: destinationCity.data?.findCityById?.latitude || "0",
+            longitude: destinationCity.data?.findCityById?.longitude || "0"
+        };
     };
 
     const addCustomStop = (stop: Stop) =>{
@@ -213,6 +209,7 @@ export const RouteFinderMap = () => {
             tempTrip.push(destination);
         }
         setTrip(tempTrip);
+        setCustomDropDown(false);
     };
 
     const resetStops= async (stop: Stop)=>{
@@ -242,7 +239,7 @@ export const RouteFinderMap = () => {
                                     <i className={"icofont-double-right"}/>
                                     <i
                                         className={`${mapTripIcons(stop.routeType)} ${stop.routeType === RouteType.OTHER && "skip-stop"}`}
-                                        onClick={()=>{setPopup(stop.routeType === RouteType.OTHER && !popup);}}
+                                        onClick={()=>{setCustomDropDown(stop.routeType === RouteType.OTHER && !customDropDown);}}
                                     />
                                     <i className={"icofont-double-right"}/>
                                 </div>}
@@ -251,7 +248,7 @@ export const RouteFinderMap = () => {
                         )}
 
                     </div>
-                    <SkipFinder open={popup} onAddStop={addCustomStop} from={"nantes"}/>
+                    <SkipFinder open={customDropDown} onAddStop={addCustomStop} from={stops?.at(-1)?.from || originCity.data?.findCityById?.name || ""}/>
                 </div>
 
                 <div className={"map-wrapper"}>
