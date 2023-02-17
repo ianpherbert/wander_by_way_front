@@ -97,6 +97,16 @@ const HomePageMap=()=>{
         setSelectedItems(temp);
     };
 
+    let count = 0.00;
+    const changeSearchTerm =(e: any)=>{
+        count = e.timeStamp;
+        setTimeout(()=>{
+            if(count - e.timeStamp === 0){
+                setSearchTerm(e.target.value);
+            }
+        }, 400);
+    };
+
     return(
         <div id={"homepageMap"}>
 
@@ -110,6 +120,7 @@ const HomePageMap=()=>{
                                 getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}` }
                                 freeSolo
                                 inputValue={fromTerm || ""}
+                                onInput={(e: any)=> changeSearchTerm(e)}
                                 options={citySearch.data?.searchCity || []}
                                 onChange={(e: any, value: string | SearchCity_searchCity | null, reason: string)=> selectItem(reason, value, InputType.FROM)}
                                 renderInput={

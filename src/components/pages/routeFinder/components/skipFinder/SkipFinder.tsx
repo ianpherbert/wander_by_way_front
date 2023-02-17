@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useCallback, useState} from "react";
 import "./skipfinder.scss";
 import {Autocomplete, Button, FormControl} from "@mui/material";
 import {SearchCity, SearchCity_searchCity, SearchCityVariables} from "../../../../../graphql/model/SearchCity";
@@ -49,6 +49,16 @@ const SkipFinder =(props: SkipFinderProps)=>{
         }
     };
 
+    let count = 0.00;
+    const changeSearchTerm =(e: any)=>{
+        count = e.timeStamp;
+        setTimeout(()=>{
+            if(count - e.timeStamp === 0){
+                setSearchTerm(e.target.value);
+            }
+        }, 400);
+    };
+
     return (
         <div className={`skipFinder ${props.open && "open"}`}>
             <div>
@@ -58,6 +68,7 @@ const SkipFinder =(props: SkipFinderProps)=>{
                         getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}` }
                         freeSolo
                         options={citySearch.data?.searchCity || []}
+                        onInput={(e: any)=> changeSearchTerm(e)}
                         onChange={(e: any, value: string | SearchCity_searchCity | null, reason: string)=> selectItem(reason, value)}
                         renderInput={
                             (params) =>
