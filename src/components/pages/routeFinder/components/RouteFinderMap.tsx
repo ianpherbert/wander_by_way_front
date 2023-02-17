@@ -102,24 +102,24 @@ export const RouteFinderMap = () => {
                 }
             }
         ));
-        const destination = destinationName !== null ? {
-            id: stops?.at(-1)?.id || "",
-            longitude: parseFloat(stops?.at(-1)?.longitude || "0"),
-            latitude: parseFloat(stops?.at(-1)?.latitude || "0"),
-            type: PointType.DESTINATION,
-            label: destinationName
-        } : {
-            id: stop.name,
-            longitude: parseFloat(destinationCity.data?.findCityById?.longitude || "0"),
-            latitude: parseFloat(destinationCity.data?.findCityById?.latitude|| "0"),
-            type: PointType.DESTINATION,
-            label: destinationCity.data?.findCityById?.name || ""
-        };
-        if(!routesFromCity.loading || destination){
-            setPoints([...searchRoutes,origin,...routeStops,destination]);
-        }else{
-            setPoints([origin,...routeStops,destination]);
+        const tempPoints = [origin,...routeStops, ...searchRoutes];
+        if(toId !== "anywhere") {
+            const destination = destinationName !== null ? {
+                id: stops?.at(-1)?.id || "",
+                longitude: parseFloat(stops?.at(-1)?.longitude || "0"),
+                latitude: parseFloat(stops?.at(-1)?.latitude || "0"),
+                type: PointType.DESTINATION,
+                label: destinationName
+            } : {
+                id: stop.name,
+                longitude: parseFloat(destinationCity.data?.findCityById?.longitude || "0"),
+                latitude: parseFloat(destinationCity.data?.findCityById?.latitude|| "0"),
+                type: PointType.DESTINATION,
+                label: destinationCity.data?.findCityById?.name || ""
+            };
+            tempPoints.push(destination);
         }
+        setPoints(tempPoints);
     },[routesFromCity.data, stops]);
 
     //Initialize page once the origin and destination cities are loaded
