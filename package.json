@@ -31,8 +31,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "codegen:watch": "graphql-codegen --watch",
-    "apollo:generate-entities": "apollo codegen:generate --target typescript --excludes=node_modules/* --includes=src/graphql/queries/*.tsx --endpoint http://localhost:8000/graphql --tagName=gql --outputFlat src/graphql/model --passthroughCustomScalars --customScalarsPrefix herbert"
+    "codegen:watch": "graphql-codegen --watch"
   },
   "eslintConfig": {
     "extends": [
