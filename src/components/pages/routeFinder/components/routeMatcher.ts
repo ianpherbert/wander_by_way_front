@@ -1,5 +1,5 @@
 
-import {FindAllRoutesQuery} from "../../../../gql/graphql";
+import { FindAllRoutesQuery} from "../../../../gql/graphql";
 
 const matchRoutes=(from: FindAllRoutesQuery, to: FindAllRoutesQuery) : string[]=>{
     const toNames = to.findAllRoutes.map((it) => it?.destinationName);
