@@ -10,12 +10,12 @@ interface HeaderProps{
 
 const Header = (props: HeaderProps) => {
 
-    const flagLink = props.language == Languages.FR ? "/languageIcons/FR.png" : "/languageIcons/EN.png"
+    const flagLink = props.language == Languages.FR ? "/languageIcons/FR.png" : "/languageIcons/EN.png";
     return(
         <div id={"header"}>
             <a className={"title"} href="/home">
                 <h1>Wander</h1>
-                <h1 className={"red"}>by</h1>
+                <h1 className={"by-higlight"}>by</h1>
                 <h1>Way</h1>
             </a>
 
@@ -31,7 +31,7 @@ const Header = (props: HeaderProps) => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Header
+export default Header;

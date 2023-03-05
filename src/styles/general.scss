@@ -21,3 +21,15 @@ p, span, div{
 .lightTeal{
   background-color: $lightTeal;
  }
+
+@keyframes ellipsis {
+  to {
+    width: 1.25em;
+  }
+}
+
+@-webkit-keyframes ellipsis {
+  to {
+    width: 1.25em;
+  }
+}

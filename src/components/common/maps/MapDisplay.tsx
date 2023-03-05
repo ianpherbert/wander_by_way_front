@@ -143,8 +143,7 @@ const MapDisplay = (props: MapProps) => {
                 const pointPopup = () => {
                     const popup = new mapboxgl.Popup().setHTML(pointInfo.body);
                     if (
-                        point.type !== PointType.DESTINATION &&
-            point.type !== PointType.ORIGIN
+                        point.type === PointType.SEARCH_ITEM
                     ) {
                         popup.on("open", () => {
                             setSelectedPoint(point);
