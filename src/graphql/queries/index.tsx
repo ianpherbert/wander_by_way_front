@@ -1,6 +1,7 @@
 import {gql} from '@apollo/client';
+import {graphql} from "../../gql";
 
-export const SEARCH_CITY = gql`
+export const SEARCH_CITY = graphql(`
                 query SearchCity($query: String!){
                     searchCity(query: $query){
                         id
@@ -11,46 +12,44 @@ export const SEARCH_CITY = gql`
                         latitude
                         longitude
                     }
-                }`;
+                }`);
 
+export const GET_ROUTES_FROM_CITY = graphql(`
+  query FindAllRoutes($id: String!, $type: PointType!) {
+    findAllRoutes(searchInput: { id: $id, type: $type }) {
+      destinationName
+      destinationId
+      latitude
+      longitude
+      routes {
+        to {
+          name
+          latitude
+          longitude
+          id
+          country
+        }
+        from {
+          name
+          latitude
+          longitude
+          id
+          country
+        }
+        type
+        durationTotal
+        durationMinutes
+        durationHours
+        lineDistance
+      }
+      durationAverage
+      lineDistanceAverage
+    }
+  }
+`
+);
 
-export const GET_ROUTES_FROM_CITY = gql`
-               query GetRoutesFromCity($cityId: String!) {
-                    findAllRoutesFromCity(
-                        cityId : $cityId
-                    ){
-                        destinationName
-                        destinationId
-                        latitude
-                        longitude
-                        routes{
-                            to{
-                                name
-                                latitude
-                                longitude
-                                id
-                                country
-                            }
-                            from{
-                                name
-                                latitude
-                                longitude
-                                id
-                                country
-                            }
-                            type
-                            durationTotal
-                            durationMinutes
-                            durationHours
-                            lineDistance
-                        }
-                        durationAverage
-                        lineDistanceAverage
-                    }
-
-               }`
-
-export const FIND_CITY_BY_ID = gql`
+export const FIND_CITY_BY_ID = graphql(`
     query FindCityById($cityId: String!){
         findCityById(cityId: $cityId){
             name
@@ -59,8 +58,9 @@ export const FIND_CITY_BY_ID = gql`
             longitude
         }
     }
-`
-export const FIND_ALL_CITIES_FROM_ASSOCIATED_TRANSIT = gql`
+`);
+
+export const FIND_ALL_CITIES_FROM_ASSOCIATED_TRANSIT = graphql(`
     query FindAllCitiesFromAssociatedTransit(
         $id: String!,
         $transitType: StationType!,
@@ -79,8 +79,7 @@ export const FIND_ALL_CITIES_FROM_ASSOCIATED_TRANSIT = gql`
             latitude
             longitude
         }
-    }
-`
-    // findAllCitiesFromAssociatedTransit
+    }`
+);
 
 

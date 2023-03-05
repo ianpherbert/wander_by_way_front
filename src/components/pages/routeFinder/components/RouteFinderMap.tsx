@@ -1,25 +1,23 @@
 import React, {useEffect, useState} from "react";
-import MapDisplay, {Point, PointType} from "../../../common/maps/MapDisplay";
+import MapDisplay, {MapPointType, Point} from "../../../common/maps/MapDisplay";
 import "../index.scss";
 
 import {useQuery} from "@apollo/client";
-import {FIND_CITY_BY_ID, GET_ROUTES_FROM_CITY} from "../../../../graphql/queries";
 import {useParams} from "react-router-dom";
-import {
-    GetRoutesFromCity,
-    GetRoutesFromCity_findAllRoutesFromCity_routes,
-    GetRoutesFromCityVariables
-} from "../../../../graphql/model/GetRoutesFromCity";
-import {FindCityById, FindCityByIdVariables} from "../../../../graphql/model/FindCityById";
 import {Stop} from "../../../../core/trip/Stop";
 import {mapTripIcons} from "../../../../utils/mapTripIcons";
-import {RouteType} from "../../../../graphql/model/globalTypes";
-import {formatTime} from "../../../../utils/timeFormatter";
 import Loader from "../../../common/loader";
 import matchRoutes from "./routeMatcher";
 import TripOverviewItem from "./TripOverviewItem";
 import SkipFinder from "./skipFinder/SkipFinder";
 import mapRouteToStop from "../utils/mapRouteToStop";
+import {
+    FindAllRoutesDocument,
+    FindAllRoutesQuery,
+    FindAllRoutesQueryVariables, FindCityByIdDocument, FindCityByIdQuery, FindCityByIdQueryVariables,
+    PointType, RouteOutput, RouteType
+} from "../../../../gql/graphql";
+
 
 
 export const RouteFinderMap = () => {
@@ -32,16 +30,16 @@ export const RouteFinderMap = () => {
     const [update, setUpdate] = useState<boolean>(false);
     const [customDropDown, setCustomDropDown] = useState<boolean>(false);
 
-    const routesFromCity = useQuery<GetRoutesFromCity, GetRoutesFromCityVariables>(GET_ROUTES_FROM_CITY, {
-        variables: { cityId:  searchCity || ""},
+    const routesFromCity = useQuery<FindAllRoutesQuery, FindAllRoutesQueryVariables>(FindAllRoutesDocument, {
+        variables: { id:  searchCity || "", type: PointType.City},
     });
-    const routesFromDestinationCity = useQuery<GetRoutesFromCity, GetRoutesFromCityVariables>(GET_ROUTES_FROM_CITY, {
-        variables: { cityId:  toId || ""},
+    const routesFromDestinationCity = useQuery<FindAllRoutesQuery, FindAllRoutesQueryVariables>(FindAllRoutesDocument, {
+        variables: { id:  toId || "", type: PointType.City},
     });
-    const originCity = useQuery<FindCityById, FindCityByIdVariables>(FIND_CITY_BY_ID,{
+    const originCity = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument,{
         variables: { cityId:  fromId || ""}
     });
-    const destinationCity = useQuery<FindCityById, FindCityByIdVariables>(FIND_CITY_BY_ID,{
+    const destinationCity = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument,{
         variables: { cityId:  toId === "anywhere" ? "" : toId || ""}
     });
     const [destinationName, setDestinationName] = useState<string | null>(null);
@@ -65,13 +63,13 @@ export const RouteFinderMap = () => {
     // Set points from stops and search points
     useEffect(()=>{
         setUpdate(true);
-        const searchRoutes = routesFromCity.data?.findAllRoutesFromCity?.map((item)=>
+        const searchRoutes = routesFromCity.data?.findAllRoutes?.map((item)=>
             (
                 {
                     id: stop.name,
                     longitude: parseFloat(item?.longitude || "0"),
                     latitude: parseFloat(item?.latitude|| "0"),
-                    type: PointType.SEARCH_ITEM,
+                    type: MapPointType.SEARCH_ITEM,
                     label: item?.destinationName || "",
                     routeInfo: {
                         routes: item?.routes || [],
@@ -85,7 +83,7 @@ export const RouteFinderMap = () => {
             id: stop.name,
             longitude: parseFloat(originCity.data?.findCityById?.longitude || "0"),
             latitude: parseFloat(originCity.data?.findCityById?.latitude|| "0"),
-            type: PointType.ORIGIN,
+            type: MapPointType.ORIGIN,
             label: originCity.data?.findCityById?.name || ""
         };
         const routeStops = stops.map(stop=> (
@@ -93,7 +91,7 @@ export const RouteFinderMap = () => {
                 id: stop.name,
                 longitude: parseFloat(stop.longitude),
                 latitude: parseFloat(stop.latitude),
-                type: PointType.INTERMEDIATE,
+                type: MapPointType.INTERMEDIATE,
                 label: stop.name,
                 stopRouteInfo: {
                     durationMinutes:stop?.duration,
@@ -108,13 +106,13 @@ export const RouteFinderMap = () => {
                 id: stops?.at(-1)?.id || "",
                 longitude: parseFloat(stops?.at(-1)?.longitude || "0"),
                 latitude: parseFloat(stops?.at(-1)?.latitude || "0"),
-                type: PointType.DESTINATION,
+                type: MapPointType.DESTINATION,
                 label: destinationName
             } : {
                 id: stop.name,
                 longitude: parseFloat(destinationCity.data?.findCityById?.longitude || "0"),
                 latitude: parseFloat(destinationCity.data?.findCityById?.latitude|| "0"),
-                type: PointType.DESTINATION,
+                type: MapPointType.DESTINATION,
                 label: destinationCity.data?.findCityById?.name || ""
             };
             tempPoints.push(destination);
@@ -130,7 +128,7 @@ export const RouteFinderMap = () => {
         }
     },[originCity.loading, destinationCity.loading]);
 
-    const addStop = (route: GetRoutesFromCity_findAllRoutesFromCity_routes | null, addId?: string, destination?: boolean) =>{
+    const addStop = (route: RouteOutput | null, addId?: string, destination?: boolean) =>{
         const tempTrip = [];
         // Add origin city from originCity Query
         const origin = buildOrigin();
@@ -148,7 +146,7 @@ export const RouteFinderMap = () => {
 
             if(destination){
                 // If the destinationName has been reached do not refetch
-                setDestinationName(route?.to?.name);
+                setDestinationName(route?.to?.name || null);
                 setSearchCity(undefined);
             }else{
                 // Search new points from new stop
@@ -167,7 +165,7 @@ export const RouteFinderMap = () => {
             return {
                 id: fromId,
                 name: originCity.data?.findCityById?.name || "",
-                routeType: RouteType.OTHER,
+                routeType: RouteType.Other,
                 origin: true,
                 destination:false,
                 duration: "0:00",
@@ -182,7 +180,7 @@ export const RouteFinderMap = () => {
         return {
             id: toId,
             name: destinationCity.data?.findCityById?.name || "",
-            routeType: RouteType.OTHER,
+            routeType: RouteType.Other,
             origin: false,
             destination: true,
             duration: "0:00",
@@ -238,8 +236,8 @@ export const RouteFinderMap = () => {
                                 {!stop.origin && <div className={"route-transit"}>
                                     <i className={"icofont-double-right"}/>
                                     <i
-                                        className={`${mapTripIcons(stop.routeType)} ${stop.routeType === RouteType.OTHER && "skip-stop"}`}
-                                        onClick={()=>{setCustomDropDown(stop.routeType === RouteType.OTHER && !customDropDown);}}
+                                        className={`${mapTripIcons(stop.routeType)} ${stop.routeType === RouteType.Other && "skip-stop"}`}
+                                        onClick={()=>{setCustomDropDown(stop.routeType === RouteType.Other && !customDropDown);}}
                                     />
                                     <i className={"icofont-double-right"}/>
                                 </div>}

@@ -1,6 +1,7 @@
 import {mapTripIcons} from "../../../../utils/mapTripIcons";
-import {RouteType} from "../../../../graphql/model/globalTypes";
+
 import {Point} from "../MapDisplay";
+import {RouteType} from "../../../../gql/graphql";
 
 const StopPopup = (point: Point) => {
     return `<div class="point-popup">
@@ -10,7 +11,7 @@ const StopPopup = (point: Point) => {
                     <div  class="point-popup-body">
                         <div>From: ${point?.stopRouteInfo?.fromName}</div>
                         <div>${point?.stopRouteInfo?.durationMinutes}</div>
-                        <i class=${mapTripIcons(point?.stopRouteInfo?.type || RouteType.OTHER)}></i>
+                        <i class=${mapTripIcons(point?.stopRouteInfo?.type || RouteType.Other)}></i>
                     </div>
                 </div>`;
 };

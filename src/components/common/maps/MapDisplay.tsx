@@ -3,15 +3,8 @@ import "./map.scss";
 import { RoundCloseButton } from "../buttons/roundCloseButton";
 import {Button, Tooltip} from "@mui/material";
 import { mapTripIcons } from "../../../utils/mapTripIcons";
-import { GetRoutesFromCity_findAllRoutesFromCity_routes } from "../../../graphql/model/GetRoutesFromCity";
 import { formatTime } from "../../../utils/timeFormatter";
 import { useQuery } from "@apollo/client";
-import {
-    FindAllCitiesFromAssociatedTransit,
-    FindAllCitiesFromAssociatedTransitVariables,
-} from "../../../graphql/model/FindAllCitiesFromAssociatedTransit";
-import { FIND_ALL_CITIES_FROM_ASSOCIATED_TRANSIT } from "../../../graphql/queries";
-import { RouteType } from "../../../graphql/model/globalTypes";
 import { routeToStation } from "../../../utils/routeStationTranslator";
 
 import mapboxgl from "mapbox-gl";
@@ -19,11 +12,18 @@ import OriginPopup from "./popups/OriginPopup";
 import StopPopup from "./popups/StopPopup";
 import DestinationPopup from "./popups/DestinationPopup";
 import SearchItemPopup from "./popups/SearchItemPopup";
+import {
+    FindAllCitiesFromAssociatedTransitDocument,
+    FindAllCitiesFromAssociatedTransitQuery,
+    FindAllCitiesFromAssociatedTransitQueryVariables,
+    RouteOutput,
+    RouteType
+} from "../../../gql/graphql";
 
 interface MapProps {
   points: Point[];
   onAddStop?: (
-    route: GetRoutesFromCity_findAllRoutesFromCity_routes,
+    route: RouteOutput,
     addId: string,
     destination: boolean
   ) => void;
@@ -39,10 +39,10 @@ export interface Point {
     id: string;
   longitude: number;
   latitude: number;
-  type: PointType;
+  type: MapPointType;
   label: string;
   routeInfo?: {
-    routes: GetRoutesFromCity_findAllRoutesFromCity_routes[];
+    routes: RouteOutput[];
     durationAverage: number;
     lineDistanceAverage: number;
   } | null;
@@ -54,7 +54,7 @@ export interface Point {
   match?: boolean
 }
 
-export enum PointType {
+export enum MapPointType {
   ORIGIN,
   DESTINATION,
   INTERMEDIATE,
@@ -72,9 +72,9 @@ const MapDisplay = (props: MapProps) => {
     const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
 
     const associatedCities = useQuery<
-    FindAllCitiesFromAssociatedTransit,
-    FindAllCitiesFromAssociatedTransitVariables
-  >(FIND_ALL_CITIES_FROM_ASSOCIATED_TRANSIT);
+    FindAllCitiesFromAssociatedTransitQuery,
+        FindAllCitiesFromAssociatedTransitQueryVariables
+  >(FindAllCitiesFromAssociatedTransitDocument);
     const mainCity = () => {
         const cities =
       associatedCities?.data?.findAllCitiesFromAssociatedTransit || [];
@@ -92,7 +92,7 @@ const MapDisplay = (props: MapProps) => {
 
     const mapPointInfo = (point: Point): PointInfo => {
         switch (point.type) {
-        case PointType.SEARCH_ITEM:
+        case MapPointType.SEARCH_ITEM:
             if(point.match){
                 return {
                     color: "#66ff00",
@@ -106,20 +106,20 @@ const MapDisplay = (props: MapProps) => {
                 body: SearchItemPopup(point, false),
             };
             
-        case PointType.ORIGIN:
+        case MapPointType.ORIGIN:
             return { color: "#da4167", scale: 1, body: OriginPopup(point) };
-        case PointType.LAYOVER:
+        case MapPointType.LAYOVER:
             return { color: "#D9E2E8", scale: 0.8, body: StopPopup(point) };
-        case PointType.DESTINATION:
+        case MapPointType.DESTINATION:
             return {
                 color: "#f5cb5c",
                 scale: 1,
                 body: DestinationPopup(
                     point,
-                    props.points.find((it) => it.type == PointType.ORIGIN)
+                    props.points.find((it) => it.type == MapPointType.ORIGIN)
                 ),
             };
-        case PointType.INTERMEDIATE:
+        case MapPointType.INTERMEDIATE:
             return {
                 color: "#38e4ae",
                 scale: 1,
@@ -143,7 +143,7 @@ const MapDisplay = (props: MapProps) => {
                 const pointPopup = () => {
                     const popup = new mapboxgl.Popup().setHTML(pointInfo.body);
                     if (
-                        point.type === PointType.SEARCH_ITEM
+                        point.type === MapPointType.SEARCH_ITEM
                     ) {
                         popup.on("open", () => {
                             setSelectedPoint(point);
@@ -169,7 +169,7 @@ const MapDisplay = (props: MapProps) => {
     }, [props.points, map]);
 
     const SidebarItem = (routeInfo: {
-    routeInfo: GetRoutesFromCity_findAllRoutesFromCity_routes;
+    routeInfo: RouteOutput;
   }) => {
         return (
             <div className={"sidebar-destination"}>
@@ -224,7 +224,7 @@ const MapDisplay = (props: MapProps) => {
         associatedCities.refetch({
             id: selectedPoint?.routeInfo?.routes[0]?.to?.id || "",
             transitType: routeToStation(
-                selectedPoint?.routeInfo?.routes[0]?.type || RouteType.OTHER
+                selectedPoint?.routeInfo?.routes[0]?.type || RouteType.Other
             ),
             name: selectedPoint?.routeInfo?.routes[0]?.to?.name || "",
         });
@@ -249,7 +249,7 @@ const MapDisplay = (props: MapProps) => {
                 </div>
                 <div className={"map-sidebar-body"}>
                     {selectedPoint?.routeInfo?.routes.map(
-                        (item: GetRoutesFromCity_findAllRoutesFromCity_routes) => (
+                        (item: RouteOutput) => (
                             <SidebarItem
                                 routeInfo={item}
                                 key={item.from.id || "" + item.to.id}

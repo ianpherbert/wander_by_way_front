@@ -1,4 +1,5 @@
-import {RouteType} from "../../graphql/model/globalTypes";
+import {RouteType} from "../../gql/graphql";
+
 
 export interface Stop{
     id: string | undefined | null,
