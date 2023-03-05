@@ -1,4 +1,4 @@
-import {RouteType, StationType} from "../gql/graphql";
+import {PointType, RouteType, StationType} from "../gql/graphql";
 
 
 export const stationToRoute = (stationType: StationType) =>{
@@ -28,5 +28,19 @@ export const routeToStation = (routeType: RouteType) =>{
         return StationType.Ferry;
     default:
         return StationType.Other;
+    }
+};
+
+export const routeTypeToPointType = (routeType: RouteType): PointType => {
+    switch (routeType){
+    case RouteType.Plane:
+        return PointType.Airport;
+    case RouteType.Train:
+    case RouteType.Bus:
+        return PointType.Station;
+    case RouteType.Boat:
+        return PointType.Port;
+    default:
+        return PointType.Other;
     }
 };

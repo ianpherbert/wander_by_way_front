@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import "./map.scss";
-import { RoundCloseButton } from "../buttons/roundCloseButton";
+import {RoundCloseButton} from "../buttons/roundCloseButton";
 import {Button, Tooltip} from "@mui/material";
-import { mapTripIcons } from "../../../utils/mapTripIcons";
-import { formatTime } from "../../../utils/timeFormatter";
-import { useQuery } from "@apollo/client";
-import { routeToStation } from "../../../utils/routeStationTranslator";
+import {mapTripIcons} from "../../../utils/mapTripIcons";
+import {formatTime} from "../../../utils/timeFormatter";
+import {useQuery} from "@apollo/client";
+import {routeToStation, routeTypeToPointType} from "../../../utils/routeStationTranslator";
 
 import mapboxgl from "mapbox-gl";
 import OriginPopup from "./popups/OriginPopup";
@@ -16,6 +16,7 @@ import {
     FindAllCitiesFromAssociatedTransitDocument,
     FindAllCitiesFromAssociatedTransitQuery,
     FindAllCitiesFromAssociatedTransitQueryVariables,
+    PointType,
     RouteOutput,
     RouteType
 } from "../../../gql/graphql";
@@ -25,6 +26,7 @@ interface MapProps {
   onAddStop?: (
     route: RouteOutput,
     addId: string,
+    addPointType: PointType,
     destination: boolean
   ) => void;
 }
@@ -71,13 +73,9 @@ const MapDisplay = (props: MapProps) => {
     const [map, setMap] = useState<mapboxgl.Map>();
     const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
 
-    const associatedCities = useQuery<
-    FindAllCitiesFromAssociatedTransitQuery,
-        FindAllCitiesFromAssociatedTransitQueryVariables
-  >(FindAllCitiesFromAssociatedTransitDocument);
+    const associatedCities = useQuery<FindAllCitiesFromAssociatedTransitQuery, FindAllCitiesFromAssociatedTransitQueryVariables>(FindAllCitiesFromAssociatedTransitDocument);
     const mainCity = () => {
-        const cities =
-      associatedCities?.data?.findAllCitiesFromAssociatedTransit || [];
+        const cities = associatedCities?.data?.findAllCitiesFromAssociatedTransit || [];
         return cities[0];
     };
 
@@ -190,6 +188,7 @@ const MapDisplay = (props: MapProps) => {
                                     props.onAddStop?.(
                                         routeInfo.routeInfo,
                                         mainCity()?.id || routeInfo.routeInfo.to.id || "",
+                                        mainCity()?.id ? PointType.City : routeTypeToPointType(routeInfo.routeInfo.type),
                                         false
                                     );
                                 }}
@@ -207,6 +206,7 @@ const MapDisplay = (props: MapProps) => {
                                     props.onAddStop?.(
                                         routeInfo.routeInfo,
                                         mainCity()?.id || routeInfo.routeInfo.to.id || "",
+                                        mainCity()?.id ? PointType.City : routeTypeToPointType(routeInfo.routeInfo.type),
                                         true
                                     );
                                 }}
