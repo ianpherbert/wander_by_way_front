@@ -1,24 +1,24 @@
-import React, {ChangeEvent, useEffect, useState} from "react";
+import React, {useState} from "react";
 import {styled} from "@mui/material/styles";
 import {Autocomplete, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField} from "@mui/material";
-import {SearchCity_searchCity} from "../../../graphql/model/SearchCity";
+import {CityOutput} from "../../../gql/graphql";
 
 interface CustomTextInputProps {
     label: string,
     onTextInput: (e: string) => void
-    options: SearchCity_searchCity[]
+    options: CityOutput[]
     enterKey: () => void
 }
 
 export const CustomAutocomplete = (props: CustomTextInputProps) => {
-    const [options, setOptions] = useState<SearchCity_searchCity[]>([])
+    const [options, setOptions] = useState<CityOutput[]>([]);
 
 
     const enter = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key === "Enter") {
-            props.enterKey()
+            props.enterKey();
         }
-    }
+    };
 
     return (
         <FormControl size="small">
@@ -37,8 +37,8 @@ export const CustomAutocomplete = (props: CustomTextInputProps) => {
                         />}
             />
         </FormControl>
-    )
-}
+    );
+};
 export const CssTextField = styled(TextField)({
     width: "20vw",
     maxWidth: "350px",
@@ -77,9 +77,9 @@ export class SelectItem {
 export const CustomSelect = (props: CustomSelectProps) => {
 
     const elevateTextInput = (e: SelectChangeEvent<any>) => {
-        props.onInput(e.target.value)
+        props.onInput(e.target.value);
 
-    }
+    };
 
     const CssSelect = styled(Select)({
         width: "15vw",
@@ -106,5 +106,5 @@ export const CustomSelect = (props: CustomSelectProps) => {
                     <MenuItem value={item.value} key={item.value}>{item.label}</MenuItem>
                 ))}
             </CssSelect>
-        </FormControl>)
-}
+        </FormControl>);
+};

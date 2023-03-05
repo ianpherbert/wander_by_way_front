@@ -1,13 +1,14 @@
-import {GetRoutesFromCity_findAllRoutesFromCity_routes} from "../../../../graphql/model/GetRoutesFromCity";
-import {Stop} from "../../../../core/trip/Stop";
-import {RouteType} from "../../../../graphql/model/globalTypes";
-import {formatTime} from "../../../../utils/timeFormatter";
 
-const mapRouteToStop = (route: GetRoutesFromCity_findAllRoutesFromCity_routes, addId: string | undefined, destination: boolean | undefined): Stop =>{
+import {Stop} from "../../../../core/trip/Stop";
+
+import {formatTime} from "../../../../utils/timeFormatter";
+import {RouteOutput, RouteType} from "../../../../gql/graphql";
+
+const mapRouteToStop = (route: RouteOutput, addId: string | undefined, destination: boolean | undefined): Stop =>{
     return {
         id: addId || route?.to?.id,
         name: route?.to?.name || "",
-        routeType: route?.type || RouteType.OTHER,
+        routeType: route?.type || RouteType.Other,
         origin: false,
         destination: destination || false,
         duration: formatTime(route?.durationTotal || 0),

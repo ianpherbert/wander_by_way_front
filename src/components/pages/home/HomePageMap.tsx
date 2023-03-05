@@ -1,15 +1,13 @@
 import React, {useEffect, useState} from "react";
 import "./index.scss";
 import "../../common/styles/map.scss";
-import MapDisplay, {Point, PointType} from "../../common/maps/MapDisplay";
+import MapDisplay, {Point, MapPointType} from "../../common/maps/MapDisplay";
 import {ReverseButton} from "../../common/buttons/reverse";
 import {WBWButton} from "../../common/buttons/wbwButton";
 import {Autocomplete, FormControl} from "@mui/material";
 import {useQuery} from "@apollo/client";
-import {SEARCH_CITY} from "../../../graphql/queries";
-import {SearchCity, SearchCity_searchCity, SearchCityVariables} from "../../../graphql/model/SearchCity";
-import {GetRoutesFromCity_findAllRoutesFromCity_routes} from "../../../graphql/model/GetRoutesFromCity";
 import {CssTextField} from "../../common/mui/inputs";
+import {CityOutput, SearchCityDocument, SearchCityQuery, SearchCityQueryVariables} from "../../../gql/graphql";
 
 enum InputType{
     TO,
@@ -18,8 +16,8 @@ enum InputType{
 }
 
 interface SelectedItems{
-    to: SearchCity_searchCity | null,
-    from: SearchCity_searchCity | null
+    to: CityOutput | null,
+    from: CityOutput | null
 }
 
 const HomePageMap=()=>{
@@ -29,7 +27,7 @@ const HomePageMap=()=>{
     const [selectedItems, setSelectedItems] = useState<SelectedItems>({to: null, from: null});
     const [points, setPoints] = useState<Point[]>([]);
 
-    const citySearch = useQuery<SearchCity, SearchCityVariables>(SEARCH_CITY,{
+    const citySearch = useQuery<SearchCityQuery, SearchCityQueryVariables>(SearchCityDocument,{
         variables: {
             query: searchTerm
         }
@@ -54,10 +52,10 @@ const HomePageMap=()=>{
     useEffect(()=>{
         const route = [];
         if(selectedItems.from !== null){
-            route.push({id: selectedItems.from.id,latitude: parseFloat(selectedItems.from.latitude), longitude: parseFloat(selectedItems.from.longitude), type: PointType.ORIGIN, label: selectedItems.from.name, routeInfo: null});
+            route.push({id: selectedItems.from.id,latitude: parseFloat(selectedItems.from.latitude), longitude: parseFloat(selectedItems.from.longitude), type: MapPointType.ORIGIN, label: selectedItems.from.name, routeInfo: null});
         }
         if(selectedItems.to !== null){
-            route.push({id: selectedItems.to.id, latitude: parseFloat(selectedItems.to.latitude), longitude: parseFloat(selectedItems.to.longitude), type: PointType.DESTINATION, label: selectedItems.to.name, routeInfo: null});
+            route.push({id: selectedItems.to.id, latitude: parseFloat(selectedItems.to.latitude), longitude: parseFloat(selectedItems.to.longitude), type: MapPointType.DESTINATION, label: selectedItems.to.name, routeInfo: null});
         }
         setPoints(route);
     },[selectedItems.to,selectedItems.from]);
@@ -78,7 +76,7 @@ const HomePageMap=()=>{
         await citySearch.refetch();
     };
 
-    const selectItem=(reason: string, item: string | SearchCity_searchCity | null, type: InputType)=>{
+    const selectItem=(reason: string, item: string | CityOutput | null, type: InputType)=>{
         const temp = selectedItems;
         if(typeof item === "string"){
             item = null;
@@ -122,7 +120,7 @@ const HomePageMap=()=>{
                                 inputValue={fromTerm || ""}
                                 onInput={(e: any)=> changeSearchTerm(e)}
                                 options={citySearch.data?.searchCity || []}
-                                onChange={(e: any, value: string | SearchCity_searchCity | null, reason: string)=> selectItem(reason, value, InputType.FROM)}
+                                onChange={(e: any, value: string | CityOutput | null, reason: string)=> selectItem(reason, value, InputType.FROM)}
                                 renderInput={
                                     (params) =>
                                         <CssTextField
@@ -141,7 +139,7 @@ const HomePageMap=()=>{
                                 freeSolo
                                 inputValue={toTerm || ""}
                                 options={citySearch.data?.searchCity || []}
-                                onChange={(e: any, value: string | SearchCity_searchCity | null, reason: string)=> selectItem(reason, value, InputType.TO)}
+                                onChange={(e: any, value: string | CityOutput | null, reason: string)=> selectItem(reason, value, InputType.TO)}
                                 renderInput={
                                     (params) =>
                                         <CssTextField

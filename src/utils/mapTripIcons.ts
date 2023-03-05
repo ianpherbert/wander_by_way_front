@@ -1,22 +1,22 @@
-import {RouteType} from "../graphql/model/globalTypes";
+import {RouteType} from "../gql/graphql";
 
 
 export function mapTripIcons(type: RouteType): string {
     let iconClass;
     switch (type) {
-    case RouteType.BUS:
+    case RouteType.Bus:
         iconClass = "icofont-bus";
         break;
-    case RouteType.TRAIN:
+    case RouteType.Train:
         iconClass = "icofont-train-line";
         break;
-    case RouteType.PLANE:
+    case RouteType.Plane:
         iconClass = "icofont-airplane";
         break;
-    case RouteType.BOAT:
+    case RouteType.Boat:
         iconClass = "icofont-sail-boat";
         break;
-    case RouteType.CAR:
+    case RouteType.Car:
         iconClass = "icofont-car-alt-4";
         break;
     default:

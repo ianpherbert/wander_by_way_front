@@ -1,13 +1,17 @@
-import React, {useCallback, useState} from "react";
+import React, { useState } from "react";
 import "./skipfinder.scss";
 import {Autocomplete, Button, FormControl} from "@mui/material";
-import {SearchCity, SearchCity_searchCity, SearchCityVariables} from "../../../../../graphql/model/SearchCity";
 import {CssTextField} from "../../../../common/mui/inputs";
 import {useQuery} from "@apollo/client";
-import {SEARCH_CITY} from "../../../../../graphql/queries";
 import {Stop} from "../../../../../core/trip/Stop";
-import {RouteType} from "../../../../../graphql/model/globalTypes";
 import {WBWButton} from "../../../../common/buttons/wbwButton";
+import {
+    CityOutput,
+    RouteType,
+    SearchCityDocument,
+    SearchCityQuery,
+    SearchCityQueryVariables
+} from "../../../../../gql/graphql";
 
 interface SkipFinderProps{
     open: boolean;
@@ -18,14 +22,14 @@ interface SkipFinderProps{
 
 const SkipFinder =(props: SkipFinderProps)=>{
     const [searchTerm, setSearchTerm] = useState<string>("");
-    const [selectedItem, setSelectedItem] = useState<SearchCity_searchCity | null>(null);
-    const citySearch = useQuery<SearchCity, SearchCityVariables>(SEARCH_CITY,{
+    const [selectedItem, setSelectedItem] = useState<CityOutput | null>(null);
+    const citySearch = useQuery<SearchCityQuery, SearchCityQueryVariables>(SearchCityDocument,{
         variables: {
             query: searchTerm
         }
     });
 
-    const selectItem=(reason: string, item: string | SearchCity_searchCity | null)=>{
+    const selectItem=(reason: string, item: string | CityOutput| null)=>{
         if(typeof item === "string"){
             setSelectedItem(null);
         }else{
@@ -38,7 +42,7 @@ const SkipFinder =(props: SkipFinderProps)=>{
             const stop = {
                 id: selectedItem.id,
                 name: selectedItem.name,
-                routeType: RouteType.CAR,
+                routeType: RouteType.Car,
                 origin: false,
                 destination: false,
                 duration: "0",
@@ -70,7 +74,7 @@ const SkipFinder =(props: SkipFinderProps)=>{
                         freeSolo
                         options={citySearch.data?.searchCity || []}
                         onInput={(e: any)=> changeSearchTerm(e)}
-                        onChange={(e: any, value: string | SearchCity_searchCity | null, reason: string)=> selectItem(reason, value)}
+                        onChange={(e: any, value: string | CityOutput | null, reason: string)=> selectItem(reason, value)}
                         renderInput={
                             (params) =>
                                 <CssTextField
