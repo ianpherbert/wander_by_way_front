@@ -26,7 +26,14 @@ import {routeTypeToPointType} from "../../../../utils/routeStationTranslator";
 import MapDisplay from "../../../common/maps/MapDisplay";
 import {useDispatch} from "react-redux";
 import {setSearchPoints, useSearchPoints} from "../../../../redux/map/mapSlice";
-import {setDestination, setOrigin, setStops, useTrip, useTripState} from "../../../../redux/trip/tripSlice";
+import {
+    addStopToTrip,
+    setDestination,
+    setOrigin,
+    setStops,
+    useTrip,
+    useTripState
+} from "../../../../redux/trip/tripSlice";
 
 interface SearchPoint {
     id: string,
@@ -172,9 +179,7 @@ export const RouteFinderMap = () => {
         // Add new stop
         if (route !== null) {
             const newStop = mapRouteToStop(route, addId, destination);
-            // Add new stop to "stops"
-            dispatch(setStops([...stops, newStop]));
-
+            dispatch(addStopToTrip(newStop));
             if (destination) {
                 // If the destinationName has been reached do not refetch
                 dispatch(setDestination(newStop));
@@ -188,7 +193,7 @@ export const RouteFinderMap = () => {
 
     const addCustomStop = (stop: Stop) => {
         setSearchCity({id: stop.id || "", type: routeTypeToPointType(stop.routeType)});
-        dispatch(setStops([...stops, stop]));
+        dispatch(addStopToTrip(stop));
         setCustomDropDown(false);
     };
 

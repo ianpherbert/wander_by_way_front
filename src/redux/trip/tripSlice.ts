@@ -18,8 +18,8 @@ export const tripSlice = createSlice({
     name: "tripSlice",
     initialState,
     reducers: {
-        addStopToTrip: (state: TripState, action: PayloadAction<Stop[]>) => {
-            state.stops = action.payload;
+        addStopToTrip: (state: TripState, action: PayloadAction<Stop>) => {
+            state.stops = [...state.stops, action.payload];
         },
         setOrigin: (state: TripState, action: PayloadAction<Stop>) => {
             if (state.origin !== action.payload) {
