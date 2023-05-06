@@ -26,7 +26,7 @@ import {routeTypeToPointType} from "../../../../utils/routeStationTranslator";
 import MapDisplay from "../../../common/maps/MapDisplay";
 import {useDispatch} from "react-redux";
 import {setSearchPoints, useSearchPoints} from "../../../../redux/map/mapSlice";
-import {setStops, setTrip, useTripState} from "../../../../redux/trip/tripSlice";
+import {setDestination, setOrigin, setStops, useTrip, useTripState} from "../../../../redux/trip/tripSlice";
 
 interface SearchPoint {
     id: string,
@@ -37,10 +37,9 @@ export const RouteFinderMap = () => {
     const {fromId, toId} = useParams();
     const dispatch = useDispatch();
     const searchPoints = useSearchPoints();
-    const {stops, trip} = useTripState();
+    const {stops, destination, origin} = useTripState();
+    const trip = useTrip();
 
-
-    // const [trip, setTrip] = useState<Stop[]>([]);
     const [searchCity, setSearchCity] = useState<SearchPoint | undefined>({id: fromId || "", type: PointType.City});
     const [update, setUpdate] = useState<boolean>(false);
     const [customDropDown, setCustomDropDown] = useState<boolean>(false);
@@ -57,7 +56,33 @@ export const RouteFinderMap = () => {
     const destinationCity = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument, {
         variables: {cityId: toId === "anywhere" ? "" : toId || ""}
     });
-    const [destinationName, setDestinationName] = useState<string | null>(null);
+    const destinationName = destination?.name;
+
+    useEffect(() => {
+        if (originCity?.data?.findCityById) {
+            const {name, latitude, longitude} = originCity.data.findCityById;
+            dispatch(setOrigin({
+                id: fromId,
+                name,
+                routeType: RouteType.Other,
+                origin: true,
+                destination: false,
+                duration: "0:00",
+                latitude,
+                longitude
+            }));
+        }
+        dispatch(setDestination({
+            id: toId,
+            name: destinationCity.data?.findCityById?.name || "",
+            routeType: RouteType.Other,
+            origin: false,
+            destination: true,
+            duration: "0:00",
+            latitude: destinationCity.data?.findCityById?.latitude || "0",
+            longitude: destinationCity.data?.findCityById?.longitude || "0"
+        }));
+    }, [originCity.data, destinationCity.data]);
 
     useEffect(() => {
         if (routesFromDestinationCity.data && routesFromCity.data && searchPoints.length > 0 && update) {
@@ -117,7 +142,7 @@ export const RouteFinderMap = () => {
         ));
         const tempPoints = [origin, ...routeStops, ...searchRoutes];
         if (toId !== "anywhere") {
-            const destination = destinationName !== null ? {
+            const destinationPoint = destinationName ? {
                 id: stops?.at(-1)?.id || "",
                 longitude: parseFloat(stops?.at(-1)?.longitude || "0"),
                 latitude: parseFloat(stops?.at(-1)?.latitude || "0"),
@@ -130,7 +155,7 @@ export const RouteFinderMap = () => {
                 type: MapPointType.DESTINATION,
                 label: destinationCity.data?.findCityById?.name || ""
             };
-            tempPoints.push(destination);
+            tempPoints.push(destinationPoint);
         }
         dispatch(setSearchPoints(tempPoints));
     }, [routesFromCity.data, stops]);
@@ -144,91 +169,32 @@ export const RouteFinderMap = () => {
     }, [originCity.loading, destinationCity.loading]);
 
     const addStop = (route: RouteOutput | null, addId?: string, addPointType?: PointType, destination?: boolean) => {
-        const tempTrip = [];
-        // Add origin city from originCity Query
-        const origin = buildOrigin();
-        if (origin) {
-            tempTrip.push(origin);
-        }
-
-        tempTrip.push(...stops);
         // Add new stop
         if (route !== null) {
             const newStop = mapRouteToStop(route, addId, destination);
-            tempTrip.push(newStop);
             // Add new stop to "stops"
             dispatch(setStops([...stops, newStop]));
 
             if (destination) {
                 // If the destinationName has been reached do not refetch
-                setDestinationName(route?.to?.name || null);
+                dispatch(setDestination(newStop));
                 setSearchCity(undefined);
             } else {
                 // Search new points from new stop
                 setSearchCity({id: addId || "", type: addPointType || PointType.Other});
             }
         }
-        // Add destinationName
-        if (!destination) {
-            tempTrip.push(buildDestination());
-        }
-        dispatch(setTrip(tempTrip));
-    };
-
-    const buildOrigin = (): Stop | null => {
-        if (originCity?.data?.findCityById) {
-            const {name, latitude, longitude} = originCity.data.findCityById;
-            return {
-                id: fromId,
-                name,
-                routeType: RouteType.Other,
-                origin: true,
-                destination: false,
-                duration: "0:00",
-                latitude,
-                longitude
-            };
-        }
-        return null;
-    };
-
-    const buildDestination = (): Stop => {
-        return {
-            id: toId,
-            name: destinationCity.data?.findCityById?.name || "",
-            routeType: RouteType.Other,
-            origin: false,
-            destination: true,
-            duration: "0:00",
-            latitude: destinationCity.data?.findCityById?.latitude || "0",
-            longitude: destinationCity.data?.findCityById?.longitude || "0"
-        };
     };
 
     const addCustomStop = (stop: Stop) => {
-        const tempTrip = [];
-        // Add origin city from originCity Query
-        const origin = buildOrigin();
-        if (origin) {
-            tempTrip.push(origin);
-        }
-        tempTrip.push(...stops, stop);
         setSearchCity({id: stop.id || "", type: routeTypeToPointType(stop.routeType)});
-        // Add new stop to "stops"
         dispatch(setStops([...stops, stop]));
-        // Add new stop
-        // Add destinationName
-        const destination = buildDestination();
-        if (destination) {
-            tempTrip.push(destination);
-        }
-        dispatch(setTrip(tempTrip));
         setCustomDropDown(false);
     };
 
     const resetStops = async (stop: Stop) => {
         const index = stops.indexOf(stop);
-        setDestinationName(null);
+        dispatch(setDestination(undefined));
         const tempStops = stops;
         if (index === -1) {
             tempStops.splice(0);
