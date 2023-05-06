@@ -13,12 +13,12 @@ export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2
         return d * 0.621371;
     }
     return d;
-}
+};
 
 
 const toRad = (value: number) => {
     return value * Math.PI / 180;
-}
+};
 
 export enum DistanceUnit{
     KILOMETRES,

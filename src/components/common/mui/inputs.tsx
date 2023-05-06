@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React from "react";
 import {styled} from "@mui/material/styles";
 import {Autocomplete, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField} from "@mui/material";
 import {CityOutput} from "../../../gql/graphql";
@@ -11,7 +11,6 @@ interface CustomTextInputProps {
 }
 
 export const CustomAutocomplete = (props: CustomTextInputProps) => {
-    const [options, setOptions] = useState<CityOutput[]>([]);
 
 
     const enter = (e: React.KeyboardEvent<HTMLDivElement>) => {

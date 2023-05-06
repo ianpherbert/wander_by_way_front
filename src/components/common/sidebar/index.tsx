@@ -1,18 +1,14 @@
 import React from "react";
-import "./index.scss"
+import "./index.scss";
 
-interface SidebarProps{
-    auth: boolean
-}
-
-const Sidebar=(props: SidebarProps)=>{
+const Sidebar=()=>{
     return (
         <aside id={"sideBar"}>
             <div>
 
             </div>
         </aside>
-    )
-}
+    );
+};
 
-export default Sidebar
+export default Sidebar;

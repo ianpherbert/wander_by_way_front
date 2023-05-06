@@ -1,5 +1,5 @@
 import React from "react";
-import "./index.scss"
+import "./index.scss";
 
 export const ReverseButton = (props: {
     onToggle:
@@ -10,5 +10,5 @@ export const ReverseButton = (props: {
         <div className={"reverse-button"} onClick={props.onToggle}>
             <i className={"icofont icofont-retweet"}/>
         </div>
-    )
-}
+    );
+};
