@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import "./skipfinder.scss";
 import {Autocomplete, FormControl} from "@mui/material";
 import {CssTextField} from "../../../../common/mui/inputs";
@@ -13,32 +13,39 @@ import {
     SearchCityQueryVariables
 } from "../../../../../gql/graphql";
 
-interface SkipFinderProps{
+interface SkipFinderProps {
     open: boolean;
-    onAddStop: (stop: Stop)=>void;
+    onAddStop: (stop: Stop) => void;
 
     from: string;
 }
 
-const SkipFinder =(props: SkipFinderProps)=>{
+const SkipFinder = (props: SkipFinderProps) => {
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [selectedItem, setSelectedItem] = useState<CityOutput | null>(null);
-    const citySearch = useQuery<SearchCityQuery, SearchCityQueryVariables>(SearchCityDocument,{
+    const citySearch = useQuery<SearchCityQuery, SearchCityQueryVariables>(SearchCityDocument, {
         variables: {
             query: searchTerm
         }
     });
 
-    const selectItem=(reason: string, item: string | CityOutput| null)=>{
-        if(typeof item === "string"){
+    const {open, onAddStop, from} = props;
+
+    useEffect(() => {
+        setSearchTerm("");
+        setSelectedItem(null);
+    }, [open]);
+
+    const selectItem = (reason: string, item: string | CityOutput | null) => {
+        if (typeof item === "string") {
             setSelectedItem(null);
-        }else{
+        } else {
             setSelectedItem(item);
         }
     };
 
-    const addStop=()=>{
-        if(selectedItem){
+    const addStop = () => {
+        if (selectedItem) {
             const stop = {
                 id: selectedItem.id,
                 name: selectedItem.name,
@@ -48,33 +55,34 @@ const SkipFinder =(props: SkipFinderProps)=>{
                 duration: "0",
                 latitude: selectedItem.latitude,
                 longitude: selectedItem.longitude,
-                from: props.from
+                from
             };
-            props.onAddStop(stop);
+            onAddStop(stop);
         }
     };
 
     let count = 0.00;
-    const changeSearchTerm =(e: any)=>{
+    const changeSearchTerm = (e: any) => {
         count = e.timeStamp;
-        setTimeout(()=>{
-            if(count - e.timeStamp === 0){
+        setTimeout(() => {
+            if (count - e.timeStamp === 0) {
                 setSearchTerm(e.target.value);
             }
         }, 400);
     };
 
     return (
-        <div className={`skipFinder ${props.open && "open"}`}>
+        <div className={`skipFinder ${open && "open"}`}>
             <div>
                 <FormControl size="small">
                     <Autocomplete
                         id={"input-from"}
-                        getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}` }
+                        getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}`}
                         freeSolo
+                        value={searchTerm}
                         options={citySearch.data?.searchCity || []}
-                        onInput={(e: any)=> changeSearchTerm(e)}
-                        onChange={(e: any, value: string | CityOutput | null, reason: string)=> selectItem(reason, value)}
+                        onInput={(e: any) => changeSearchTerm(e)}
+                        onChange={(e: any, value: string | CityOutput | null, reason: string) => selectItem(reason, value)}
                         renderInput={
                             (params) =>
                                 <CssTextField
@@ -84,7 +92,6 @@ const SkipFinder =(props: SkipFinderProps)=>{
                     />
                 </FormControl>
                 {selectedItem && <WBWButton label={`Add ${selectedItem?.name}`} onNext={addStop}/>}
-                {/*{selectedItem && <Button onClick={addStop}></Button>}*/}
             </div>
         </div>
     );
