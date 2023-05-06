@@ -26,6 +26,7 @@ import {routeTypeToPointType} from "../../../../utils/routeStationTranslator";
 import MapDisplay from "../../../common/maps/MapDisplay";
 import {useDispatch} from "react-redux";
 import {setSearchPoints, useSearchPoints} from "../../../../redux/map/mapSlice";
+import {setStops, useTripState} from "../../../../redux/trip/tripSlice";
 
 interface SearchPoint {
     id: string,
@@ -36,8 +37,8 @@ export const RouteFinderMap = () => {
     const {fromId, toId} = useParams();
     const dispatch = useDispatch();
     const searchPoints = useSearchPoints();
+    const {stops} = useTripState();
     
-    const [stops, setStops] = useState<Stop[]>([]);
     const [trip, setTrip] = useState<Stop[]>([]);
     const [searchCity, setSearchCity] = useState<SearchPoint | undefined>({id: fromId || "", type: PointType.City});
     const [update, setUpdate] = useState<boolean>(false);
@@ -155,7 +156,7 @@ export const RouteFinderMap = () => {
             const newStop = mapRouteToStop(route, addId, destination);
             tempTrip.push(newStop);
             // Add new stop to "stops"
-            setStops([...stops, newStop]);
+            dispatch(setStops([...stops, newStop]));
 
             if (destination) {
                 // If the destinationName has been reached do not refetch
@@ -174,16 +175,17 @@ export const RouteFinderMap = () => {
     };
 
     const buildOrigin = (): Stop | null => {
-        if (originCity?.data?.findCityById !== undefined) {
+        if (originCity?.data?.findCityById) {
+            const {name, latitude, longitude} = originCity.data.findCityById;
             return {
                 id: fromId,
-                name: originCity.data?.findCityById?.name || "",
+                name,
                 routeType: RouteType.Other,
                 origin: true,
                 destination: false,
                 duration: "0:00",
-                latitude: originCity.data?.findCityById?.latitude || "0",
-                longitude: originCity.data?.findCityById?.longitude || "0"
+                latitude,
+                longitude
             };
         }
         return null;
@@ -212,7 +214,7 @@ export const RouteFinderMap = () => {
         tempTrip.push(...stops, stop);
         setSearchCity({id: stop.id || "", type: routeTypeToPointType(stop.routeType)});
         // Add new stop to "stops"
-        setStops([...stops, stop]);
+        dispatch(setStops([...stops, stop]));
         // Add new stop
         // Add destinationName
         const destination = buildDestination();
@@ -232,7 +234,7 @@ export const RouteFinderMap = () => {
         } else {
             tempStops.splice(index + 1);
         }
-        setStops(tempStops);
+        dispatch(setStops(tempStops));
         addStop(null);
         setSearchCity({id: stop?.id || "", type: routeTypeToPointType(stop.routeType)});
     };

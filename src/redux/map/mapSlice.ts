@@ -11,7 +11,7 @@ const initialState: MapState = {
 };
 
 export const mapSlice = createSlice({
-    name: "appSlice",
+    name: "mapSlice",
     initialState,
     reducers: {
         setSearchPoints: (state: MapState, action: PayloadAction<Point[]>) => {
