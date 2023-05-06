@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import MapDisplay, {MapPointType, Point} from "../../../common/maps/MapDisplay";
+import {MapPointType} from "../../../common/maps/Point";
 import "../index.scss";
 
 import {useQuery} from "@apollo/client";
@@ -23,16 +23,20 @@ import {
     RouteType
 } from "../../../../gql/graphql";
 import {routeTypeToPointType} from "../../../../utils/routeStationTranslator";
+import MapDisplay from "../../../common/maps/MapDisplay";
+import {useDispatch} from "react-redux";
+import {setSearchPoints, useSearchPoints} from "../../../../redux/map/mapSlice";
 
-interface SearchPoint{
+interface SearchPoint {
     id: string,
     type: PointType
 }
 
 export const RouteFinderMap = () => {
     const {fromId, toId} = useParams();
-
-    const [searchPoints, setPoints] = useState<Point[]>([]);
+    const dispatch = useDispatch();
+    const searchPoints = useSearchPoints();
+    
     const [stops, setStops] = useState<Stop[]>([]);
     const [trip, setTrip] = useState<Stop[]>([]);
     const [searchCity, setSearchCity] = useState<SearchPoint | undefined>({id: fromId || "", type: PointType.City});
@@ -43,41 +47,41 @@ export const RouteFinderMap = () => {
         variables: searchCity,
     });
     const routesFromDestinationCity = useQuery<FindAllRoutesQuery, FindAllRoutesQueryVariables>(FindAllRoutesDocument, {
-        variables: { id:  toId || "", type: PointType.City},
+        variables: {id: toId || "", type: PointType.City},
     });
-    const originCity = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument,{
-        variables: { cityId:  fromId || ""}
+    const originCity = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument, {
+        variables: {cityId: fromId || ""}
     });
-    const destinationCity = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument,{
-        variables: { cityId:  toId === "anywhere" ? "" : toId || ""}
+    const destinationCity = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument, {
+        variables: {cityId: toId === "anywhere" ? "" : toId || ""}
     });
     const [destinationName, setDestinationName] = useState<string | null>(null);
 
-    useEffect(()=>{
-        if(routesFromDestinationCity.data && routesFromCity.data && searchPoints.length > 0 && update){
-            const matches = matchRoutes(routesFromDestinationCity.data , routesFromCity.data);
-            if(matches.length > 0) {
+    useEffect(() => {
+        if (routesFromDestinationCity.data && routesFromCity.data && searchPoints.length > 0 && update) {
+            const matches = matchRoutes(routesFromDestinationCity.data, routesFromCity.data);
+            if (matches.length > 0) {
                 const matchedPoints = searchPoints.map(point => {
-                    if(matches.includes(point.label)){
+                    if (matches.includes(point.label)) {
                         point.match = true;
                     }
                     return point;
                 });
-                setPoints(matchedPoints);
+                dispatch(setSearchPoints(matchedPoints));
                 setUpdate(false);
             }
         }
     }, [searchPoints]);
 
     // Set points from stops and search points
-    useEffect(()=>{
+    useEffect(() => {
         setUpdate(true);
-        const searchRoutes = routesFromCity.data?.findAllRoutes?.map((item)=>
+        const searchRoutes = routesFromCity.data?.findAllRoutes?.map((item) =>
             (
                 {
                     id: stop.name,
                     longitude: parseFloat(item?.longitude || "0"),
-                    latitude: parseFloat(item?.latitude|| "0"),
+                    latitude: parseFloat(item?.latitude || "0"),
                     type: MapPointType.SEARCH_ITEM,
                     label: item?.destinationName || "",
                     routeInfo: {
@@ -91,11 +95,11 @@ export const RouteFinderMap = () => {
         const origin = {
             id: stop.name,
             longitude: parseFloat(originCity.data?.findCityById?.longitude || "0"),
-            latitude: parseFloat(originCity.data?.findCityById?.latitude|| "0"),
+            latitude: parseFloat(originCity.data?.findCityById?.latitude || "0"),
             type: MapPointType.ORIGIN,
             label: originCity.data?.findCityById?.name || ""
         };
-        const routeStops = stops.map(stop=> (
+        const routeStops = stops.map(stop => (
             {
                 id: stop.name,
                 longitude: parseFloat(stop.longitude),
@@ -103,14 +107,14 @@ export const RouteFinderMap = () => {
                 type: MapPointType.INTERMEDIATE,
                 label: stop.name,
                 stopRouteInfo: {
-                    durationMinutes:stop?.duration,
+                    durationMinutes: stop?.duration,
                     fromName: stop?.from,
                     type: stop?.routeType
                 }
             }
         ));
-        const tempPoints = [origin,...routeStops, ...searchRoutes];
-        if(toId !== "anywhere") {
+        const tempPoints = [origin, ...routeStops, ...searchRoutes];
+        if (toId !== "anywhere") {
             const destination = destinationName !== null ? {
                 id: stops?.at(-1)?.id || "",
                 longitude: parseFloat(stops?.at(-1)?.longitude || "0"),
@@ -120,63 +124,63 @@ export const RouteFinderMap = () => {
             } : {
                 id: stop.name,
                 longitude: parseFloat(destinationCity.data?.findCityById?.longitude || "0"),
-                latitude: parseFloat(destinationCity.data?.findCityById?.latitude|| "0"),
+                latitude: parseFloat(destinationCity.data?.findCityById?.latitude || "0"),
                 type: MapPointType.DESTINATION,
                 label: destinationCity.data?.findCityById?.name || ""
             };
             tempPoints.push(destination);
         }
-        setPoints(tempPoints);
-    },[routesFromCity.data, stops]);
+        dispatch(setSearchPoints(tempPoints));
+    }, [routesFromCity.data, stops]);
 
     //Initialize page once the origin and destination cities are loaded
-    useEffect(()=>{
-        if(!originCity.loading && !destinationCity.loading){
+    useEffect(() => {
+        if (!originCity.loading && !destinationCity.loading) {
             //Once loading is done, load the initial data
             addStop(null);
         }
-    },[originCity.loading, destinationCity.loading]);
+    }, [originCity.loading, destinationCity.loading]);
 
-    const addStop = (route: RouteOutput | null, addId?: string, addPointType?: PointType, destination?: boolean) =>{
+    const addStop = (route: RouteOutput | null, addId?: string, addPointType?: PointType, destination?: boolean) => {
         const tempTrip = [];
         // Add origin city from originCity Query
         const origin = buildOrigin();
-        if(origin){
+        if (origin) {
             tempTrip.push(origin);
         }
 
         tempTrip.push(...stops);
         // Add new stop
-        if(route !== null){
+        if (route !== null) {
             const newStop = mapRouteToStop(route, addId, destination);
             tempTrip.push(newStop);
             // Add new stop to "stops"
-            setStops([...stops,newStop]);
+            setStops([...stops, newStop]);
 
-            if(destination){
+            if (destination) {
                 // If the destinationName has been reached do not refetch
                 setDestinationName(route?.to?.name || null);
                 setSearchCity(undefined);
-            }else{
+            } else {
                 // Search new points from new stop
                 setSearchCity({id: addId || "", type: addPointType || PointType.Other});
             }
         }
         // Add destinationName
-        if(!destination){
+        if (!destination) {
             tempTrip.push(buildDestination());
         }
         setTrip(tempTrip);
     };
 
-    const buildOrigin = (): Stop | null  => {
-        if(originCity?.data?.findCityById !== undefined){
+    const buildOrigin = (): Stop | null => {
+        if (originCity?.data?.findCityById !== undefined) {
             return {
                 id: fromId,
                 name: originCity.data?.findCityById?.name || "",
                 routeType: RouteType.Other,
                 origin: true,
-                destination:false,
+                destination: false,
                 duration: "0:00",
                 latitude: originCity.data?.findCityById?.latitude || "0",
                 longitude: originCity.data?.findCityById?.longitude || "0"
@@ -185,7 +189,7 @@ export const RouteFinderMap = () => {
         return null;
     };
 
-    const buildDestination = (): Stop=>{
+    const buildDestination = (): Stop => {
         return {
             id: toId,
             name: destinationCity.data?.findCityById?.name || "",
@@ -198,35 +202,35 @@ export const RouteFinderMap = () => {
         };
     };
 
-    const addCustomStop = (stop: Stop) =>{
+    const addCustomStop = (stop: Stop) => {
         const tempTrip = [];
         // Add origin city from originCity Query
         const origin = buildOrigin();
-        if(origin){
+        if (origin) {
             tempTrip.push(origin);
         }
         tempTrip.push(...stops, stop);
         setSearchCity({id: stop.id || "", type: routeTypeToPointType(stop.routeType)});
         // Add new stop to "stops"
-        setStops([...stops,stop]);
+        setStops([...stops, stop]);
         // Add new stop
         // Add destinationName
         const destination = buildDestination();
-        if(destination){
+        if (destination) {
             tempTrip.push(destination);
         }
         setTrip(tempTrip);
         setCustomDropDown(false);
     };
 
-    const resetStops= async (stop: Stop)=>{
+    const resetStops = async (stop: Stop) => {
         const index = stops.indexOf(stop);
         setDestinationName(null);
         const tempStops = stops;
-        if(index === -1){
+        if (index === -1) {
             tempStops.splice(0);
-        }else{
-            tempStops.splice(index+1);
+        } else {
+            tempStops.splice(index + 1);
         }
         setStops(tempStops);
         addStop(null);
@@ -246,7 +250,9 @@ export const RouteFinderMap = () => {
                                     <i className={"icofont-double-right"}/>
                                     <i
                                         className={`${mapTripIcons(stop.routeType)} ${stop.routeType === RouteType.Other && "skip-stop"}`}
-                                        onClick={()=>{setCustomDropDown(stop.routeType === RouteType.Other && !customDropDown);}}
+                                        onClick={() => {
+                                            setCustomDropDown(stop.routeType === RouteType.Other && !customDropDown);
+                                        }}
                                     />
                                     <i className={"icofont-double-right"}/>
                                 </div>}
@@ -255,14 +261,15 @@ export const RouteFinderMap = () => {
                         )}
 
                     </div>
-                    <SkipFinder open={customDropDown} onAddStop={addCustomStop} from={stops?.at(-1)?.from || originCity.data?.findCityById?.name || ""}/>
+                    <SkipFinder open={customDropDown} onAddStop={addCustomStop}
+                        from={stops?.at(-1)?.from || originCity.data?.findCityById?.name || ""}/>
                 </div>
 
                 <div className={"map-wrapper"}>
                     {routesFromDestinationCity.loading && <div className={"map-notification"}>
                         <p>Searching from {destinationName || destinationCity.data?.findCityById?.name}</p>
                     </div>}
-                    <MapDisplay points={searchPoints} onAddStop={addStop}/>
+                    <MapDisplay onAddStop={addStop}/>
                     {routesFromCity.loading && <Loader/>}
                 </div>
             </div>

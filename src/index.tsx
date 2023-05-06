@@ -4,9 +4,11 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import {ApolloClient, ApolloProvider, InMemoryCache} from "@apollo/client";
+import {Provider} from "react-redux";
+import store from "./store";
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+    document.getElementById('root') as HTMLElement
 );
 
 const client = new ApolloClient({
@@ -16,7 +18,9 @@ const client = new ApolloClient({
 
 root.render(
     <ApolloProvider client={client}>
-        <App />
+        <Provider store={store}>
+            <App/>
+        </Provider>
     </ApolloProvider>
 );
 

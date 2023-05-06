@@ -1,28 +1,35 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { RootState, useSelector } from "react-redux";
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {RootState, useSelector} from "react-redux";
+import {Point} from "../../components/common/maps/Point";
 
 export interface MapState {
-    connected: boolean;
+    searchPoints: Point[];
 }
 
 const initialState: MapState = {
-    connected: false
+    searchPoints: [],
 };
 
 export const mapSlice = createSlice({
     name: "appSlice",
     initialState,
     reducers: {
-        toggleConnected: (state: MapState) => {
-            state.connected = !state.connected;
+        setSearchPoints: (state: MapState, action: PayloadAction<Point[]>) => {
+            state.searchPoints = action.payload;
         },
-    }
+    },
 });
 
-export const {toggleConnected} = mapSlice.actions;
+export const {setSearchPoints} = mapSlice.actions;
 
 export const useAppState = () => {
-    return useSelector((state: RootState)=>{
+    return useSelector((state: RootState) => {
         return state.mapSlice;
+    });
+};
+
+export const useSearchPoints = () => {
+    return useSelector((state: RootState) => {
+        return state.mapSlice.searchPoints;
     });
 };

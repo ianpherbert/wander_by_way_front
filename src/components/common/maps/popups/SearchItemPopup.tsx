@@ -1,4 +1,4 @@
-import {Point} from "../MapDisplay";
+import {Point} from "../Point";
 
 const SearchItemPopup = (point: Point, connection: boolean) => {
     return `<div class="point-popup">
