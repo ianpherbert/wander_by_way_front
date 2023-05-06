@@ -20,51 +20,22 @@ import {
     RouteOutput,
     RouteType
 } from "../../../gql/graphql";
+import {MapPointType, Point, PointInfo} from "./Point";
+import {useSearchPoints} from "../../../redux/map/mapSlice";
 
 interface MapProps {
-  points: Point[];
-  onAddStop?: (
-    route: RouteOutput,
-    addId: string,
-    addPointType: PointType,
-    destination: boolean
-  ) => void;
+    onAddStop?: (
+        route: RouteOutput,
+        addId: string,
+        addPointType: PointType,
+        destination: boolean
+    ) => void;
 }
 
-interface PointInfo {
-    color: string;
-    scale: number;
-    body: string;
-}
-
-export interface Point {
-    id: string;
-  longitude: number;
-  latitude: number;
-  type: MapPointType;
-  label: string;
-  routeInfo?: {
-    routes: RouteOutput[];
-    durationAverage: number;
-    lineDistanceAverage: number;
-  } | null;
-  stopRouteInfo?: {
-    durationMinutes: number;
-    fromName: string;
-    type: RouteType;
-  };
-  match?: boolean
-}
-
-export enum MapPointType {
-  ORIGIN,
-  DESTINATION,
-  INTERMEDIATE,
-  LAYOVER,
-  SEARCH_ITEM,
-}
 
 const MapDisplay = (props: MapProps) => {
+    const points = useSearchPoints();
+
     mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY || "";
 
     const [selectedPoint, setSelectedPoint] = useState<Point | null>(
@@ -91,7 +62,7 @@ const MapDisplay = (props: MapProps) => {
     const mapPointInfo = (point: Point): PointInfo => {
         switch (point.type) {
         case MapPointType.SEARCH_ITEM:
-            if(point.match){
+            if (point.match) {
                 return {
                     color: "#66ff00",
                     scale: .6,
@@ -103,18 +74,18 @@ const MapDisplay = (props: MapProps) => {
                 scale: 0.5,
                 body: SearchItemPopup(point, false),
             };
-            
+
         case MapPointType.ORIGIN:
-            return { color: "#da4167", scale: 1, body: OriginPopup(point) };
+            return {color: "#da4167", scale: 1, body: OriginPopup(point)};
         case MapPointType.LAYOVER:
-            return { color: "#D9E2E8", scale: 0.8, body: StopPopup(point) };
+            return {color: "#D9E2E8", scale: 0.8, body: StopPopup(point)};
         case MapPointType.DESTINATION:
             return {
                 color: "#f5cb5c",
                 scale: 1,
                 body: DestinationPopup(
                     point,
-                    props.points.find((it) => it.type == MapPointType.ORIGIN)
+                    points.find((it) => it.type == MapPointType.ORIGIN)
                 ),
             };
         case MapPointType.INTERMEDIATE:
@@ -136,7 +107,7 @@ const MapDisplay = (props: MapProps) => {
         markers.forEach((it) => it.remove());
         if (map !== undefined) {
             const tempMarkers: mapboxgl.Marker[] = [];
-            props.points.forEach((point) => {
+            points.forEach((point) => {
                 const pointInfo = mapPointInfo(point);
                 const pointPopup = () => {
                     const popup = new mapboxgl.Popup().setHTML(pointInfo.body);
@@ -157,25 +128,25 @@ const MapDisplay = (props: MapProps) => {
                     draggable: false,
                     scale: pointInfo.scale,
                 });
-                marker.setLngLat({ lon: point.longitude, lat: point.latitude });
+                marker.setLngLat({lon: point.longitude, lat: point.latitude});
                 marker.addTo(map);
                 marker.setPopup(pointPopup());
                 tempMarkers.push(marker);
             });
             setMarkers(tempMarkers);
         }
-    }, [props.points, map]);
+    }, [points, map]);
 
     const SidebarItem = (routeInfo: {
-    routeInfo: RouteOutput;
-  }) => {
+        routeInfo: RouteOutput;
+    }) => {
         return (
             <div className={"sidebar-destination"}>
 
                 <h3>{mainCity()?.name || routeInfo.routeInfo.to.name}</h3>
                 <div>From: {routeInfo.routeInfo.from.name}</div>
                 <div className={"sidebar-destination-icon"}>
-                    <i className={mapTripIcons(routeInfo.routeInfo.type)} />
+                    <i className={mapTripIcons(routeInfo.routeInfo.type)}/>
                     {formatTime(routeInfo?.routeInfo?.durationTotal || 0)}
                 </div>
                 <div className={"add-to-trip-wrapper"}>
@@ -243,8 +214,8 @@ const MapDisplay = (props: MapProps) => {
                     <h2>
                         {associatedCities?.data?.findAllCitiesFromAssociatedTransit?.at(0)
                             ?.name ||
-              selectedPoint?.label ||
-              "null"}
+                            selectedPoint?.label ||
+                            "null"}
                     </h2>
                 </div>
                 <div className={"map-sidebar-body"}>
@@ -263,8 +234,8 @@ const MapDisplay = (props: MapProps) => {
 
     return (
         <>
-            <MapSideBar />
-            <div id={"map"} className={"map"} />
+            <MapSideBar/>
+            <div id={"map"} className={"map"}/>
         </>
     );
 };

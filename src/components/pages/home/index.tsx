@@ -9,7 +9,7 @@ const HomePage=()=>{
             <WelcomeCard/>
             <HomePageMap/>
         </main>
-    )
-}
+    );
+};
 
-export default HomePage
+export default HomePage;

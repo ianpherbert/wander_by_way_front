@@ -1,9 +1,9 @@
 import {calculateDistance} from "../../../../utils/calculateDistance";
-import {Point} from "../MapDisplay";
+import {Point} from "../Point";
 
-const DestinationPopup=(point: Point, originPoint: Point | undefined)=>{
+const DestinationPopup = (point: Point, originPoint: Point | undefined) => {
     let distance = "";
-    if(originPoint){
+    if (originPoint) {
         distance = `<div>${Math.floor(calculateDistance(point.latitude, point.longitude, originPoint.latitude, originPoint.longitude))}km from destination</div>`;
     }
     return `<div class="point-popup">

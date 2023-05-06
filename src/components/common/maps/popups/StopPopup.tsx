@@ -1,6 +1,6 @@
 import {mapTripIcons} from "../../../../utils/mapTripIcons";
 
-import {Point} from "../MapDisplay";
+import {Point} from "../Point";
 import {RouteType} from "../../../../gql/graphql";
 
 const StopPopup = (point: Point) => {

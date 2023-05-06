@@ -21,7 +21,7 @@ const Body = () => {
                 </Routes>
             </Router>
         </div>
-    )
-}
+    );
+};
 
-export default Body
+export default Body;

@@ -1,8 +1,8 @@
 import {PointType, RouteType, StationType} from "../gql/graphql";
 
 
-export const stationToRoute = (stationType: StationType) =>{
-    switch (stationType){
+export const stationToRoute = (stationType: StationType) => {
+    switch (stationType) {
     case StationType.Airport:
         return RouteType.Plane;
     case StationType.Train:
@@ -16,8 +16,8 @@ export const stationToRoute = (stationType: StationType) =>{
     }
 };
 
-export const routeToStation = (routeType: RouteType) =>{
-    switch (routeType){
+export const routeToStation = (routeType: RouteType) => {
+    switch (routeType) {
     case RouteType.Plane:
         return StationType.Airport;
     case RouteType.Train:
@@ -32,7 +32,7 @@ export const routeToStation = (routeType: RouteType) =>{
 };
 
 export const routeTypeToPointType = (routeType: RouteType): PointType => {
-    switch (routeType){
+    switch (routeType) {
     case RouteType.Plane:
         return PointType.Airport;
     case RouteType.Train:
@@ -41,6 +41,6 @@ export const routeTypeToPointType = (routeType: RouteType): PointType => {
     case RouteType.Boat:
         return PointType.Port;
     default:
-        return PointType.Other;
+        return PointType.City;
     }
 };
