@@ -122,10 +122,6 @@ const MapDisplay = (props: MapProps) => {
         }
     };
 
-    // useEffect(() => {
-    //     setUpMarkers(points);
-    // }, [points, map]);
-
     function setUpMarkers(pointsToSet: Point[]) {
         markers.forEach((it) => it.remove());
         if (map) {
