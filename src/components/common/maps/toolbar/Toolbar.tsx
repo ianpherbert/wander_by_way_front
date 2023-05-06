@@ -8,7 +8,7 @@ export const Toolbar = () => {
     const dispatch = useDispatch();
     const filters = useFilters();
 
-    const filterNames: FilterName[] = ["connections", "flight", "train", "bus", "ferry"];
+    const filterNames: FilterName[] = ["connections", "route", "flight", "train", "bus", "ferry"];
 
     function action(e: MouseEvent, filter: FilterName) {
         dispatch(toggleFilter(filter));

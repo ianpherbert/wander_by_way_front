@@ -21,7 +21,7 @@ import {
     RouteType
 } from "../../../gql/graphql";
 import {MapPointType, Point, PointInfo} from "./Point";
-import {useSearchPoints} from "../../../redux/map/mapSlice";
+import {useFilters, useSearchPoints} from "../../../redux/map/mapSlice";
 
 interface MapProps {
     onAddStop?: (
@@ -35,7 +35,7 @@ interface MapProps {
 
 const MapDisplay = (props: MapProps) => {
     const points = useSearchPoints();
-
+    const filters = useFilters();
     mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY || "";
 
     const [selectedPoint, setSelectedPoint] = useState<Point | null>(
@@ -58,6 +58,28 @@ const MapDisplay = (props: MapProps) => {
             })
         );
     }, []);
+
+    useEffect(() => {
+        if (map) {
+            const {connections, route, flight, train, bus, ferry} = filters;
+            const filteredPoints = [];
+            const connectedPoints = points.filter(it => it.match);
+            const origin = points.find((it) => it.type == MapPointType.ORIGIN)!;
+            const destination = points.find((it) => it.type == MapPointType.DESTINATION);
+            if (connections.applied) {
+                filteredPoints.push(...connectedPoints);
+            }
+            const routes = points.filter(it => !it.match);
+            if (route.applied) {
+                filteredPoints.push(...routes);
+            }
+            const toSet = [origin, ...filteredPoints];
+            if (destination) {
+                toSet.push(destination);
+            }
+            setUpMarkers(toSet);
+        }
+    }, [filters]);
 
     const mapPointInfo = (point: Point): PointInfo => {
         switch (point.type) {
@@ -104,10 +126,14 @@ const MapDisplay = (props: MapProps) => {
     };
 
     useEffect(() => {
+        setUpMarkers(points);
+    }, [points, map]);
+
+    function setUpMarkers(pointsToSet: Point[]) {
         markers.forEach((it) => it.remove());
-        if (map !== undefined) {
+        if (map) {
             const tempMarkers: mapboxgl.Marker[] = [];
-            points.forEach((point) => {
+            pointsToSet.forEach((point) => {
                 const pointInfo = mapPointInfo(point);
                 const pointPopup = () => {
                     const popup = new mapboxgl.Popup().setHTML(pointInfo.body);
@@ -135,7 +161,7 @@ const MapDisplay = (props: MapProps) => {
             });
             setMarkers(tempMarkers);
         }
-    }, [points, map]);
+    }
 
     const SidebarItem = (routeInfo: {
         routeInfo: RouteOutput;
