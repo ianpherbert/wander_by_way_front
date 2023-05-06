@@ -28,9 +28,9 @@ import {useDispatch} from "react-redux";
 import {setSearchPoints, useSearchPoints} from "../../../../redux/map/mapSlice";
 import {
     addStopToTrip,
+    resetStops,
     setDestination,
     setOrigin,
-    setStops,
     useTrip,
     useTripState
 } from "../../../../redux/trip/tripSlice";
@@ -64,32 +64,6 @@ export const RouteFinderMap = () => {
         variables: {cityId: toId === "anywhere" ? "" : toId || ""}
     });
     const destinationName = destination?.name;
-
-    useEffect(() => {
-        if (originCity?.data?.findCityById) {
-            const {name, latitude, longitude} = originCity.data.findCityById;
-            dispatch(setOrigin({
-                id: fromId,
-                name,
-                routeType: RouteType.Other,
-                origin: true,
-                destination: false,
-                duration: "0:00",
-                latitude,
-                longitude
-            }));
-        }
-        dispatch(setDestination({
-            id: toId,
-            name: destinationCity.data?.findCityById?.name || "",
-            routeType: RouteType.Other,
-            origin: false,
-            destination: true,
-            duration: "0:00",
-            latitude: destinationCity.data?.findCityById?.latitude || "0",
-            longitude: destinationCity.data?.findCityById?.longitude || "0"
-        }));
-    }, [originCity.data, destinationCity.data]);
 
     useEffect(() => {
         if (routesFromDestinationCity.data && routesFromCity.data && searchPoints.length > 0 && update) {
@@ -170,25 +144,44 @@ export const RouteFinderMap = () => {
     //Initialize page once the origin and destination cities are loaded
     useEffect(() => {
         if (!originCity.loading && !destinationCity.loading) {
-            //Once loading is done, load the initial data
-            addStop(null);
+            if (originCity?.data?.findCityById) {
+                const {name, latitude, longitude} = originCity.data.findCityById;
+                dispatch(setOrigin({
+                    id: fromId,
+                    name,
+                    routeType: RouteType.Other,
+                    origin: true,
+                    destination: false,
+                    duration: "0:00",
+                    latitude,
+                    longitude
+                }));
+            }
+            dispatch(setDestination({
+                id: toId,
+                name: destinationCity.data?.findCityById?.name || "",
+                routeType: RouteType.Other,
+                origin: false,
+                destination: true,
+                duration: "0:00",
+                latitude: destinationCity.data?.findCityById?.latitude || "0",
+                longitude: destinationCity.data?.findCityById?.longitude || "0"
+            }));
         }
     }, [originCity.loading, destinationCity.loading]);
 
-    const addStop = (route: RouteOutput | null, addId?: string, addPointType?: PointType, destination?: boolean) => {
-        // Add new stop
-        if (route !== null) {
-            const newStop = mapRouteToStop(route, addId, destination);
-            dispatch(addStopToTrip(newStop));
-            if (destination) {
-                // If the destinationName has been reached do not refetch
-                dispatch(setDestination(newStop));
-                setSearchCity(undefined);
-            } else {
-                // Search new points from new stop
-                setSearchCity({id: addId || "", type: addPointType || PointType.Other});
-            }
+    const addStop = (route: RouteOutput, addId?: string, addPointType?: PointType, destination?: boolean) => {
+        const newStop = mapRouteToStop(route, addId, destination);
+        dispatch(addStopToTrip(newStop));
+        if (destination) {
+            // If the destinationName has been reached do not refetch
+            dispatch(setDestination(newStop));
+            setSearchCity(undefined);
+        } else {
+            // Search new points from new stop
+            setSearchCity({id: addId || "", type: addPointType || PointType.Other});
         }
+
     };
 
     const addCustomStop = (stop: Stop) => {
@@ -197,17 +190,9 @@ export const RouteFinderMap = () => {
         setCustomDropDown(false);
     };
 
-    const resetStops = async (stop: Stop) => {
-        const index = stops.indexOf(stop);
-        dispatch(setDestination(undefined));
-        const tempStops = stops;
-        if (index === -1) {
-            tempStops.splice(0);
-        } else {
-            tempStops.splice(index + 1);
-        }
-        dispatch(setStops(tempStops));
-        addStop(null);
+    const stepBack = async (stop: Stop) => {
+        dispatch(resetStops(stop));
+        !destinationCity.data && dispatch(setDestination(undefined));
         setSearchCity({id: stop?.id || "", type: routeTypeToPointType(stop.routeType)});
     };
 
@@ -230,7 +215,7 @@ export const RouteFinderMap = () => {
                                     />
                                     <i className={"icofont-double-right"}/>
                                 </div>}
-                                <TripOverviewItem stop={stop} restart={resetStops}/>
+                                <TripOverviewItem stop={stop} restart={stepBack}/>
                             </React.Fragment>
                         )}
 

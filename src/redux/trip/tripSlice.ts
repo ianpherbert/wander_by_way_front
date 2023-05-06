@@ -33,13 +33,21 @@ export const tripSlice = createSlice({
                 state.destination = action.payload;
             }
         },
-        setStops: (state: TripState, action: PayloadAction<Stop[]>) => {
-            state.stops = action.payload;
-        },
+        resetStops: (state: TripState, action: PayloadAction<Stop>) => {
+            const stop = action.payload;
+            const {stops} = state;
+            const index = stops.indexOf(stop);
+            const tempStops = [...stops];
+            if (index === -1) {
+                state.stops = [];
+            } else {
+                state.stops = tempStops.slice(index + 1);
+            }
+        }
     },
 });
 
-export const {addStopToTrip, setOrigin, setDestination, setStops} = tripSlice.actions;
+export const {addStopToTrip, setOrigin, setDestination, resetStops} = tripSlice.actions;
 
 export const useTripState = () => {
     return useSelector((state: RootState) => {
@@ -50,7 +58,6 @@ export const useTripState = () => {
 export const useTrip = () => {
     return useSelector((state: RootState) => {
         const {origin, stops, destination} = state.tripSlice;
-        console.log(origin, stops, destination);
         return [origin ?? [], ...stops, destination ?? []].flat();
     });
 };
