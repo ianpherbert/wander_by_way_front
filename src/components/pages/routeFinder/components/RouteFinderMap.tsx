@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {MapPointType} from "../../../common/maps/Point";
+import {MapPointType, Point} from "../../../common/maps/Point";
 import "../index.scss";
 
 import {useQuery} from "@apollo/client";
@@ -25,7 +25,7 @@ import {
 import {routeTypeToPointType} from "../../../../utils/routeStationTranslator";
 import MapDisplay from "../../../common/maps/MapDisplay";
 import {useDispatch} from "react-redux";
-import {setSearchPoints, useSearchPoints} from "../../../../redux/map/mapSlice";
+import {setSearchPoints} from "../../../../redux/map/mapSlice";
 import {
     addStopToTrip,
     resetStops,
@@ -43,12 +43,10 @@ interface SearchPoint {
 export const RouteFinderMap = () => {
     const {fromId, toId} = useParams();
     const dispatch = useDispatch();
-    const searchPoints = useSearchPoints();
-    const {stops, destination, origin} = useTripState();
+    const {stops, destination} = useTripState();
     const trip = useTrip();
 
     const [searchCity, setSearchCity] = useState<SearchPoint | undefined>({id: fromId || "", type: PointType.City});
-    const [update, setUpdate] = useState<boolean>(false);
     const [customDropDown, setCustomDropDown] = useState<boolean>(false);
 
     const routesFromCity = useQuery<FindAllRoutesQuery, FindAllRoutesQueryVariables>(FindAllRoutesDocument, {
@@ -65,25 +63,8 @@ export const RouteFinderMap = () => {
     });
     const destinationName = destination?.name;
 
-    useEffect(() => {
-        if (routesFromDestinationCity.data && routesFromCity.data && searchPoints.length > 0 && update) {
-            const matches = matchRoutes(routesFromDestinationCity.data, routesFromCity.data);
-            if (matches.length > 0) {
-                const matchedPoints = searchPoints.map(point => {
-                    if (matches.includes(point.label)) {
-                        point.match = true;
-                    }
-                    return point;
-                });
-                dispatch(setSearchPoints(matchedPoints));
-                setUpdate(false);
-            }
-        }
-    }, [searchPoints]);
-
     // Set points from stops and search points
     useEffect(() => {
-        setUpdate(true);
         const searchRoutes = routesFromCity.data?.findAllRoutes?.map((item) =>
             (
                 {
@@ -138,7 +119,19 @@ export const RouteFinderMap = () => {
             };
             tempPoints.push(destinationPoint);
         }
-        dispatch(setSearchPoints(tempPoints));
+
+        if (routesFromDestinationCity.data && routesFromCity.data && tempPoints.length > 0) {
+            const matches = matchRoutes(routesFromDestinationCity.data, routesFromCity.data);
+            const matchedPoints = tempPoints.map((point: Point) => {
+                if (matches.includes(point.label)) {
+                    return {...point, match: true};
+                }
+                return point;
+            });
+            dispatch(setSearchPoints(matchedPoints));
+        } else {
+            dispatch(setSearchPoints(tempPoints));
+        }
     }, [routesFromCity.data, stops]);
 
     //Initialize page once the origin and destination cities are loaded
