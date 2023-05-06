@@ -64,7 +64,7 @@ const MapDisplay = (props: MapProps) => {
             const {connections, route, flight, train, bus, ferry} = filters;
             const filteredPoints = [];
             const connectedPoints = points.filter(it => it.match);
-            const origin = points.find((it) => it.type == MapPointType.ORIGIN)!;
+            const origin = points.find((it) => it.type == MapPointType.ORIGIN);
             const destination = points.find((it) => it.type == MapPointType.DESTINATION);
             if (connections.applied) {
                 filteredPoints.push(...connectedPoints);
@@ -73,13 +73,10 @@ const MapDisplay = (props: MapProps) => {
             if (route.applied) {
                 filteredPoints.push(...routes);
             }
-            const toSet = [origin, ...filteredPoints];
-            if (destination) {
-                toSet.push(destination);
-            }
+            const toSet = origin ? destination ? [origin, ...filteredPoints, destination] : [origin, ...filteredPoints] : filteredPoints;
             setUpMarkers(toSet);
         }
-    }, [filters]);
+    }, [filters, points, map]);
 
     const mapPointInfo = (point: Point): PointInfo => {
         switch (point.type) {
@@ -125,9 +122,9 @@ const MapDisplay = (props: MapProps) => {
         }
     };
 
-    useEffect(() => {
-        setUpMarkers(points);
-    }, [points, map]);
+    // useEffect(() => {
+    //     setUpMarkers(points);
+    // }, [points, map]);
 
     function setUpMarkers(pointsToSet: Point[]) {
         markers.forEach((it) => it.remove());
