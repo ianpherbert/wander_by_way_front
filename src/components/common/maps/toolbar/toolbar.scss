@@ -1,0 +1,15 @@
+@import "../../../../styles/constants";
+@import "../../../../styles/general";
+
+#toolbar {
+  height: 200px;
+  width: 200px;
+  background-color: $grey;
+  z-index: 10;
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  border-style: solid;
+  border-radius: 10px;
+  overflow-y: auto;
+}

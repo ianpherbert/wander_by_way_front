@@ -34,6 +34,7 @@ import {
     useTrip,
     useTripState
 } from "../../../../redux/trip/tripSlice";
+import {Toolbar} from "../../../common/maps/toolbar/Toolbar";
 
 interface SearchPoint {
     id: string,
@@ -218,6 +219,7 @@ export const RouteFinderMap = () => {
                 </div>
 
                 <div className={"map-wrapper"}>
+                    <Toolbar/>
                     {routesFromDestinationCity.loading && <div className={"map-notification"}>
                         <p>Searching from {destinationName || destinationCity.data?.findCityById?.name}</p>
                     </div>}
