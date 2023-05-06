@@ -6,7 +6,7 @@ const LoginPage=()=>{
         <>
         Login
         </>
-    )
-}
+    );
+};
 
-export default LoginPage
+export default LoginPage;

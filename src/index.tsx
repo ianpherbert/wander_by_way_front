@@ -15,9 +15,9 @@ const client = new ApolloClient({
 });
 
 root.render(
-  <ApolloProvider client={client}>
-    <App />
-  </ApolloProvider>
+    <ApolloProvider client={client}>
+        <App />
+    </ApolloProvider>
 );
 
 reportWebVitals();

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./skipfinder.scss";
-import {Autocomplete, Button, FormControl} from "@mui/material";
+import {Autocomplete, FormControl} from "@mui/material";
 import {CssTextField} from "../../../../common/mui/inputs";
 import {useQuery} from "@apollo/client";
 import {Stop} from "../../../../../core/trip/Stop";

@@ -1,6 +1,6 @@
 import React from "react";
 import {Stop} from "../../../../core/trip/Stop";
-import {Button, IconButton, Tooltip} from "@mui/material";
+import {IconButton, Tooltip} from "@mui/material";
 import {SouthWestRounded} from "@mui/icons-material";
 
 interface TripOverviewItemProps{
