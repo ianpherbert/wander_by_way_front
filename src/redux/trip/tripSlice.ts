@@ -5,11 +5,13 @@ import {Stop} from "../../core/trip/Stop";
 export interface TripState {
     stops: Stop[],
     origin?: Stop,
-    destination?: Stop
+    destination?: Stop,
+    trip: Stop[]
 }
 
 const initialState: TripState = {
     stops: [],
+    trip: []
 };
 
 export const tripSlice = createSlice({
@@ -28,10 +30,13 @@ export const tripSlice = createSlice({
         setStops: (state: TripState, action: PayloadAction<Stop[]>) => {
             state.stops = action.payload;
         },
+        setTrip: (state: TripState, action: PayloadAction<Stop[]>) => {
+            state.trip = action.payload;
+        },
     },
 });
 
-export const {addStopToTrip, setOrigin, setDestination, setStops} = tripSlice.actions;
+export const {addStopToTrip, setOrigin, setDestination, setStops, setTrip} = tripSlice.actions;
 
 export const useTripState = () => {
     return useSelector((state: RootState) => {

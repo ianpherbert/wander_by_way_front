@@ -26,7 +26,7 @@ import {routeTypeToPointType} from "../../../../utils/routeStationTranslator";
 import MapDisplay from "../../../common/maps/MapDisplay";
 import {useDispatch} from "react-redux";
 import {setSearchPoints, useSearchPoints} from "../../../../redux/map/mapSlice";
-import {setStops, useTripState} from "../../../../redux/trip/tripSlice";
+import {setStops, setTrip, useTripState} from "../../../../redux/trip/tripSlice";
 
 interface SearchPoint {
     id: string,
@@ -37,9 +37,10 @@ export const RouteFinderMap = () => {
     const {fromId, toId} = useParams();
     const dispatch = useDispatch();
     const searchPoints = useSearchPoints();
-    const {stops} = useTripState();
-    
-    const [trip, setTrip] = useState<Stop[]>([]);
+    const {stops, trip} = useTripState();
+
+
+    // const [trip, setTrip] = useState<Stop[]>([]);
     const [searchCity, setSearchCity] = useState<SearchPoint | undefined>({id: fromId || "", type: PointType.City});
     const [update, setUpdate] = useState<boolean>(false);
     const [customDropDown, setCustomDropDown] = useState<boolean>(false);
@@ -171,7 +172,7 @@ export const RouteFinderMap = () => {
         if (!destination) {
             tempTrip.push(buildDestination());
         }
-        setTrip(tempTrip);
+        dispatch(setTrip(tempTrip));
     };
 
     const buildOrigin = (): Stop | null => {
@@ -221,7 +222,7 @@ export const RouteFinderMap = () => {
         if (destination) {
             tempTrip.push(destination);
         }
-        setTrip(tempTrip);
+        dispatch(setTrip(tempTrip));
         setCustomDropDown(false);
     };
 
