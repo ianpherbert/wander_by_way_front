@@ -21,11 +21,13 @@ interface Filters {
 
 export interface MapState {
     searchPoints: Point[];
-    filters: Filters
+    filters: Filters;
+    showConnections: boolean;
 }
 
 const initialState: MapState = {
     searchPoints: [],
+    showConnections: true,
     filters: {
         connections: {
             active: false,
@@ -70,15 +72,24 @@ export const mapSlice = createSlice({
             if (state.filters[filter].active) {
                 state.filters[filter] = {active: true, applied: !state.filters[filter].applied};
             }
+        },
+        toggleShowConnections: (state: MapState) => {
+            state.showConnections = !state.showConnections;
         }
     },
 });
 
-export const {setSearchPoints, toggleFilter} = mapSlice.actions;
+export const {setSearchPoints, toggleFilter, toggleShowConnections} = mapSlice.actions;
 
 export const useFilters = () => {
     return useSelector((state: RootState) => {
         return state.mapSlice.filters;
+    });
+};
+
+export const useShowConnections = () => {
+    return useSelector((state: RootState) => {
+        return state.mapSlice.showConnections;
     });
 };
 
