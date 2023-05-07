@@ -137,7 +137,7 @@ const HomePageMap = () => {
                                 freeSolo
                                 inputValue={fromTerm || ""}
                                 onInput={(e: any) => changeSearchTerm(e)}
-                                options={citySearch.data?.searchCity || []}
+                                options={citySearch.data?.searchCity as CityOutput[] || []}
                                 onChange={(e: any, value: string | CityOutput | null, reason: string) => selectItem(reason, value, InputType.FROM)}
                                 renderInput={
                                     (params) =>
@@ -158,7 +158,7 @@ const HomePageMap = () => {
                                 getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}`}
                                 freeSolo
                                 inputValue={toTerm || ""}
-                                options={citySearch.data?.searchCity || []}
+                                options={citySearch.data?.searchCity as CityOutput[] || []}
                                 onChange={(e: any, value: string | CityOutput | null, reason: string) => selectItem(reason, value, InputType.TO)}
                                 renderInput={
                                     (params) =>

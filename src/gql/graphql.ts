@@ -54,14 +54,14 @@ export type CityAirportOutput = {
 
 export type CityOutput = {
   __typename?: 'CityOutput';
-  airports?: Maybe<Array<Maybe<CityAirportOutput>>>;
+  airports: Array<Maybe<CityAirportOutput>>;
   country: Scalars['String'];
   id: Scalars['String'];
   latitude: Scalars['String'];
   longitude: Scalars['String'];
   name: Scalars['String'];
-  population?: Maybe<Scalars['Int']>;
-  trainStations?: Maybe<Array<Maybe<CityStationOutput>>>;
+  population: Scalars['Int'];
+  trainStations: Array<Maybe<CityStationOutput>>;
   type: CityType;
 };
 
@@ -78,10 +78,8 @@ export type CitySearchOutput = {
 
 export type CityStationOutput = {
   __typename?: 'CityStationOutput';
-  airport: Scalars['Boolean'];
   latitude: Scalars['String'];
   longitude: Scalars['String'];
-  main: Scalars['Boolean'];
   name: Scalars['String'];
   stationId: Scalars['String'];
   type: StationType;
@@ -279,7 +277,7 @@ export type SearchCityQueryVariables = Exact<{
 }>;
 
 
-export type SearchCityQuery = { __typename?: 'Query', searchCity?: Array<{ __typename?: 'CityOutput', id: string, name: string, type: CityType, population?: number | null, country: string, latitude: string, longitude: string } | null> | null };
+export type SearchCityQuery = { __typename?: 'Query', searchCity?: Array<{ __typename?: 'CityOutput', id: string, name: string, type: CityType, population: number, country: string, latitude: string, longitude: string } | null> | null };
 
 export type FindAllRoutesQueryVariables = Exact<{
   id: Scalars['String'];
