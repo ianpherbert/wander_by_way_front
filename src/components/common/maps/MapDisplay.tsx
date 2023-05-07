@@ -59,21 +59,43 @@ const MapDisplay = (props: MapProps) => {
         );
     }, []);
 
+
     useEffect(() => {
         if (map) {
             const {connections, route, flight, train, bus, ferry} = filters;
-            const filteredPoints = [];
-            const connectedPoints = points.filter(it => it.match);
+
+            const acceptedTypes = [
+                flight.applied ? RouteType.Plane.valueOf() : null,
+                train.applied ? RouteType.Train.valueOf() : null,
+                bus.applied ? RouteType.Bus.valueOf() : null,
+                ferry.applied ? RouteType.Boat.valueOf() : null,
+            ];
+
+
+            const filteredPoints = points.filter((point) => {
+                const filtered = point.routeInfo?.routes.filter(route =>
+                    acceptedTypes.includes(route.type.valueOf())
+                ) ?? [];
+                return filtered.length > 0;
+            }
+            );
+
+
             const origin = points.find((it) => it.type == MapPointType.ORIGIN);
-            const destination = points.find((it) => it.type == MapPointType.DESTINATION);
+            const destination = filteredPoints.find((it) => it.type == MapPointType.DESTINATION);
+
+            const secondFilter = [];
+
+            //Apply Filters
+            const connectedPoints = filteredPoints.filter(it => it.match);
             if (connections.applied) {
-                filteredPoints.push(...connectedPoints);
+                secondFilter.push(...connectedPoints);
             }
-            const routes = points.filter(it => !it.match);
+            const routes = filteredPoints.filter(it => !it.match);
             if (route.applied) {
-                filteredPoints.push(...routes);
+                secondFilter.push(...routes);
             }
-            const toSet = origin ? destination ? [origin, ...filteredPoints, destination] : [origin, ...filteredPoints] : filteredPoints;
+            const toSet = origin ? destination ? [origin, ...secondFilter, destination] : [origin, ...secondFilter] : secondFilter;
             setUpMarkers(toSet);
         }
     }, [filters, points, map]);
