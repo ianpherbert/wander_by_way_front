@@ -1,13 +1,20 @@
 import "./toolbar.scss";
 import React, {useState} from "react";
-import {Grid, Radio, ToggleButton} from "@mui/material";
-import {FilterName, toggleFilter, useFilters} from "../../../../redux/map/mapSlice";
+import {FormControlLabel, Grid, Radio, Switch, ToggleButton} from "@mui/material";
+import {
+    FilterName,
+    toggleFilter,
+    toggleShowConnections,
+    useFilters,
+    useShowConnections
+} from "../../../../redux/map/mapSlice";
 import {useDispatch} from "react-redux";
 import {ChevronRight, ExpandMore} from "@mui/icons-material";
 
 export const Toolbar = () => {
     const dispatch = useDispatch();
     const filters = useFilters();
+    const showConnections = useShowConnections();
 
     const filterNames: FilterName[] = ["connections", "route", "flight", "train", "bus", "ferry"];
 
@@ -15,6 +22,10 @@ export const Toolbar = () => {
 
     function action(e: MouseEvent, filter: FilterName) {
         dispatch(toggleFilter(filter));
+    }
+
+    function changeShowConnections() {
+        dispatch(toggleShowConnections());
     }
 
     const gridStyle = {
@@ -42,6 +53,9 @@ export const Toolbar = () => {
                 </ToggleButton></div>
             <div className={"toolbar-body"}>
                 <Grid container>
+                    <Grid xs={12}><FormControlLabel
+                        control={<Switch checked={showConnections} onClick={changeShowConnections}/>}
+                        label="Show Connections"/></Grid>
                     {filterNames.map((name) => <Grid container key={name}><Grid xs={3}><Radio onMouseUp={(e) => {
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore

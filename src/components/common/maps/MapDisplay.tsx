@@ -21,7 +21,7 @@ import {
     RouteType
 } from "../../../gql/graphql";
 import {MapPointType, Point, PointInfo} from "./Point";
-import {useFilters, useSearchPoints} from "../../../redux/map/mapSlice";
+import {useFilters, useSearchPoints, useShowConnections} from "../../../redux/map/mapSlice";
 
 interface MapProps {
     onAddStop?: (
@@ -43,6 +43,7 @@ const MapDisplay = (props: MapProps) => {
     );
     const [map, setMap] = useState<mapboxgl.Map>();
     const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
+    const showConnections = useShowConnections();
 
     const associatedCities = useQuery<FindAllCitiesFromAssociatedTransitQuery, FindAllCitiesFromAssociatedTransitQueryVariables>(FindAllCitiesFromAssociatedTransitDocument);
     const mainCity = () => {
@@ -98,12 +99,12 @@ const MapDisplay = (props: MapProps) => {
             const toSet = origin ? destination ? [origin, ...secondFilter, destination] : [origin, ...secondFilter] : secondFilter;
             setUpMarkers(toSet);
         }
-    }, [filters, points, map]);
+    }, [filters, points, map, showConnections]);
 
     const mapPointInfo = (point: Point): PointInfo => {
         switch (point.type) {
         case MapPointType.SEARCH_ITEM:
-            if (point.match) {
+            if (point.match && showConnections) {
                 return {
                     color: "#66ff00",
                     scale: .6,
