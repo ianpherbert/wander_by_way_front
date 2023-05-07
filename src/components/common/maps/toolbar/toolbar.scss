@@ -3,32 +3,48 @@
 
 .toolbar {
   height: 200px;
-  width: 200px;
+  width: 400px;
   background-color: $grey;
   z-index: 10;
   position: absolute;
   bottom: 5px;
   left: 5px;
-
   border-radius: 10px;
   transition: .3s;
 
+  .toggle {
+    position: absolute;
+    right: 0;
+    top: 2%;
+  }
+
   &.closed {
+    background-color: rgba(65, 160, 201, 0.62);
     height: 50px;
-    width: 100px;
+    width: 50px;
     overflow: hidden;
     box-shadow: $shadow;
+
+    &:hover {
+      width: 65px;
+      overflow: hidden;
+    }
+
+    .toggle {
+      position: relative;
+    }
   }
 
   .toolbar-title {
+    overflow: hidden;
     user-select: none;
     position: absolute;
-    top: 0;
-    left: 5%;
+    top: 2%;
+    left: 2%;
     right: 2%;
     height: 50px;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     text-align: center;
   }
@@ -36,11 +52,9 @@
   .toolbar-body {
     position: absolute;
     top: 50px;
-    left: 0;
+    left: 5px;
     right: 0;
     bottom: 0;
     overflow-y: auto;
-
-
   }
 }
