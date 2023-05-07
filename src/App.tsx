@@ -10,7 +10,7 @@ function App() {
 
     return (
         <>
-            <Sidebar auth={false}/>
+            <Sidebar/>
             <Header language={Languages.EN} connected={false}/>
             <Body/>
         </>

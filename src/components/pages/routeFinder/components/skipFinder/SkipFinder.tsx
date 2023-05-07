@@ -80,7 +80,7 @@ const SkipFinder = (props: SkipFinderProps) => {
         setActiveType(routeType);
     }
 
-    function mouseExit(routeType: RouteType) {
+    function mouseExit() {
         if (!activeType) {
             setActiveType(null);
         } else {
@@ -94,7 +94,7 @@ const SkipFinder = (props: SkipFinderProps) => {
     }
 
     function buttonText() {
-        return buttonDisabled() ? "Select a destination and mode" : `Go to ${truncateString(selectedItem!.name)} by ${selectedActiveType}`;
+        return buttonDisabled() ? "Select a destination and mode" : `Go to ${truncateString(selectedItem?.name)} by ${selectedActiveType}`;
     }
 
     function buttonDisabled() {
@@ -111,7 +111,7 @@ const SkipFinder = (props: SkipFinderProps) => {
                             getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}`}
                             freeSolo
                             value={searchTerm}
-                            options={citySearch.data?.searchCity || []}
+                            options={citySearch.data?.searchCity as CityOutput[] || []}
                             onInput={(e: any) => changeSearchTerm(e)}
                             onChange={(e: any, value: string | CityOutput | null, reason: string) => selectItem(reason, value)}
                             renderInput={
@@ -131,7 +131,7 @@ const SkipFinder = (props: SkipFinderProps) => {
                             onMouseEnter={() => {
                                 mouseEnter(it);
                             }} onMouseLeave={() => {
-                                mouseExit(it);
+                                mouseExit();
                             }} onClick={() => {
                                 onSelectType(it);
                             }}/>

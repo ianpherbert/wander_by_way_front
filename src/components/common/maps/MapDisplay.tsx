@@ -21,7 +21,7 @@ import {
     RouteType
 } from "../../../gql/graphql";
 import {MapPointType, Point, PointInfo} from "./Point";
-import {useSearchPoints} from "../../../redux/map/mapSlice";
+import {useFilters, useSearchPoints} from "../../../redux/map/mapSlice";
 
 interface MapProps {
     onAddStop?: (
@@ -35,7 +35,7 @@ interface MapProps {
 
 const MapDisplay = (props: MapProps) => {
     const points = useSearchPoints();
-
+    const filters = useFilters();
     mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY || "";
 
     const [selectedPoint, setSelectedPoint] = useState<Point | null>(
@@ -58,6 +58,47 @@ const MapDisplay = (props: MapProps) => {
             })
         );
     }, []);
+
+
+    useEffect(() => {
+        if (map) {
+            const {connections, route, flight, train, bus, ferry} = filters;
+
+            const acceptedTypes = [
+                flight.applied ? RouteType.Plane.valueOf() : null,
+                train.applied ? RouteType.Train.valueOf() : null,
+                bus.applied ? RouteType.Bus.valueOf() : null,
+                ferry.applied ? RouteType.Boat.valueOf() : null,
+            ];
+
+
+            const filteredPoints = points.filter((point) => {
+                const filtered = point.routeInfo?.routes.filter(route =>
+                    acceptedTypes.includes(route.type.valueOf())
+                ) ?? [];
+                return filtered.length > 0;
+            }
+            );
+
+
+            const origin = points.find((it) => it.type == MapPointType.ORIGIN);
+            const destination = filteredPoints.find((it) => it.type == MapPointType.DESTINATION);
+
+            const secondFilter = [];
+
+            //Apply Filters
+            const connectedPoints = filteredPoints.filter(it => it.match);
+            if (connections.applied) {
+                secondFilter.push(...connectedPoints);
+            }
+            const routes = filteredPoints.filter(it => !it.match);
+            if (route.applied) {
+                secondFilter.push(...routes);
+            }
+            const toSet = origin ? destination ? [origin, ...secondFilter, destination] : [origin, ...secondFilter] : secondFilter;
+            setUpMarkers(toSet);
+        }
+    }, [filters, points, map]);
 
     const mapPointInfo = (point: Point): PointInfo => {
         switch (point.type) {
@@ -103,11 +144,11 @@ const MapDisplay = (props: MapProps) => {
         }
     };
 
-    useEffect(() => {
+    function setUpMarkers(pointsToSet: Point[]) {
         markers.forEach((it) => it.remove());
-        if (map !== undefined) {
+        if (map) {
             const tempMarkers: mapboxgl.Marker[] = [];
-            points.forEach((point) => {
+            pointsToSet.forEach((point) => {
                 const pointInfo = mapPointInfo(point);
                 const pointPopup = () => {
                     const popup = new mapboxgl.Popup().setHTML(pointInfo.body);
@@ -135,7 +176,7 @@ const MapDisplay = (props: MapProps) => {
             });
             setMarkers(tempMarkers);
         }
-    }, [points, map]);
+    }
 
     const SidebarItem = (routeInfo: {
         routeInfo: RouteOutput;

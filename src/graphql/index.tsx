@@ -1,4 +1,3 @@
-
 import {graphql} from "../gql";
 
 export const SEARCH_CITY = graphql(`
@@ -15,8 +14,8 @@ export const SEARCH_CITY = graphql(`
                 }`);
 
 export const GET_ROUTES_FROM_CITY = graphql(`
-  query FindAllRoutes($id: String!, $type: PointType!) {
-    findAllRoutes(searchInput: { id: $id, type: $type }) {
+  query FindAllRoutes($id: String!, $type: PointType!, $filters: RouteSearchFilterInput!) {
+    findAllRoutes(searchInput: { id: $id, type: $type, filters: $filters }) {
       destinationName
       destinationId
       latitude

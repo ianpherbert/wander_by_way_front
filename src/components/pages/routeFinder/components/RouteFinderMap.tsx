@@ -20,12 +20,13 @@ import {
     FindCityByIdQueryVariables,
     PointType,
     RouteOutput,
+    RouteSearchFilterInput,
     RouteType
 } from "../../../../gql/graphql";
 import {routeTypeToPointType} from "../../../../utils/routeStationTranslator";
 import MapDisplay from "../../../common/maps/MapDisplay";
 import {useDispatch} from "react-redux";
-import {setSearchPoints} from "../../../../redux/map/mapSlice";
+import {setSearchPoints, useApiFilters} from "../../../../redux/map/mapSlice";
 import {
     addStopToTrip,
     resetStops,
@@ -34,10 +35,13 @@ import {
     useTrip,
     useTripState
 } from "../../../../redux/trip/tripSlice";
+import {Toolbar} from "../../../common/maps/toolbar/Toolbar";
 
 interface SearchPoint {
     id: string,
-    type: PointType
+    type: PointType,
+
+    filters: RouteSearchFilterInput
 }
 
 export const RouteFinderMap = () => {
@@ -45,15 +49,20 @@ export const RouteFinderMap = () => {
     const dispatch = useDispatch();
     const {stops, destination} = useTripState();
     const trip = useTrip();
+    const apiFilters = useApiFilters();
 
-    const [searchCity, setSearchCity] = useState<SearchPoint | undefined>({id: fromId || "", type: PointType.City});
+    const [searchCity, setSearchCity] = useState<SearchPoint | undefined>({
+        id: fromId || "",
+        type: PointType.City,
+        filters: apiFilters
+    });
     const [customDropDown, setCustomDropDown] = useState<boolean>(false);
 
     const routesFromCity = useQuery<FindAllRoutesQuery, FindAllRoutesQueryVariables>(FindAllRoutesDocument, {
         variables: searchCity,
     });
     const routesFromDestinationCity = useQuery<FindAllRoutesQuery, FindAllRoutesQueryVariables>(FindAllRoutesDocument, {
-        variables: {id: toId || "", type: PointType.City},
+        variables: {id: toId || "", type: PointType.City, filters: apiFilters},
     });
     const originCity = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument, {
         variables: {cityId: fromId || ""}
@@ -172,13 +181,13 @@ export const RouteFinderMap = () => {
             setSearchCity(undefined);
         } else {
             // Search new points from new stop
-            setSearchCity({id: addId || "", type: addPointType || PointType.Other});
+            setSearchCity({id: addId || "", type: addPointType || PointType.Other, filters: apiFilters});
         }
 
     };
 
     const addCustomStop = (stop: Stop) => {
-        setSearchCity({id: stop.id || "", type: routeTypeToPointType(stop.routeType)});
+        setSearchCity({id: stop.id || "", type: routeTypeToPointType(stop.routeType), filters: apiFilters});
         dispatch(addStopToTrip(stop));
         setCustomDropDown(false);
     };
@@ -186,7 +195,7 @@ export const RouteFinderMap = () => {
     const stepBack = async (stop: Stop) => {
         dispatch(resetStops(stop));
         !destinationCity.data && dispatch(setDestination(undefined));
-        setSearchCity({id: stop?.id || "", type: routeTypeToPointType(stop.routeType)});
+        setSearchCity({id: stop?.id || "", type: routeTypeToPointType(stop.routeType), filters: apiFilters});
     };
 
 
@@ -218,6 +227,7 @@ export const RouteFinderMap = () => {
                 </div>
 
                 <div className={"map-wrapper"}>
+                    <Toolbar/>
                     {routesFromDestinationCity.loading && <div className={"map-notification"}>
                         <p>Searching from {destinationName || destinationCity.data?.findCityById?.name}</p>
                     </div>}
