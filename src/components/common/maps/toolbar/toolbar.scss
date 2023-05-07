@@ -1,7 +1,7 @@
 @import "../../../../styles/constants";
 @import "../../../../styles/general";
 
-#toolbar {
+.toolbar {
   height: 200px;
   width: 200px;
   background-color: $grey;
@@ -9,7 +9,38 @@
   position: absolute;
   bottom: 5px;
   left: 5px;
-  border-style: solid;
+
   border-radius: 10px;
-  overflow-y: auto;
+  transition: .3s;
+
+  &.closed {
+    height: 50px;
+    width: 100px;
+    overflow: hidden;
+    box-shadow: $shadow;
+  }
+
+  .toolbar-title {
+    user-select: none;
+    position: absolute;
+    top: 0;
+    left: 5%;
+    right: 2%;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+  }
+
+  .toolbar-body {
+    position: absolute;
+    top: 50px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+
+
+  }
 }
