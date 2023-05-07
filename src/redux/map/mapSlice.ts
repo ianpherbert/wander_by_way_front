@@ -1,6 +1,7 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {RootState, useSelector} from "react-redux";
 import {MapPointType, Point} from "../../components/common/maps/Point";
+import {RouteSearchFilterInput} from "../../gql/graphql";
 
 export type FilterName = "connections" | "flight" | "train" | "bus" | "ferry" | "route"
 
@@ -78,6 +79,18 @@ export const {setSearchPoints, toggleFilter} = mapSlice.actions;
 export const useFilters = () => {
     return useSelector((state: RootState) => {
         return state.mapSlice.filters;
+    });
+};
+
+export const useApiFilters = () => {
+    return useSelector((state: RootState): RouteSearchFilterInput => {
+        const {bus, train, flight, ferry} = state.mapSlice.filters;
+        return {
+            bus: bus.applied,
+            ferry: ferry.applied,
+            flight: flight.applied,
+            train: train.applied,
+        };
     });
 };
 
