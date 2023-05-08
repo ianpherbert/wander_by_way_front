@@ -1,6 +1,7 @@
 import {Point} from "../Point";
 
 const SearchItemPopup = (point: Point, connection: boolean) => {
+
     return `<div class="point-popup">
                     <div class="point-popup-header">
                         <h4>${point.label}</h4>

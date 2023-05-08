@@ -42,7 +42,7 @@ const MapDisplay = (props: MapProps) => {
         null
     );
     const [map, setMap] = useState<mapboxgl.Map>();
-    const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
+    // const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
     const showConnections = useShowConnections();
 
     const associatedCities = useQuery<FindAllCitiesFromAssociatedTransitQuery, FindAllCitiesFromAssociatedTransitQueryVariables>(FindAllCitiesFromAssociatedTransitDocument);
@@ -107,24 +107,24 @@ const MapDisplay = (props: MapProps) => {
         case MapPointType.SEARCH_ITEM:
             if (point.match && showConnections) {
                 return {
-                    color: "#66ff00",
+                    icon: "new-york-subway",
                     scale: .6,
                     body: SearchItemPopup(point, true),
                 };
             }
             return {
-                color: "#DA4167FF",
+                icon: "oslo-metro",
                 scale: 0.5,
                 body: SearchItemPopup(point, false),
             };
 
         case MapPointType.ORIGIN:
-            return {color: "#da4167", scale: 1, body: OriginPopup(point)};
+            return {icon: "stadium", scale: 1, body: OriginPopup(point)};
         case MapPointType.LAYOVER:
-            return {color: "#D9E2E8", scale: 0.8, body: StopPopup(point)};
+            return {icon: "windmill", scale: 0.8, body: StopPopup(point)};
         case MapPointType.DESTINATION:
             return {
-                color: "#f5cb5c",
+                icon: "paris-metro",
                 scale: 1,
                 body: DestinationPopup(
                     point,
@@ -133,50 +133,132 @@ const MapDisplay = (props: MapProps) => {
             };
         case MapPointType.INTERMEDIATE:
             return {
-                color: "#38e4ae",
+                icon: "delhi-metro",
                 scale: 1,
                 body: StopPopup(point),
             };
         default:
             return {
-                color: "#38e4ae",
+                icon: "kiev-metro",
                 scale: 1,
                 body: StopPopup(point),
             };
         }
     };
 
+    const [prevSource, setPrevSource] = useState<string>("");
+
     function setUpMarkers(pointsToSet: Point[]) {
-        markers.forEach((it) => it.remove());
+        // markers.forEach((it) => it.remove());
+        const rand = Math.random().toString();
         if (map) {
-            const tempMarkers: mapboxgl.Marker[] = [];
-            pointsToSet.forEach((point) => {
-                const pointInfo = mapPointInfo(point);
-                const pointPopup = () => {
-                    const popup = new mapboxgl.Popup().setHTML(pointInfo.body);
-                    if (
-                        point.type === MapPointType.SEARCH_ITEM
-                    ) {
-                        popup.on("open", () => {
-                            setSelectedPoint(point);
-                        });
-                        popup.on("close", () => {
-                            setSelectedPoint(null);
-                        });
-                    }
-                    return popup;
-                };
-                const marker = new mapboxgl.Marker({
-                    color: pointInfo.color,
-                    draggable: false,
-                    scale: pointInfo.scale,
-                });
-                marker.setLngLat({lon: point.longitude, lat: point.latitude});
-                marker.addTo(map);
-                marker.setPopup(pointPopup());
-                tempMarkers.push(marker);
+            try {
+                map.removeLayer(prevSource);
+            } catch (e) {
+                console.log(prevSource, "error");
+            }
+            try {
+                map.removeSource(prevSource);
+            } catch (e) {
+                console.log(prevSource, "error");
+            }
+
+            setPrevSource(rand);
+
+            const features = pointsToSet.map(it => ({
+                type: "Feature",
+                properties: {
+                    description: mapPointInfo(it).body,
+                    icon: mapPointInfo(it).icon,
+                    size: mapPointInfo(it).scale
+                },
+                geometry: {
+                    type: "Point",
+                    coordinates: [it.longitude, it.latitude]
+                }
+            }));
+
+
+            map.addSource(rand, {
+                type: "geojson",
+                data: {
+                    type: "FeatureCollection",
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    features: features
+                }
             });
-            setMarkers(tempMarkers);
+
+            map.addLayer({
+                'id': rand,
+                'type': 'symbol',
+                'source': rand, // reference the data source
+                'layout': {
+                    'icon-image': ['get', 'icon'],
+                    "icon-size": ['get', 'scale'],
+                    'icon-allow-overlap': false
+                }
+            });
+
+
+            map.on('click', rand, (e) => {
+                // Copy coordinates array.
+
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                const coordinates = e.features?.[0].geometry?.coordinates.slice();
+                const description = e?.features?.[0]?.properties?.description;
+
+                // Ensure that if the map is zoomed out such that multiple
+                // copies of the feature are visible, the popup appears
+                // over the copy being pointed to.
+                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                }
+
+                new mapboxgl.Popup()
+                    .setLngLat(coordinates)
+                    .setHTML(description)
+                    .addTo(map);
+            });
+
+            // Change the cursor to a pointer when the mouse is over the places layer.
+            map.on('mouseenter', 'places', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            // Change it back to a pointer when it leaves.
+            map.on('mouseleave', 'places', () => {
+                map.getCanvas().style.cursor = '';
+            });
+            // const tempMarkers: mapboxgl.Marker[] = [];
+            // pointsToSet.forEach((point) => {
+            //     const pointInfo = mapPointInfo(point);
+            //     const pointPopup = () => {
+            //         const popup = new mapboxgl.Popup().setHTML(pointInfo.body);
+            //         if (
+            //             point.type === MapPointType.SEARCH_ITEM
+            //         ) {
+            //             popup.on("open", () => {
+            //                 setSelectedPoint(point);
+            //             });
+            //             popup.on("close", () => {
+            //                 setSelectedPoint(null);
+            //             });
+            //         }
+            //         return popup;
+            //     };
+            //     const marker = new mapboxgl.Marker({
+            //         color: pointInfo.color,
+            //         draggable: false,
+            //         scale: pointInfo.scale,
+            //     });
+            //     marker.setLngLat({lon: point.longitude, lat: point.latitude});
+            //     marker.addTo(map);
+            //     marker.setPopup(pointPopup());
+            //     tempMarkers.push(marker);
+            // });
+            // setMarkers(tempMarkers);
         }
     }
 
