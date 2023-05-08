@@ -52,12 +52,15 @@ const MapDisplay = (props: MapProps) => {
     };
 
     useEffect(() => {
-        setMap(
-            new mapboxgl.Map({
-                style: process.env.REACT_APP_MAPBOX_STYLE || "",
-                container: "map",
-            })
-        );
+        const map = new mapboxgl.Map({
+            style: process.env.REACT_APP_MAPBOX_STYLE || "",
+            container: "map",
+        });
+        map.on("load", () => {
+            setMap(map);
+        });
+
+
     }, []);
 
 
@@ -173,7 +176,6 @@ const MapDisplay = (props: MapProps) => {
                 marker.setLngLat({lon: point.longitude, lat: point.latitude});
                 marker.addTo(map);
                 marker.setPopup(pointPopup());
-                tempMarkers.push(marker);
             });
             setMarkers(tempMarkers);
         }
