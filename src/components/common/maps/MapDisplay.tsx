@@ -43,14 +43,9 @@ interface MapProps {
 const MapDisplay = (props: MapProps) => {
     const points = useSearchPoints();
     const filters = useFilters();
-    mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY || "";
     const selectedPoint = useSelectedPoint();
     const dispatch = useDispatch();
-    // const [selectedPoint, setSelectedPoint] = useState<Point | null>(
-    //     null
-    // );
     const [map, setMap] = useState<mapboxgl.Map>();
-    // const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
     const showConnections = useShowConnections();
 
     const associatedCities = useQuery<FindAllCitiesFromAssociatedTransitQuery, FindAllCitiesFromAssociatedTransitQueryVariables>(FindAllCitiesFromAssociatedTransitDocument);
@@ -60,6 +55,7 @@ const MapDisplay = (props: MapProps) => {
     };
 
     useEffect(() => {
+        mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY || "";
         const map = new mapboxgl.Map({
             style: process.env.REACT_APP_MAPBOX_STYLE || "",
             container: "map",
@@ -242,34 +238,6 @@ const MapDisplay = (props: MapProps) => {
             map.on('mouseleave', 'places', () => {
                 map.getCanvas().style.cursor = '';
             });
-            // const tempMarkers: mapboxgl.Marker[] = [];
-            // pointsToSet.forEach((point) => {
-            //     const pointInfo = mapPointInfo(point);
-            //     const pointPopup = () => {
-            //         const popup = new mapboxgl.Popup().setHTML(pointInfo.body);
-            //         if (
-            //             point.type === MapPointType.SEARCH_ITEM
-            //         ) {
-            //             popup.on("open", () => {
-            //                 setSelectedPoint(point);
-            //             });
-            //             popup.on("close", () => {
-            //                 setSelectedPoint(null);
-            //             });
-            //         }
-            //         return popup;
-            //     };
-            //     const marker = new mapboxgl.Marker({
-            //         color: pointInfo.color,
-            //         draggable: false,
-            //         scale: pointInfo.scale,
-            //     });
-            //     marker.setLngLat({lon: point.longitude, lat: point.latitude});
-            //     marker.addTo(map);
-            //     marker.setPopup(pointPopup());
-            //     tempMarkers.push(marker);
-            // });
-            // setMarkers(tempMarkers);
         }
     }
 
@@ -292,6 +260,7 @@ const MapDisplay = (props: MapProps) => {
                                 size={"medium"}
                                 variant="outlined"
                                 onClick={() => {
+                                    dispatch(setSelectedPoint(null));
                                     props.onAddStop?.(
                                         routeInfo.routeInfo,
                                         mainCity()?.id || routeInfo.routeInfo.to.id || "",
