@@ -1,6 +1,6 @@
 @import "../../../styles/constants";
 
-#welcomeCard{
+#welcomeCard {
   width: 80vw;
   max-width: 1500px;
   height: 400px;
@@ -10,7 +10,7 @@
   position: relative;
   box-shadow: $shadow;
 
-  .welcome-card-text{
+  .welcome-card-text {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -18,22 +18,49 @@
     left: 5%;
     color: black;
     z-index: 10;
-    h3{
-      font-size: 96px;
-      color: $red;
-      margin: 0;
+
+    #hello-container {
+      height: 150px;
+      //overflow: hidden;
+      width: 100%;
+
+      h3 {
+        position: absolute;
+        transition: opacity .6s;
+        font-size: 96px;
+        color: $red;
+        margin: 0;
+        animation: fadeIn 5s;
+
+        @keyframes fadeIn {
+          0% {
+            opacity: 0;
+          }
+          10% {
+            opacity: 100%;
+          }
+          90% {
+            opacity: 100%;
+          }
+          100% {
+            opacity: 0;
+          }
+        }
+      }
     }
-    p{
+
+    p {
       color: white;
     }
   }
 }
 
-#homepageMap{
+#homepageMap {
   width: 80vw;
   max-width: 1500px;
   margin: 60px auto;
-  h3{
+
+  h3 {
     font-size: 36px;
   }
 
