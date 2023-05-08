@@ -59,8 +59,6 @@ const MapDisplay = (props: MapProps) => {
         map.on("load", () => {
             setMap(map);
         });
-
-
     }, []);
 
 
@@ -176,6 +174,7 @@ const MapDisplay = (props: MapProps) => {
                 marker.setLngLat({lon: point.longitude, lat: point.latitude});
                 marker.addTo(map);
                 marker.setPopup(pointPopup());
+                tempMarkers.push(marker);
             });
             setMarkers(tempMarkers);
         }
