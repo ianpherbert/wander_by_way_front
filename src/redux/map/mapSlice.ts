@@ -23,9 +23,11 @@ export interface MapState {
     searchPoints: Point[];
     filters: Filters;
     showConnections: boolean;
+    selectedPoint: Point | null
 }
 
 const initialState: MapState = {
+    selectedPoint: null,
     searchPoints: [],
     showConnections: true,
     filters: {
@@ -75,11 +77,14 @@ export const mapSlice = createSlice({
         },
         toggleShowConnections: (state: MapState) => {
             state.showConnections = !state.showConnections;
+        },
+        setSelectedPoint: (state: MapState, action: PayloadAction<Point | null>) => {
+            state.selectedPoint = action.payload;
         }
     },
 });
 
-export const {setSearchPoints, toggleFilter, toggleShowConnections} = mapSlice.actions;
+export const {setSearchPoints, toggleFilter, toggleShowConnections, setSelectedPoint} = mapSlice.actions;
 
 export const useFilters = () => {
     return useSelector((state: RootState) => {
@@ -102,6 +107,12 @@ export const useApiFilters = () => {
             flight: flight.applied,
             train: train.applied,
         };
+    });
+};
+
+export const useSelectedPoint = () => {
+    return useSelector((state: RootState) => {
+        return state.mapSlice.selectedPoint;
     });
 };
 

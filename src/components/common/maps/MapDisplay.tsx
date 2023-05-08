@@ -21,7 +21,14 @@ import {
     RouteType
 } from "../../../gql/graphql";
 import {MapPointType, Point, PointInfo} from "./Point";
-import {useFilters, useSearchPoints, useShowConnections} from "../../../redux/map/mapSlice";
+import {
+    setSelectedPoint,
+    useFilters,
+    useSearchPoints,
+    useSelectedPoint,
+    useShowConnections
+} from "../../../redux/map/mapSlice";
+import {useDispatch} from "react-redux";
 
 interface MapProps {
     onAddStop?: (
@@ -37,10 +44,11 @@ const MapDisplay = (props: MapProps) => {
     const points = useSearchPoints();
     const filters = useFilters();
     mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY || "";
-
-    const [selectedPoint, setSelectedPoint] = useState<Point | null>(
-        null
-    );
+    const selectedPoint = useSelectedPoint();
+    const dispatch = useDispatch();
+    // const [selectedPoint, setSelectedPoint] = useState<Point | null>(
+    //     null
+    // );
     const [map, setMap] = useState<mapboxgl.Map>();
     // const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
     const showConnections = useShowConnections();
@@ -170,7 +178,8 @@ const MapDisplay = (props: MapProps) => {
                 properties: {
                     description: mapPointInfo(it).body,
                     icon: mapPointInfo(it).icon,
-                    size: mapPointInfo(it).scale
+                    size: mapPointInfo(it).scale,
+                    point: it
                 },
                 geometry: {
                     type: "Point",
@@ -202,13 +211,13 @@ const MapDisplay = (props: MapProps) => {
 
 
             map.on('click', rand, (e) => {
-                // Copy coordinates array.
-
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 const coordinates = e.features?.[0].geometry?.coordinates.slice();
                 const description = e?.features?.[0]?.properties?.description;
-
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                dispatch(setSelectedPoint(JSON.parse(e?.features?.[0]?.properties.point)));
                 // Ensure that if the map is zoomed out such that multiple
                 // copies of the feature are visible, the popup appears
                 // over the copy being pointed to.
@@ -218,7 +227,9 @@ const MapDisplay = (props: MapProps) => {
 
                 new mapboxgl.Popup()
                     .setLngLat(coordinates)
-                    .setHTML(description)
+                    .setHTML(description).on("close", () => {
+                        dispatch(setSelectedPoint(null));
+                    })
                     .addTo(map);
             });
 
@@ -331,7 +342,7 @@ const MapDisplay = (props: MapProps) => {
             >
                 <RoundCloseButton
                     onClose={() => {
-                        setSelectedPoint(null);
+                        dispatch(setSelectedPoint(null));
                     }}
                     left={false}
                 />
