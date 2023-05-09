@@ -88,7 +88,7 @@ const MapDisplay = (props: MapProps) => {
 
 
             const origin = points.find((it) => it.type == MapPointType.ORIGIN);
-            const destination = filteredPoints.find((it) => it.type == MapPointType.DESTINATION);
+            const destination = points.find((it) => it.type == MapPointType.DESTINATION);
 
             const secondFilter = [];
 
@@ -128,7 +128,7 @@ const MapDisplay = (props: MapProps) => {
             return {icon: "windmill", scale: 0.8, body: StopPopup(point)};
         case MapPointType.DESTINATION:
             return {
-                icon: "paris-metro",
+                icon: "windmill",
                 scale: 1,
                 body: DestinationPopup(
                     point,
@@ -150,24 +150,28 @@ const MapDisplay = (props: MapProps) => {
         }
     };
 
-    const [prevSource, setPrevSource] = useState<string>("");
+    const [prevSource, setPrevSource] = useState<string>();
 
     function setUpMarkers(pointsToSet: Point[]) {
-        // markers.forEach((it) => it.remove());
         const rand = Math.random().toString();
         if (map) {
-            try {
-                map.removeLayer(prevSource);
-            } catch (e) {
-                console.log(prevSource, "error");
-            }
-            try {
-                map.removeSource(prevSource);
-            } catch (e) {
-                console.log(prevSource, "error");
+            if (prevSource) {
+                try {
+                    map.removeLayer(prevSource);
+                } catch (e) {
+                    console.log(prevSource, "error");
+                }
+                try {
+                    map.removeSource(prevSource);
+                } catch (e) {
+                    console.log(prevSource, "error");
+                }
             }
 
+
             setPrevSource(rand);
+
+            console.log(pointsToSet);
 
             const features = pointsToSet.map(it => ({
                 type: "Feature",
