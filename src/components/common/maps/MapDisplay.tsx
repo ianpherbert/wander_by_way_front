@@ -82,7 +82,7 @@ const MapDisplay = (props: MapProps) => {
                 map.loadImage(`/cartography/icons/${icon[1].path}`, (error, image) => {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
-                    map.addImage(icon[1].name, image, {sdf: true, pixelRatio: 20});
+                    map.addImage(icon[1].name, image, {pixelRatio: 20});
                 });
             }
             await new Promise(resolve => setTimeout(resolve, 2000));
@@ -142,7 +142,7 @@ const MapDisplay = (props: MapProps) => {
                 };
             }
             return {
-                icon: "connection",
+                icon: "search",
                 scale: 0.5,
                 body: SearchItemPopup(point, false),
             };
