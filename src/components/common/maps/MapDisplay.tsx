@@ -250,12 +250,12 @@ const MapDisplay = (props: MapProps) => {
                 });
 
                 // Change the cursor to a pointer when the mouse is over the places layer.
-                map.on('mouseenter', 'places', () => {
+                map.on('mouseenter', 'points', () => {
                     map.getCanvas().style.cursor = 'pointer';
                 });
 
                 // Change it back to a pointer when it leaves.
-                map.on('mouseleave', 'places', () => {
+                map.on('mouseleave', 'points', () => {
                     map.getCanvas().style.cursor = '';
                 });
             }
