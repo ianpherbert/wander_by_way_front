@@ -84,6 +84,33 @@ const MapDisplay = (props: MapProps) => {
                     map.addImage(icon[1].name, image, {sdf: true, pixelRatio: 20});
                 });
             }
+            // map.addSource("points", {
+            //     type: "geojson",
+            //     data: {
+            //         type: "FeatureCollection",
+            //         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            //         // @ts-ignore
+            //         features: [{
+            //             type: "Feature",
+            //             properties: {},
+            //             geometry: {
+            //                 type: "Point",
+            //                 coordinates: [0, 0]
+            //             }
+            //         }]
+            //     }
+            // });
+
+            // map.addLayer({
+            //     'id': "points",
+            //     'type': 'symbol',
+            //     'source': "points", // reference the data source
+            //     'layout': {
+            //         'icon-image': ['get', 'icon'],
+            //         "icon-size": ['get', 'scale'],
+            //         'icon-allow-overlap': false
+            //     }
+            // });
             await new Promise(resolve => setTimeout(resolve, 2000));
             setMap(map);
         });
@@ -180,12 +207,12 @@ const MapDisplay = (props: MapProps) => {
     function setUpMarkers(pointsToSet: Point[]) {
 
         if (map) {
-            if (prevSource) {
-                map.removeLayer(prevSource);
-                map.removeSource(prevSource);
-            }
-            const rand = Math.random().toString();
-            setPrevSource(rand);
+            // if (prevSource) {
+            //     map.removeLayer(prevSource);
+            //     map.removeSource(prevSource);
+            // }
+            // const rand = Math.random().toString();
+            // setPrevSource(rand);
             const features = pointsToSet.map(it => {
                 const {body, icon, scale} = mapPointInfo(it);
                 return {
@@ -207,29 +234,44 @@ const MapDisplay = (props: MapProps) => {
             });
 
 
-            map.addSource(rand, {
-                type: "geojson",
-                data: {
+            if (map.getSource("points") && features.length > 0) {
+                console.log("if");
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                map.getSource("points").setData({
                     type: "FeatureCollection",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     features: features.map(it => it.feature)
-                }
-            });
+                });
+            } else {
+                console.log("else");
+                map.addSource("points", {
+                    type: "geojson",
+                    data: {
+                        type: "FeatureCollection",
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        features: features.map(it => it.feature)
+                    }
+                });
+            }
 
-            map.addLayer({
-                'id': rand,
-                'type': 'symbol',
-                'source': rand, // reference the data source
-                'layout': {
-                    'icon-image': ['get', 'icon'],
-                    "icon-size": ['get', 'scale'],
-                    'icon-allow-overlap': false
-                }
-            });
+            if (!map.getLayer("points")) {
+                map.addLayer({
+                    'id': "points",
+                    'type': 'symbol',
+                    'source': "points", // reference the data source
+                    'layout': {
+                        'icon-image': ['get', 'icon'],
+                        "icon-size": ['get', 'scale'],
+                        'icon-allow-overlap': false
+                    }
+                });
+            }
 
 
-            map.on('click', rand, (e) => {
+            map.on('click', "points", (e) => {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 const coordinates = e.features?.[0].geometry?.coordinates.slice();
