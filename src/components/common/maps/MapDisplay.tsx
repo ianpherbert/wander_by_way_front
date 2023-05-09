@@ -54,15 +54,40 @@ const MapDisplay = (props: MapProps) => {
         return cities[0];
     };
 
+    const icons = {
+        home: {
+            name: "home", path: "home.png"
+        }, search: {
+            name: "search",
+            path: "search-point.png"
+        }, destination: {
+            name: "destination", path: "destination-point.png"
+        }, intermediate: {
+            name: "intermediate",
+            path: "intermediate-point.png"
+        }, connection: {
+            name: "connection", path: "connection-point.png"
+        }
+    };
+
     useEffect(() => {
         mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY || "";
         const map = new mapboxgl.Map({
             style: process.env.REACT_APP_MAPBOX_STYLE || "",
             container: "map",
         });
-        map.on("load", () => {
+        map.on("load", async () => {
+            for (const icon of Object.entries(icons)) {
+                map.loadImage(`/cartography/icons/${icon[1].path}`, (error, image) => {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    map.addImage(icon[1].name, image, {sdf: true, pixelRatio: 20});
+                });
+            }
+            await new Promise(resolve => setTimeout(resolve, 2000));
             setMap(map);
         });
+        // });
     }, []);
 
 
@@ -111,24 +136,24 @@ const MapDisplay = (props: MapProps) => {
         case MapPointType.SEARCH_ITEM:
             if (point.match && showConnections) {
                 return {
-                    icon: "new-york-subway",
+                    icon: "connection",
                     scale: .6,
                     body: SearchItemPopup(point, true),
                 };
             }
             return {
-                icon: "oslo-metro",
+                icon: "connection",
                 scale: 0.5,
                 body: SearchItemPopup(point, false),
             };
 
         case MapPointType.ORIGIN:
-            return {icon: "stadium", scale: 1, body: OriginPopup(point)};
+            return {icon: "home", scale: 1, body: OriginPopup(point)};
         case MapPointType.LAYOVER:
             return {icon: "windmill", scale: 0.8, body: StopPopup(point)};
         case MapPointType.DESTINATION:
             return {
-                icon: "windmill",
+                icon: "destination",
                 scale: 1,
                 body: DestinationPopup(
                     point,
@@ -137,13 +162,13 @@ const MapDisplay = (props: MapProps) => {
             };
         case MapPointType.INTERMEDIATE:
             return {
-                icon: "delhi-metro",
+                icon: "intermediate",
                 scale: 1,
                 body: StopPopup(point),
             };
         default:
             return {
-                icon: "kiev-metro",
+                icon: "intermediate",
                 scale: 1,
                 body: StopPopup(point),
             };
@@ -153,39 +178,33 @@ const MapDisplay = (props: MapProps) => {
     const [prevSource, setPrevSource] = useState<string>();
 
     function setUpMarkers(pointsToSet: Point[]) {
-        const rand = Math.random().toString();
+
         if (map) {
             if (prevSource) {
-                try {
-                    map.removeLayer(prevSource);
-                } catch (e) {
-                    console.log(prevSource, "error");
-                }
-                try {
-                    map.removeSource(prevSource);
-                } catch (e) {
-                    console.log(prevSource, "error");
-                }
+                map.removeLayer(prevSource);
+                map.removeSource(prevSource);
             }
-
-
+            const rand = Math.random().toString();
             setPrevSource(rand);
-
-            console.log(pointsToSet);
-
-            const features = pointsToSet.map(it => ({
-                type: "Feature",
-                properties: {
-                    description: mapPointInfo(it).body,
-                    icon: mapPointInfo(it).icon,
-                    size: mapPointInfo(it).scale,
-                    point: it
-                },
-                geometry: {
-                    type: "Point",
-                    coordinates: [it.longitude, it.latitude]
-                }
-            }));
+            const features = pointsToSet.map(it => {
+                const {body, icon, scale} = mapPointInfo(it);
+                return {
+                    type: it.type,
+                    feature: {
+                        type: "Feature",
+                        properties: {
+                            description: body,
+                            icon: icon,
+                            size: scale,
+                            point: it
+                        },
+                        geometry: {
+                            type: "Point",
+                            coordinates: [it.longitude, it.latitude]
+                        }
+                    }
+                };
+            });
 
 
             map.addSource(rand, {
@@ -194,7 +213,7 @@ const MapDisplay = (props: MapProps) => {
                     type: "FeatureCollection",
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
-                    features: features
+                    features: features.map(it => it.feature)
                 }
             });
 
