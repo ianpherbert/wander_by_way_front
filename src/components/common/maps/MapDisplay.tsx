@@ -304,9 +304,20 @@ const MapDisplay = (props: MapProps) => {
             ),
             name: selectedPoint?.routeInfo?.routes[0]?.to?.name || "",
         });
+
+        function shouldShow() {
+            if (
+                selectedPoint?.type === MapPointType.DESTINATION
+                || selectedPoint?.type === MapPointType.ORIGIN
+            ) {
+                return "";
+            }
+            return selectedPoint?.type ? "open" : "closed";
+        }
+
         return (
             <div
-                className={`map-sidebar ${selectedPoint ? "open" : "closed"}`}
+                className={`map-sidebar ${shouldShow()}`}
                 hidden={!selectedPoint}
             >
                 <RoundCloseButton
