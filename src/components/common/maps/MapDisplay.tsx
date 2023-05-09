@@ -39,7 +39,8 @@ interface MapProps {
     ) => void;
 }
 
-
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 const MapDisplay = (props: MapProps) => {
     const points = useSearchPoints();
     const filters = useFilters();
@@ -84,37 +85,9 @@ const MapDisplay = (props: MapProps) => {
                     map.addImage(icon[1].name, image, {sdf: true, pixelRatio: 20});
                 });
             }
-            // map.addSource("points", {
-            //     type: "geojson",
-            //     data: {
-            //         type: "FeatureCollection",
-            //         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            //         // @ts-ignore
-            //         features: [{
-            //             type: "Feature",
-            //             properties: {},
-            //             geometry: {
-            //                 type: "Point",
-            //                 coordinates: [0, 0]
-            //             }
-            //         }]
-            //     }
-            // });
-
-            // map.addLayer({
-            //     'id': "points",
-            //     'type': 'symbol',
-            //     'source': "points", // reference the data source
-            //     'layout': {
-            //         'icon-image': ['get', 'icon'],
-            //         "icon-size": ['get', 'scale'],
-            //         'icon-allow-overlap': false
-            //     }
-            // });
             await new Promise(resolve => setTimeout(resolve, 2000));
             setMap(map);
         });
-        // });
     }, []);
 
 
@@ -202,17 +175,9 @@ const MapDisplay = (props: MapProps) => {
         }
     };
 
-    const [prevSource, setPrevSource] = useState<string>();
 
     function setUpMarkers(pointsToSet: Point[]) {
-
         if (map) {
-            // if (prevSource) {
-            //     map.removeLayer(prevSource);
-            //     map.removeSource(prevSource);
-            // }
-            // const rand = Math.random().toString();
-            // setPrevSource(rand);
             const features = pointsToSet.map(it => {
                 const {body, icon, scale} = mapPointInfo(it);
                 return {
@@ -235,17 +200,13 @@ const MapDisplay = (props: MapProps) => {
 
 
             if (map.getSource("points") && features.length > 0) {
-                console.log("if");
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 map.getSource("points").setData({
                     type: "FeatureCollection",
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
                     features: features.map(it => it.feature)
                 });
             } else {
-                console.log("else");
                 map.addSource("points", {
                     type: "geojson",
                     data: {
@@ -268,41 +229,36 @@ const MapDisplay = (props: MapProps) => {
                         'icon-allow-overlap': false
                     }
                 });
+                map.on('click', "points", (e) => {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    const coordinates = e.features?.[0].geometry?.coordinates.slice();
+                    const description = e?.features?.[0]?.properties?.description;
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    dispatch(setSelectedPoint(JSON.parse(e?.features?.[0]?.properties.point)));
+                    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                    }
+
+                    new mapboxgl.Popup()
+                        .setLngLat(coordinates)
+                        .setHTML(description).on("close", () => {
+                            dispatch(setSelectedPoint(null));
+                        })
+                        .addTo(map);
+                });
+
+                // Change the cursor to a pointer when the mouse is over the places layer.
+                map.on('mouseenter', 'places', () => {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                // Change it back to a pointer when it leaves.
+                map.on('mouseleave', 'places', () => {
+                    map.getCanvas().style.cursor = '';
+                });
             }
-
-
-            map.on('click', "points", (e) => {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                const coordinates = e.features?.[0].geometry?.coordinates.slice();
-                const description = e?.features?.[0]?.properties?.description;
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                dispatch(setSelectedPoint(JSON.parse(e?.features?.[0]?.properties.point)));
-                // Ensure that if the map is zoomed out such that multiple
-                // copies of the feature are visible, the popup appears
-                // over the copy being pointed to.
-                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-                }
-
-                new mapboxgl.Popup()
-                    .setLngLat(coordinates)
-                    .setHTML(description).on("close", () => {
-                        dispatch(setSelectedPoint(null));
-                    })
-                    .addTo(map);
-            });
-
-            // Change the cursor to a pointer when the mouse is over the places layer.
-            map.on('mouseenter', 'places', () => {
-                map.getCanvas().style.cursor = 'pointer';
-            });
-
-            // Change it back to a pointer when it leaves.
-            map.on('mouseleave', 'places', () => {
-                map.getCanvas().style.cursor = '';
-            });
         }
     }
 
