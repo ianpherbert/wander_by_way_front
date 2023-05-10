@@ -7,7 +7,7 @@ import {formatTime} from "../../../utils/timeFormatter";
 import {useQuery} from "@apollo/client";
 import {routeToStation, routeTypeToPointType} from "../../../utils/routeStationTranslator";
 
-import mapboxgl from "mapbox-gl";
+import mapboxgl, {LngLatBoundsLike} from "mapbox-gl";
 import {
     FindAllCitiesFromAssociatedTransitDocument,
     FindAllCitiesFromAssociatedTransitQuery,
@@ -46,6 +46,20 @@ const MapDisplay = (props: MapProps) => {
         return cities[0];
     };
 
+    function getLimits() {
+        if (!filteredPoints.length) {
+            return null;
+        }
+        const latSorted = filteredPoints.sort((a, b) => a.latitude - b.latitude);
+        const lonSorted = filteredPoints.sort((a, b) => a.longitude - b.longitude);
+
+        return {
+            north: lonSorted[0],
+            south: lonSorted[lonSorted.length - 1],
+            west: latSorted[0],
+            east: latSorted[latSorted.length - 1]
+        };
+    }
 
     useEffect(() => {
         initMap().then(mapBox => setMap(mapBox));
@@ -118,6 +132,17 @@ const MapDisplay = (props: MapProps) => {
                     map.getCanvas().style.cursor = '';
                 });
             }
+            const extremePoints = getLimits();
+            if (extremePoints) {
+                const southwest = [extremePoints.west.longitude, extremePoints.south.latitude];
+                const northeast = [extremePoints.east.longitude, extremePoints.north.latitude];
+                const bbox = [southwest, northeast] as LngLatBoundsLike;
+                map.fitBounds(bbox, {
+                    padding: {top: 100, bottom: 100, left: 100, right: 100},
+                    maxZoom: 10,
+                });
+            }
+
         }
     }, [filteredPoints, map, showConnections]);
 
