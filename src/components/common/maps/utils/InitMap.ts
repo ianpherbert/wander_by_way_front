@@ -14,7 +14,7 @@ function initMap(): Promise<mapboxgl.Map> {
                 map.loadImage(`/cartography/icons/${icon[1].path}`, (error, image) => {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
-                    map.addImage(icon[1].name, image, {pixelRatio: 20});
+                    map.addImage(icon[1].name, image, {pixelRatio: 30});
                 });
             }
             resolve(map);

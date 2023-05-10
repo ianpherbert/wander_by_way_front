@@ -23,32 +23,28 @@ export interface MapFeature {
 function mapPoints(points: Point[], showConnections: boolean): MapFeature[] {
     const mapPointInfo = (point: Point): PointInfo => {
         let searchIconType = "";
+
+        const connect = point.match && showConnections;
         switch (point.type) {
         case MapPointType.SEARCH_ITEM:
-            if (point.match && showConnections) {
-                return {
-                    icon: mapIcons.connection.name,
-                    scale: .6,
-                    body: SearchItemPopup(point, true),
-                };
-            }
-
             switch (point.routeInfo?.routes[0].type) {
             case RouteType.Boat:
-                searchIconType = mapIcons.search.name;
+                searchIconType = connect ? mapIcons.ferryConnection.name : mapIcons.ferry.name;
                 break;
             case RouteType.Bus:
-                searchIconType = mapIcons.bus.name;
+                searchIconType = connect ? mapIcons.busConnection.name : mapIcons.bus.name;
                 break;
             case RouteType.Plane:
-                searchIconType = mapIcons.flight.name;
+                searchIconType = connect ? mapIcons.flightConnection.name : mapIcons.flight.name;
                 break;
             case RouteType.Train:
-                searchIconType = mapIcons.train.name;
+                searchIconType = connect ? mapIcons.trainConnection.name : mapIcons.train.name;
                 break;
             default:
                 searchIconType = mapIcons.search.name;
             }
+
+
             return {
                 icon: searchIconType,
                 scale: 0.5,

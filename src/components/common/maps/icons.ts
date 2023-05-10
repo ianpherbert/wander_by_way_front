@@ -22,5 +22,16 @@ export const mapIcons = {
     },
     ferry: {
         name: "ferry-point", path: "ferry-point.png"
+    }, flightConnection: {
+        name: "plane-point-connection", path: "plane-point-connection.png"
+    },
+    trainConnection: {
+        name: "train-point-connection", path: "train-point-connection.png"
+    },
+    busConnection: {
+        name: "bus-point-connection", path: "bus-point-connection.png"
+    },
+    ferryConnection: {
+        name: "ferry-point-connection", path: "ferry-point-connection.png"
     }
 };
