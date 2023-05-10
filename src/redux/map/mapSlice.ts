@@ -148,6 +148,9 @@ export const useFilteredPoints = () => {
 
 
         const filteredPoints = points.filter((point) => {
+            if (point.id != "stop") {
+                return true;
+            }
             const filtered = point.routeInfo?.routes.filter(route =>
                 acceptedTypes.includes(route.type.valueOf())
             ) ?? [];
