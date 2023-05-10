@@ -145,7 +145,8 @@ const MapDisplay = (props: MapProps) => {
                 const northeast = [extremePoints.east.longitude, extremePoints.north.latitude];
                 const bbox = [southwest, northeast] as LngLatBoundsLike;
                 map.fitBounds(bbox, {
-                    padding: {top: 100, bottom: 100, left: 100, right: 100},
+                    padding: {top: 50, bottom: 50, left: 50, right: 50},
+                    duration: 2000,
                     maxZoom: 10,
                 });
             }
