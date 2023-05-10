@@ -90,6 +90,8 @@ const MapDisplay = (props: MapProps) => {
                     // @ts-ignore
                     const coordinates = e.features?.[0].geometry?.coordinates.slice();
                     const description = e?.features?.[0]?.properties?.description;
+                    map.setCenter(coordinates);
+                    map.zoomTo(10);
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     dispatch(setSelectedPoint(JSON.parse(e?.features?.[0]?.properties.point)));
@@ -100,6 +102,7 @@ const MapDisplay = (props: MapProps) => {
                     new mapboxgl.Popup()
                         .setLngLat(coordinates)
                         .setHTML(description).on("close", () => {
+                            map.zoomTo(7);
                             dispatch(setSelectedPoint(null));
                         })
                         .addTo(map);

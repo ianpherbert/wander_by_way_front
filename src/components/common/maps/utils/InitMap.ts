@@ -19,9 +19,6 @@ function initMap(): Promise<mapboxgl.Map> {
             }
             resolve(map);
         });
-        map.on('styleimagemissing', (e) => {
-            console.log('A styleimagemissing event occurred.', e);
-        });
     });
 }
 
