@@ -23,10 +23,12 @@ export interface MapState {
     searchPoints: Point[];
     filters: Filters;
     showConnections: boolean;
-    selectedPoint: Point | null
+    selectedPoint: Point | null;
+    autoZoom: boolean;
 }
 
 const initialState: MapState = {
+    autoZoom: true,
     selectedPoint: null,
     searchPoints: [],
     showConnections: true,
@@ -80,11 +82,27 @@ export const mapSlice = createSlice({
         },
         setSelectedPoint: (state: MapState, action: PayloadAction<Point | null>) => {
             state.selectedPoint = action.payload;
+        },
+        toggleAutoZoom: (state: MapState) => {
+            state.autoZoom = !state.autoZoom;
         }
     },
 });
 
-export const {setSearchPoints, toggleFilter, toggleShowConnections, setSelectedPoint} = mapSlice.actions;
+export const {
+    setSearchPoints,
+    toggleFilter,
+    toggleShowConnections,
+    setSelectedPoint,
+    toggleAutoZoom
+} = mapSlice.actions;
+
+export const useAutoZoom = () => {
+    return useSelector((state: RootState) => {
+        return state.mapSlice.autoZoom;
+    });
+};
+
 
 export const useFilters = () => {
     return useSelector((state: RootState) => {

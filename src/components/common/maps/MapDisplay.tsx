@@ -17,7 +17,13 @@ import {
     RouteType
 } from "../../../gql/graphql";
 import {MapPointType} from "./Point";
-import {setSelectedPoint, useFilteredPoints, useSelectedPoint, useShowConnections} from "../../../redux/map/mapSlice";
+import {
+    setSelectedPoint,
+    useAutoZoom,
+    useFilteredPoints,
+    useSelectedPoint,
+    useShowConnections
+} from "../../../redux/map/mapSlice";
 import {useDispatch} from "react-redux";
 import mapPoints from "./utils/mapPointInfo";
 import initMap from "./utils/InitMap";
@@ -39,6 +45,7 @@ const MapDisplay = (props: MapProps) => {
     const [map, setMap] = useState<mapboxgl.Map>();
     const showConnections = useShowConnections();
     const filteredPoints = useFilteredPoints();
+    const autoZoom = useAutoZoom();
 
     const associatedCities = useQuery<FindAllCitiesFromAssociatedTransitQuery, FindAllCitiesFromAssociatedTransitQueryVariables>(FindAllCitiesFromAssociatedTransitDocument);
     const mainCity = () => {
@@ -133,7 +140,7 @@ const MapDisplay = (props: MapProps) => {
                 });
             }
             const extremePoints = getLimits();
-            if (extremePoints) {
+            if (extremePoints && autoZoom) {
                 const southwest = [extremePoints.west.longitude, extremePoints.south.latitude];
                 const northeast = [extremePoints.east.longitude, extremePoints.north.latitude];
                 const bbox = [southwest, northeast] as LngLatBoundsLike;
