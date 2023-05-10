@@ -62,7 +62,7 @@ const MapDisplay = (props: MapProps) => {
                     type: "FeatureCollection",
                     features: features
                 });
-            } else {
+            } else if (!map.getSource("points")) {
                 map.addSource("points", {
                     type: "geojson",
                     data: {

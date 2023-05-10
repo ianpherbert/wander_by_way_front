@@ -3,6 +3,8 @@ import SearchItemPopup from "../popups/SearchItemPopup";
 import OriginPopup from "../popups/OriginPopup";
 import StopPopup from "../popups/StopPopup";
 import DestinationPopup from "../popups/DestinationPopup";
+import {mapIcons} from "../icons";
+import {RouteType} from "../../../../gql/graphql";
 
 export interface MapFeature {
     type: "Feature";
@@ -20,28 +22,46 @@ export interface MapFeature {
 
 function mapPoints(points: Point[], showConnections: boolean): MapFeature[] {
     const mapPointInfo = (point: Point): PointInfo => {
+        let searchIconType = "";
         switch (point.type) {
         case MapPointType.SEARCH_ITEM:
             if (point.match && showConnections) {
                 return {
-                    icon: "connection",
+                    icon: mapIcons.connection.name,
                     scale: .6,
                     body: SearchItemPopup(point, true),
                 };
             }
+
+            switch (point.routeInfo?.routes[0].type) {
+            case RouteType.Boat:
+                searchIconType = mapIcons.search.name;
+                break;
+            case RouteType.Bus:
+                searchIconType = mapIcons.bus.name;
+                break;
+            case RouteType.Plane:
+                searchIconType = mapIcons.flight.name;
+                break;
+            case RouteType.Train:
+                searchIconType = mapIcons.train.name;
+                break;
+            default:
+                searchIconType = mapIcons.search.name;
+            }
             return {
-                icon: "search",
+                icon: searchIconType,
                 scale: 0.5,
                 body: SearchItemPopup(point, false),
             };
 
         case MapPointType.ORIGIN:
-            return {icon: "home", scale: 1, body: OriginPopup(point)};
+            return {icon: mapIcons.home.name, scale: 1, body: OriginPopup(point)};
         case MapPointType.LAYOVER:
-            return {icon: "windmill", scale: 0.8, body: StopPopup(point)};
+            return {icon: mapIcons.connection.name, scale: 0.8, body: StopPopup(point)};
         case MapPointType.DESTINATION:
             return {
-                icon: "destination",
+                icon: mapIcons.destination.name,
                 scale: 1,
                 body: DestinationPopup(
                     point,
@@ -51,7 +71,7 @@ function mapPoints(points: Point[], showConnections: boolean): MapFeature[] {
         case MapPointType.INTERMEDIATE:
         default:
             return {
-                icon: "intermediate",
+                icon: mapIcons.intermediate.name,
                 scale: 1,
                 body: StopPopup(point),
             };
