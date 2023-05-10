@@ -1,7 +1,7 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {RootState, useSelector} from "react-redux";
 import {MapPointType, Point} from "../../components/common/maps/Point";
-import {RouteSearchFilterInput} from "../../gql/graphql";
+import {RouteSearchFilterInput, RouteType} from "../../gql/graphql";
 
 export type FilterName = "connections" | "flight" | "train" | "bus" | "ferry" | "route"
 
@@ -116,8 +116,42 @@ export const useSelectedPoint = () => {
     });
 };
 
-export const useSearchPoints = () => {
+export const useFilteredPoints = () => {
     return useSelector((state: RootState) => {
-        return state.mapSlice.searchPoints;
+        const {filters, searchPoints: points} = state.mapSlice;
+        const {connections, route, flight, train, bus, ferry} = filters;
+
+        const acceptedTypes = [
+            flight.applied ? RouteType.Plane.valueOf() : null,
+            train.applied ? RouteType.Train.valueOf() : null,
+            bus.applied ? RouteType.Bus.valueOf() : null,
+            ferry.applied ? RouteType.Boat.valueOf() : null,
+        ];
+
+
+        const filteredPoints = points.filter((point) => {
+            const filtered = point.routeInfo?.routes.filter(route =>
+                acceptedTypes.includes(route.type.valueOf())
+            ) ?? [];
+            return filtered.length > 0;
+        }
+        );
+
+
+        const origin = points.find((it) => it.type == MapPointType.ORIGIN);
+        const destination = points.find((it) => it.type == MapPointType.DESTINATION);
+
+        const secondFilter = [];
+
+        //Apply Filters
+        const connectedPoints = filteredPoints.filter(it => it.match);
+        if (connections.applied) {
+            secondFilter.push(...connectedPoints);
+        }
+        const routes = filteredPoints.filter(it => !it.match);
+        if (route.applied) {
+            secondFilter.push(...routes);
+        }
+        return origin ? destination ? [origin, ...secondFilter, destination] : [origin, ...secondFilter] : secondFilter;
     });
 };

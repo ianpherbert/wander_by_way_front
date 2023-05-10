@@ -8,10 +8,6 @@ import {useQuery} from "@apollo/client";
 import {routeToStation, routeTypeToPointType} from "../../../utils/routeStationTranslator";
 
 import mapboxgl from "mapbox-gl";
-import OriginPopup from "./popups/OriginPopup";
-import StopPopup from "./popups/StopPopup";
-import DestinationPopup from "./popups/DestinationPopup";
-import SearchItemPopup from "./popups/SearchItemPopup";
 import {
     FindAllCitiesFromAssociatedTransitDocument,
     FindAllCitiesFromAssociatedTransitQuery,
@@ -20,15 +16,11 @@ import {
     RouteOutput,
     RouteType
 } from "../../../gql/graphql";
-import {MapPointType, Point, PointInfo} from "./Point";
-import {
-    setSelectedPoint,
-    useFilters,
-    useSearchPoints,
-    useSelectedPoint,
-    useShowConnections
-} from "../../../redux/map/mapSlice";
+import {MapPointType} from "./Point";
+import {setSelectedPoint, useFilteredPoints, useSelectedPoint, useShowConnections} from "../../../redux/map/mapSlice";
 import {useDispatch} from "react-redux";
+import mapPoints from "./utils/mapPointInfo";
+import initMap from "./utils/InitMap";
 
 interface MapProps {
     onAddStop?: (
@@ -42,12 +34,11 @@ interface MapProps {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 const MapDisplay = (props: MapProps) => {
-    const points = useSearchPoints();
-    const filters = useFilters();
     const selectedPoint = useSelectedPoint();
     const dispatch = useDispatch();
     const [map, setMap] = useState<mapboxgl.Map>();
     const showConnections = useShowConnections();
+    const filteredPoints = useFilteredPoints();
 
     const associatedCities = useQuery<FindAllCitiesFromAssociatedTransitQuery, FindAllCitiesFromAssociatedTransitQueryVariables>(FindAllCitiesFromAssociatedTransitDocument);
     const mainCity = () => {
@@ -55,156 +46,21 @@ const MapDisplay = (props: MapProps) => {
         return cities[0];
     };
 
-    const icons = {
-        home: {
-            name: "home", path: "home.png"
-        }, search: {
-            name: "search",
-            path: "search-point.png"
-        }, destination: {
-            name: "destination", path: "destination-point.png"
-        }, intermediate: {
-            name: "intermediate",
-            path: "intermediate-point.png"
-        }, connection: {
-            name: "connection", path: "connection-point.png"
-        }
-    };
 
     useEffect(() => {
-        mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY || "";
-        const map = new mapboxgl.Map({
-            style: process.env.REACT_APP_MAPBOX_STYLE || "",
-            container: "map",
-        });
-        map.on("load", async () => {
-            for (const icon of Object.entries(icons)) {
-                map.loadImage(`/cartography/icons/${icon[1].path}`, (error, image) => {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    map.addImage(icon[1].name, image, {pixelRatio: 20});
-                });
-            }
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            setMap(map);
-        });
+        initMap().then(mapBox => setMap(mapBox));
     }, []);
 
 
     useEffect(() => {
         if (map) {
-            const {connections, route, flight, train, bus, ferry} = filters;
-
-            const acceptedTypes = [
-                flight.applied ? RouteType.Plane.valueOf() : null,
-                train.applied ? RouteType.Train.valueOf() : null,
-                bus.applied ? RouteType.Bus.valueOf() : null,
-                ferry.applied ? RouteType.Boat.valueOf() : null,
-            ];
-
-
-            const filteredPoints = points.filter((point) => {
-                const filtered = point.routeInfo?.routes.filter(route =>
-                    acceptedTypes.includes(route.type.valueOf())
-                ) ?? [];
-                return filtered.length > 0;
-            }
-            );
-
-
-            const origin = points.find((it) => it.type == MapPointType.ORIGIN);
-            const destination = points.find((it) => it.type == MapPointType.DESTINATION);
-
-            const secondFilter = [];
-
-            //Apply Filters
-            const connectedPoints = filteredPoints.filter(it => it.match);
-            if (connections.applied) {
-                secondFilter.push(...connectedPoints);
-            }
-            const routes = filteredPoints.filter(it => !it.match);
-            if (route.applied) {
-                secondFilter.push(...routes);
-            }
-            const toSet = origin ? destination ? [origin, ...secondFilter, destination] : [origin, ...secondFilter] : secondFilter;
-            setUpMarkers(toSet);
-        }
-    }, [filters, points, map, showConnections]);
-
-    const mapPointInfo = (point: Point): PointInfo => {
-        switch (point.type) {
-        case MapPointType.SEARCH_ITEM:
-            if (point.match && showConnections) {
-                return {
-                    icon: "connection",
-                    scale: .6,
-                    body: SearchItemPopup(point, true),
-                };
-            }
-            return {
-                icon: "search",
-                scale: 0.5,
-                body: SearchItemPopup(point, false),
-            };
-
-        case MapPointType.ORIGIN:
-            return {icon: "home", scale: 1, body: OriginPopup(point)};
-        case MapPointType.LAYOVER:
-            return {icon: "windmill", scale: 0.8, body: StopPopup(point)};
-        case MapPointType.DESTINATION:
-            return {
-                icon: "destination",
-                scale: 1,
-                body: DestinationPopup(
-                    point,
-                    points.find((it) => it.type == MapPointType.ORIGIN)
-                ),
-            };
-        case MapPointType.INTERMEDIATE:
-            return {
-                icon: "intermediate",
-                scale: 1,
-                body: StopPopup(point),
-            };
-        default:
-            return {
-                icon: "intermediate",
-                scale: 1,
-                body: StopPopup(point),
-            };
-        }
-    };
-
-
-    function setUpMarkers(pointsToSet: Point[]) {
-        if (map) {
-            const features = pointsToSet.map(it => {
-                const {body, icon, scale} = mapPointInfo(it);
-                return {
-                    type: it.type,
-                    feature: {
-                        type: "Feature",
-                        properties: {
-                            description: body,
-                            icon: icon,
-                            size: scale,
-                            point: it
-                        },
-                        geometry: {
-                            type: "Point",
-                            coordinates: [it.longitude, it.latitude]
-                        }
-                    }
-                };
-            });
-
-
+            const features = mapPoints(filteredPoints, showConnections);
             if (map.getSource("points") && features.length > 0) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 map.getSource("points").setData({
                     type: "FeatureCollection",
-                    features: features.map(it => it.feature)
+                    features: features
                 });
             } else {
                 map.addSource("points", {
@@ -213,7 +69,7 @@ const MapDisplay = (props: MapProps) => {
                         type: "FeatureCollection",
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
-                        features: features.map(it => it.feature)
+                        features: features
                     }
                 });
             }
@@ -260,7 +116,7 @@ const MapDisplay = (props: MapProps) => {
                 });
             }
         }
-    }
+    }, [filteredPoints, map, showConnections]);
 
     const SidebarItem = (routeInfo: {
         routeInfo: RouteOutput;
