@@ -158,7 +158,6 @@ export const useFilteredPoints = () => {
 
         const origin = points.find((it) => it.type == MapPointType.ORIGIN);
         const destination = points.find((it) => it.type == MapPointType.DESTINATION);
-
         const secondFilter = [];
 
         //Apply Filters

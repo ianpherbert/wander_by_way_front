@@ -58,7 +58,7 @@ function mapPoints(points: Point[], showConnections: boolean): MapFeature[] {
         case MapPointType.DESTINATION:
             return {
                 icon: mapIcons.destination.name,
-                scale: 1,
+                scale: 3,
                 body: DestinationPopup(
                     point,
                     points.find((it) => it.type == MapPointType.ORIGIN)

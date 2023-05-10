@@ -113,13 +113,7 @@ export const RouteFinderMap = () => {
         ));
         const tempPoints = [origin, ...routeStops, ...searchRoutes];
         if (toId !== "anywhere") {
-            const destinationPoint = destinationName ? {
-                id: stops?.at(-1)?.id || "",
-                longitude: parseFloat(stops?.at(-1)?.longitude || "0"),
-                latitude: parseFloat(stops?.at(-1)?.latitude || "0"),
-                type: MapPointType.DESTINATION,
-                label: destinationName
-            } : {
+            const destinationPoint = {
                 id: stop.name,
                 longitude: parseFloat(destinationCity.data?.findCityById?.longitude || "0"),
                 latitude: parseFloat(destinationCity.data?.findCityById?.latitude || "0"),
