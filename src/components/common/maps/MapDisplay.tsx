@@ -55,33 +55,30 @@ const MapDisplay = (props: MapProps) => {
         return cities[0];
     };
 
-    function getLimits() {
-        if (!filteredPoints.length) {
-            return null;
-        }
-        const latSorted = filteredPoints.sort((a, b) => a.latitude - b.latitude);
-        const lonSorted = filteredPoints.sort((a, b) => a.longitude - b.longitude);
+    useEffect(() => {
+        initMap().then(mapBox => setMap(mapBox));
+    }, []);
 
-        return {
+    useEffect(() => {
+        zoomToAllPoints();
+    }, [filteredPoints.length]);
+
+    function zoomToAllPoints() {
+        const searchPoints = filteredPoints;
+        const latSorted = searchPoints.sort((a, b) => a.latitude - b.latitude);
+        const lonSorted = searchPoints.sort((a, b) => a.longitude - b.longitude);
+
+        const extremePoints = {
             north: lonSorted[0],
             south: lonSorted[lonSorted.length - 1],
             west: latSorted[0],
             east: latSorted[latSorted.length - 1]
         };
-    }
-
-    useEffect(() => {
-        initMap().then(mapBox => setMap(mapBox));
-    }, []);
-
-
-    function zoomToAllpoints() {
-        const extremePoints = getLimits();
-        if (extremePoints && autoZoom && map) {
-            const southwest = [extremePoints.west.longitude, extremePoints.south.latitude];
-            const northeast = [extremePoints.east.longitude, extremePoints.north.latitude];
+        if (autoZoom && map) {
+            const southwest = [extremePoints.west?.longitude, extremePoints.south?.latitude];
+            const northeast = [extremePoints.east?.longitude, extremePoints.north?.latitude];
             const bbox = [southwest, northeast] as LngLatBoundsLike;
-            map.fitBounds(bbox, {
+            map?.fitBounds(bbox, {
                 padding: {top: 50, bottom: 50, left: 50, right: 50},
                 duration: 2000,
             });
@@ -126,7 +123,12 @@ const MapDisplay = (props: MapProps) => {
                     // @ts-ignore
                     const coordinates = e.features?.[0].geometry?.coordinates.slice();
                     const description = e?.features?.[0]?.properties?.description;
-                    map.flyTo({center: coordinates, essential: true, zoom: 10});
+                    map.flyTo({
+                        center: coordinates,
+                        essential: true,
+                        zoom: 10,
+                        padding: {top: 0, bottom: 0, left: 0, right: 400}
+                    });
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     dispatch(setSelectedPoint(JSON.parse(e?.features?.[0]?.properties.point)));
@@ -137,7 +139,7 @@ const MapDisplay = (props: MapProps) => {
                     setPopup(new mapboxgl.Popup()
                         .setLngLat(coordinates)
                         .setHTML(description).on("close", () => {
-                            zoomToAllpoints();
+                            zoomToAllPoints();
                             dispatch(setSelectedPoint(null));
                         })
                         .addTo(map));
@@ -153,8 +155,6 @@ const MapDisplay = (props: MapProps) => {
                     map.getCanvas().style.cursor = '';
                 });
             }
-            // zoomToAllpoints();
-
         }
     }, [filteredPoints, map, showConnections]);
 
