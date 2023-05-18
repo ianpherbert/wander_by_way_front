@@ -42,10 +42,12 @@ interface MapProps {
 const MapDisplay = (props: MapProps) => {
     const selectedPoint = useSelectedPoint();
     const dispatch = useDispatch();
-    const [map, setMap] = useState<mapboxgl.Map>();
     const showConnections = useShowConnections();
     const filteredPoints = useFilteredPoints();
     const autoZoom = useAutoZoom();
+
+    const [map, setMap] = useState<mapboxgl.Map>();
+    const [popup, setPopup] = useState<mapboxgl.Popup>();
 
     const associatedCities = useQuery<FindAllCitiesFromAssociatedTransitQuery, FindAllCitiesFromAssociatedTransitQueryVariables>(FindAllCitiesFromAssociatedTransitDocument);
     const mainCity = () => {
@@ -72,6 +74,19 @@ const MapDisplay = (props: MapProps) => {
         initMap().then(mapBox => setMap(mapBox));
     }, []);
 
+
+    function zoomToAllpoints() {
+        const extremePoints = getLimits();
+        if (extremePoints && autoZoom && map) {
+            const southwest = [extremePoints.west.longitude, extremePoints.south.latitude];
+            const northeast = [extremePoints.east.longitude, extremePoints.north.latitude];
+            const bbox = [southwest, northeast] as LngLatBoundsLike;
+            map.fitBounds(bbox, {
+                padding: {top: 50, bottom: 50, left: 50, right: 50},
+                duration: 2000,
+            });
+        }
+    }
 
     useEffect(() => {
         if (map) {
@@ -111,8 +126,7 @@ const MapDisplay = (props: MapProps) => {
                     // @ts-ignore
                     const coordinates = e.features?.[0].geometry?.coordinates.slice();
                     const description = e?.features?.[0]?.properties?.description;
-                    map.setCenter(coordinates);
-                    map.zoomTo(10);
+                    map.flyTo({center: coordinates, essential: true, zoom: 10});
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     dispatch(setSelectedPoint(JSON.parse(e?.features?.[0]?.properties.point)));
@@ -120,13 +134,13 @@ const MapDisplay = (props: MapProps) => {
                         coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
                     }
 
-                    new mapboxgl.Popup()
+                    setPopup(new mapboxgl.Popup()
                         .setLngLat(coordinates)
                         .setHTML(description).on("close", () => {
-                            map.zoomTo(7);
+                            zoomToAllpoints();
                             dispatch(setSelectedPoint(null));
                         })
-                        .addTo(map);
+                        .addTo(map));
                 });
 
                 // Change the cursor to a pointer when the mouse is over the places layer.
@@ -139,17 +153,7 @@ const MapDisplay = (props: MapProps) => {
                     map.getCanvas().style.cursor = '';
                 });
             }
-            const extremePoints = getLimits();
-            if (extremePoints && autoZoom) {
-                const southwest = [extremePoints.west.longitude, extremePoints.south.latitude];
-                const northeast = [extremePoints.east.longitude, extremePoints.north.latitude];
-                const bbox = [southwest, northeast] as LngLatBoundsLike;
-                map.fitBounds(bbox, {
-                    padding: {top: 50, bottom: 50, left: 50, right: 50},
-                    duration: 2000,
-                    maxZoom: 10,
-                });
-            }
+            // zoomToAllpoints();
 
         }
     }, [filteredPoints, map, showConnections]);
@@ -228,15 +232,19 @@ const MapDisplay = (props: MapProps) => {
             return selectedPoint?.type ? "open" : "closed";
         }
 
+        function handleClose() {
+            dispatch(setSelectedPoint(null));
+            popup?.remove();
+            setPopup(undefined);
+        }
+
         return (
             <div
                 className={`map-sidebar ${shouldShow()}`}
                 hidden={!selectedPoint}
             >
                 <RoundCloseButton
-                    onClose={() => {
-                        dispatch(setSelectedPoint(null));
-                    }}
+                    onClose={handleClose}
                     left={false}
                 />
                 <div className={"map-sidebar-header"}>
