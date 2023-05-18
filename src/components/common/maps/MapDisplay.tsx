@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import "./map.scss";
 import {RoundCloseButton} from "../buttons/roundCloseButton";
 import {Button, Tooltip} from "@mui/material";
@@ -55,6 +55,8 @@ const MapDisplay = (props: MapProps) => {
         return cities[0];
     };
 
+    const shouldZoom = useRef(autoZoom);
+
     useEffect(() => {
         initMap().then(mapBox => setMap(mapBox));
     }, []);
@@ -62,6 +64,10 @@ const MapDisplay = (props: MapProps) => {
     useEffect(() => {
         zoomToAllPoints();
     }, [filteredPoints.length]);
+
+    useEffect(() => {
+        shouldZoom.current = autoZoom;
+    }, [autoZoom]);
 
     function zoomToAllPoints() {
         const searchPoints = filteredPoints;
@@ -74,7 +80,7 @@ const MapDisplay = (props: MapProps) => {
             west: latSorted[0],
             east: latSorted[latSorted.length - 1]
         };
-        if (autoZoom && map) {
+        if (shouldZoom.current && map) {
             const southwest = [extremePoints.west?.longitude, extremePoints.south?.latitude];
             const northeast = [extremePoints.east?.longitude, extremePoints.north?.latitude];
             const bbox = [southwest, northeast] as LngLatBoundsLike;
@@ -123,12 +129,15 @@ const MapDisplay = (props: MapProps) => {
                     // @ts-ignore
                     const coordinates = e.features?.[0].geometry?.coordinates.slice();
                     const description = e?.features?.[0]?.properties?.description;
-                    map.flyTo({
-                        center: coordinates,
-                        essential: true,
-                        zoom: 10,
-                        padding: {top: 0, bottom: 0, left: 0, right: 400}
-                    });
+                    if (shouldZoom.current) {
+                        map.flyTo({
+                            center: coordinates,
+                            essential: true,
+                            zoom: 10,
+                            padding: {top: 0, bottom: 0, left: 0, right: 400}
+                        });
+                    }
+
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     dispatch(setSelectedPoint(JSON.parse(e?.features?.[0]?.properties.point)));
