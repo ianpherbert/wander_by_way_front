@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
 import React, {useEffect, useRef, useState} from "react";
 import "./map.scss";
 import {RoundCloseButton} from "../buttons/roundCloseButton";
@@ -37,8 +40,6 @@ interface MapProps {
     ) => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 const MapDisplay = (props: MapProps) => {
     const selectedPoint = useSelectedPoint();
     const dispatch = useDispatch();
@@ -75,8 +76,6 @@ const MapDisplay = (props: MapProps) => {
         if (map) {
             const features = mapPoints(filteredPoints, showConnections);
             if (map.getSource("points") && features.length > 0) {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
                 map.getSource("points").setData({
                     type: "FeatureCollection",
                     features: features
@@ -86,8 +85,6 @@ const MapDisplay = (props: MapProps) => {
                     type: "geojson",
                     data: {
                         type: "FeatureCollection",
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
                         features: features
                     }
                 });
@@ -105,8 +102,6 @@ const MapDisplay = (props: MapProps) => {
                     }
                 });
                 map.on('click', "points", (e) => {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
                     const coordinates = e.features?.[0].geometry?.coordinates.slice();
                     const description = e?.features?.[0]?.properties?.description;
                     if (shouldZoom.current) {
@@ -117,9 +112,6 @@ const MapDisplay = (props: MapProps) => {
                             padding: {top: 0, bottom: 0, left: 0, right: 400}
                         });
                     }
-
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
                     dispatch(setSelectedPoint(JSON.parse(e?.features?.[0]?.properties.point)));
                     while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
                         coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
