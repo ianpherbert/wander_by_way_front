@@ -117,6 +117,7 @@ export const mapSlice = createSlice({
             const filter = action.payload;
             if (state.filters[filter].active) {
                 state.filters[filter] = {active: true, applied: !state.filters[filter].applied};
+                state.filteredPoints = applyFilters(state.searchPoints, state.filters);
             }
         },
         toggleShowConnections: (state: MapState) => {
