@@ -25,8 +25,8 @@ import {
     useShowConnections
 } from "../../../redux/map/mapSlice";
 import {useDispatch} from "react-redux";
-import mapPoints from "./utils/mapPointInfo";
 import initMap from "./utils/InitMap";
+import mapPoints from "./utils/mapPointInfo";
 
 interface MapProps {
     onAddStop?: (
@@ -166,6 +166,7 @@ const MapDisplay = (props: MapProps) => {
             map?.fitBounds(bbox, {
                 padding: {top: 50, bottom: 50, left: 50, right: 50},
                 duration: 2000,
+                maxZoom: 7
             });
         }
     }
