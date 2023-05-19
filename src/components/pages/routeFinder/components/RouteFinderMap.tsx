@@ -113,13 +113,7 @@ export const RouteFinderMap = () => {
         ));
         const tempPoints = [origin, ...routeStops, ...searchRoutes];
         if (toId !== "anywhere") {
-            const destinationPoint = destinationName ? {
-                id: stops?.at(-1)?.id || "",
-                longitude: parseFloat(stops?.at(-1)?.longitude || "0"),
-                latitude: parseFloat(stops?.at(-1)?.latitude || "0"),
-                type: MapPointType.DESTINATION,
-                label: destinationName
-            } : {
+            const destinationPoint = {
                 id: stop.name,
                 longitude: parseFloat(destinationCity.data?.findCityById?.longitude || "0"),
                 latitude: parseFloat(destinationCity.data?.findCityById?.latitude || "0"),
@@ -193,8 +187,9 @@ export const RouteFinderMap = () => {
     };
 
     const stepBack = async (stop: Stop) => {
-        dispatch(resetStops(stop));
-        !destinationCity.data && dispatch(setDestination(undefined));
+        const index = stops.findIndex((it) => it.id === stop.id);
+        const stopsReset = index === -1 ? [] : [...stops].slice(0, index + 1);
+        dispatch(resetStops(stopsReset));
         setSearchCity({id: stop?.id || "", type: routeTypeToPointType(stop.routeType), filters: apiFilters});
     };
 

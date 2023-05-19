@@ -1,7 +1,7 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {RootState, useSelector} from "react-redux";
 import {MapPointType, Point} from "../../components/common/maps/Point";
-import {RouteSearchFilterInput} from "../../gql/graphql";
+import {RouteSearchFilterInput, RouteType} from "../../gql/graphql";
 
 export type FilterName = "connections" | "flight" | "train" | "bus" | "ferry" | "route"
 
@@ -21,12 +21,18 @@ interface Filters {
 
 export interface MapState {
     searchPoints: Point[];
+    filteredPoints: Point[];
     filters: Filters;
     showConnections: boolean;
+    selectedPoint: Point | null;
+    autoZoom: boolean;
 }
 
 const initialState: MapState = {
+    autoZoom: true,
+    selectedPoint: null,
     searchPoints: [],
+    filteredPoints: [],
     showConnections: true,
     filters: {
         connections: {
@@ -56,6 +62,45 @@ const initialState: MapState = {
     }
 };
 
+function applyFilters(points: Point[], filters: Filters) {
+    const {connections, route, flight, train, bus, ferry} = filters;
+
+    const acceptedTypes = [
+        flight.applied ? RouteType.Plane.valueOf() : null,
+        train.applied ? RouteType.Train.valueOf() : null,
+        bus.applied ? RouteType.Bus.valueOf() : null,
+        ferry.applied ? RouteType.Boat.valueOf() : null,
+    ];
+
+
+    const filteredPoints = points.filter((point) => {
+        if (point.id != "stop") {
+            return true;
+        }
+        const filtered = point.routeInfo?.routes.filter(route =>
+            acceptedTypes.includes(route.type.valueOf())
+        ) ?? [];
+        return filtered.length > 0;
+    }
+    );
+
+
+    const origin = points.find((it) => it.type == MapPointType.ORIGIN);
+    const destination = points.find((it) => it.type == MapPointType.DESTINATION);
+    const secondFilter = [];
+
+    //Apply Filters
+    const connectedPoints = filteredPoints.filter(it => it.match);
+    if (connections.applied) {
+        secondFilter.push(...connectedPoints);
+    }
+    const routes = filteredPoints.filter(it => !it.match);
+    if (route.applied) {
+        secondFilter.push(...routes);
+    }
+    return origin ? destination ? [origin, ...secondFilter, destination] : [origin, ...secondFilter] : secondFilter;
+}
+
 export const mapSlice = createSlice({
     name: "mapSlice",
     initialState,
@@ -66,20 +111,41 @@ export const mapSlice = createSlice({
                 state.filters.connections = {...state.filters.connections, active: true};
             }
             state.searchPoints = action.payload;
+            state.filteredPoints = applyFilters(action.payload, state.filters);
         },
         toggleFilter: (state: MapState, action: PayloadAction<FilterName>) => {
             const filter = action.payload;
             if (state.filters[filter].active) {
                 state.filters[filter] = {active: true, applied: !state.filters[filter].applied};
+                state.filteredPoints = applyFilters(state.searchPoints, state.filters);
             }
         },
         toggleShowConnections: (state: MapState) => {
             state.showConnections = !state.showConnections;
+        },
+        setSelectedPoint: (state: MapState, action: PayloadAction<Point | null>) => {
+            state.selectedPoint = action.payload;
+        },
+        toggleAutoZoom: (state: MapState) => {
+            state.autoZoom = !state.autoZoom;
         }
     },
 });
 
-export const {setSearchPoints, toggleFilter, toggleShowConnections} = mapSlice.actions;
+export const {
+    setSearchPoints,
+    toggleFilter,
+    toggleShowConnections,
+    setSelectedPoint,
+    toggleAutoZoom
+} = mapSlice.actions;
+
+export const useAutoZoom = () => {
+    return useSelector((state: RootState) => {
+        return state.mapSlice.autoZoom;
+    });
+};
+
 
 export const useFilters = () => {
     return useSelector((state: RootState) => {
@@ -105,8 +171,14 @@ export const useApiFilters = () => {
     });
 };
 
-export const useSearchPoints = () => {
+export const useSelectedPoint = () => {
     return useSelector((state: RootState) => {
-        return state.mapSlice.searchPoints;
+        return state.mapSlice.selectedPoint;
+    });
+};
+
+export const useFilteredPoints = () => {
+    return useSelector((state: RootState) => {
+        return state.mapSlice.filteredPoints;
     });
 };

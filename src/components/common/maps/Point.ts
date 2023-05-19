@@ -1,7 +1,7 @@
 import {RouteOutput, RouteType} from "../../../gql/graphql";
 
 export interface PointInfo {
-    color: string;
+    icon: string;
     scale: number;
     body: string;
 }

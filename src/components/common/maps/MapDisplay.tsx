@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import "./map.scss";
 import {RoundCloseButton} from "../buttons/roundCloseButton";
 import {Button, Tooltip} from "@mui/material";
@@ -7,11 +7,7 @@ import {formatTime} from "../../../utils/timeFormatter";
 import {useQuery} from "@apollo/client";
 import {routeToStation, routeTypeToPointType} from "../../../utils/routeStationTranslator";
 
-import mapboxgl from "mapbox-gl";
-import OriginPopup from "./popups/OriginPopup";
-import StopPopup from "./popups/StopPopup";
-import DestinationPopup from "./popups/DestinationPopup";
-import SearchItemPopup from "./popups/SearchItemPopup";
+import mapboxgl, {LngLatBoundsLike} from "mapbox-gl";
 import {
     FindAllCitiesFromAssociatedTransitDocument,
     FindAllCitiesFromAssociatedTransitQuery,
@@ -20,8 +16,17 @@ import {
     RouteOutput,
     RouteType
 } from "../../../gql/graphql";
-import {MapPointType, Point, PointInfo} from "./Point";
-import {useFilters, useSearchPoints, useShowConnections} from "../../../redux/map/mapSlice";
+import {MapPointType} from "./Point";
+import {
+    setSelectedPoint,
+    useAutoZoom,
+    useFilteredPoints,
+    useSelectedPoint,
+    useShowConnections
+} from "../../../redux/map/mapSlice";
+import {useDispatch} from "react-redux";
+import mapPoints from "./utils/mapPointInfo";
+import initMap from "./utils/InitMap";
 
 interface MapProps {
     onAddStop?: (
@@ -32,18 +37,17 @@ interface MapProps {
     ) => void;
 }
 
-
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 const MapDisplay = (props: MapProps) => {
-    const points = useSearchPoints();
-    const filters = useFilters();
-    mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY || "";
-
-    const [selectedPoint, setSelectedPoint] = useState<Point | null>(
-        null
-    );
-    const [map, setMap] = useState<mapboxgl.Map>();
-    const [markers, setMarkers] = useState<mapboxgl.Marker[]>([]);
+    const selectedPoint = useSelectedPoint();
+    const dispatch = useDispatch();
     const showConnections = useShowConnections();
+    const filteredPoints = useFilteredPoints();
+    const autoZoom = useAutoZoom();
+
+    const [map, setMap] = useState<mapboxgl.Map>();
+    const [popup, setPopup] = useState<mapboxgl.Popup>();
 
     const associatedCities = useQuery<FindAllCitiesFromAssociatedTransitQuery, FindAllCitiesFromAssociatedTransitQueryVariables>(FindAllCitiesFromAssociatedTransitDocument);
     const mainCity = () => {
@@ -51,137 +55,142 @@ const MapDisplay = (props: MapProps) => {
         return cities[0];
     };
 
+    const shouldZoom = useRef(autoZoom);
+
     useEffect(() => {
-        setMap(
-            new mapboxgl.Map({
-                style: process.env.REACT_APP_MAPBOX_STYLE || "",
-                container: "map",
-            })
-        );
+        initMap().then(mapBox => {
+            setMap(mapBox);
+        });
     }, []);
 
+    useEffect(() => {
+        zoomToAllPoints();
+    }, [filteredPoints]);
+
+    useEffect(() => {
+        shouldZoom.current = autoZoom;
+    }, [autoZoom]);
 
     useEffect(() => {
         if (map) {
-            const {connections, route, flight, train, bus, ferry} = filters;
-
-            const acceptedTypes = [
-                flight.applied ? RouteType.Plane.valueOf() : null,
-                train.applied ? RouteType.Train.valueOf() : null,
-                bus.applied ? RouteType.Bus.valueOf() : null,
-                ferry.applied ? RouteType.Boat.valueOf() : null,
-            ];
-
-
-            const filteredPoints = points.filter((point) => {
-                const filtered = point.routeInfo?.routes.filter(route =>
-                    acceptedTypes.includes(route.type.valueOf())
-                ) ?? [];
-                return filtered.length > 0;
+            const features = mapPoints(filteredPoints, showConnections);
+            if (map.getSource("points") && features.length > 0) {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                map.getSource("points").setData({
+                    type: "FeatureCollection",
+                    features: features
+                });
+            } else if (!map.getSource("points")) {
+                map.addSource("points", {
+                    type: "geojson",
+                    data: {
+                        type: "FeatureCollection",
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        features: features
+                    }
+                });
             }
-            );
 
-
-            const origin = points.find((it) => it.type == MapPointType.ORIGIN);
-            const destination = filteredPoints.find((it) => it.type == MapPointType.DESTINATION);
-
-            const secondFilter = [];
-
-            //Apply Filters
-            const connectedPoints = filteredPoints.filter(it => it.match);
-            if (connections.applied) {
-                secondFilter.push(...connectedPoints);
-            }
-            const routes = filteredPoints.filter(it => !it.match);
-            if (route.applied) {
-                secondFilter.push(...routes);
-            }
-            const toSet = origin ? destination ? [origin, ...secondFilter, destination] : [origin, ...secondFilter] : secondFilter;
-            setUpMarkers(toSet);
-        }
-    }, [filters, points, map, showConnections]);
-
-    const mapPointInfo = (point: Point): PointInfo => {
-        switch (point.type) {
-        case MapPointType.SEARCH_ITEM:
-            if (point.match && showConnections) {
-                return {
-                    color: "#66ff00",
-                    scale: .6,
-                    body: SearchItemPopup(point, true),
-                };
-            }
-            return {
-                color: "#DA4167FF",
-                scale: 0.5,
-                body: SearchItemPopup(point, false),
-            };
-
-        case MapPointType.ORIGIN:
-            return {color: "#da4167", scale: 1, body: OriginPopup(point)};
-        case MapPointType.LAYOVER:
-            return {color: "#D9E2E8", scale: 0.8, body: StopPopup(point)};
-        case MapPointType.DESTINATION:
-            return {
-                color: "#f5cb5c",
-                scale: 1,
-                body: DestinationPopup(
-                    point,
-                    points.find((it) => it.type == MapPointType.ORIGIN)
-                ),
-            };
-        case MapPointType.INTERMEDIATE:
-            return {
-                color: "#38e4ae",
-                scale: 1,
-                body: StopPopup(point),
-            };
-        default:
-            return {
-                color: "#38e4ae",
-                scale: 1,
-                body: StopPopup(point),
-            };
-        }
-    };
-
-    function setUpMarkers(pointsToSet: Point[]) {
-        markers.forEach((it) => it.remove());
-        if (map) {
-            const tempMarkers: mapboxgl.Marker[] = [];
-            pointsToSet.forEach((point) => {
-                const pointInfo = mapPointInfo(point);
-                const pointPopup = () => {
-                    const popup = new mapboxgl.Popup().setHTML(pointInfo.body);
-                    if (
-                        point.type === MapPointType.SEARCH_ITEM
-                    ) {
-                        popup.on("open", () => {
-                            setSelectedPoint(point);
-                        });
-                        popup.on("close", () => {
-                            setSelectedPoint(null);
+            if (!map.getLayer("points")) {
+                map.addLayer({
+                    'id': "points",
+                    'type': 'symbol',
+                    'source': "points", // reference the data source
+                    'layout': {
+                        'icon-image': ['get', 'icon'],
+                        "icon-size": ['get', 'scale'],
+                        'icon-allow-overlap': false
+                    }
+                });
+                map.on('click', "points", (e) => {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    const coordinates = e.features?.[0].geometry?.coordinates.slice();
+                    const description = e?.features?.[0]?.properties?.description;
+                    if (shouldZoom.current) {
+                        map.flyTo({
+                            center: coordinates,
+                            essential: true,
+                            zoom: 10,
+                            padding: {top: 0, bottom: 0, left: 0, right: 400}
                         });
                     }
-                    return popup;
-                };
-                const marker = new mapboxgl.Marker({
-                    color: pointInfo.color,
-                    draggable: false,
-                    scale: pointInfo.scale,
+
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    dispatch(setSelectedPoint(JSON.parse(e?.features?.[0]?.properties.point)));
+                    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                    }
+
+                    setPopup(new mapboxgl.Popup()
+                        .setLngLat(coordinates)
+                        .setHTML(description).on("close", closePopup)
+                        .addTo(map));
                 });
-                marker.setLngLat({lon: point.longitude, lat: point.latitude});
-                marker.addTo(map);
-                marker.setPopup(pointPopup());
-                tempMarkers.push(marker);
-            });
-            setMarkers(tempMarkers);
+
+                // Change the cursor to a pointer when the mouse is over the places layer.
+                map.on('mouseenter', 'points', () => {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                // Change it back to a pointer when it leaves.
+                map.on('mouseleave', 'points', () => {
+                    map.getCanvas().style.cursor = '';
+                });
+            }
         }
+    }, [filteredPoints, map, showConnections]);
+
+    function zoomToAllPoints() {
+        if (filteredPoints.length < 1) {
+            return;
+        }
+        const searchPoints = [...filteredPoints];
+        const latSorted = searchPoints.sort((a, b) => a.latitude - b.latitude);
+        const lonSorted = searchPoints.sort((a, b) => a.longitude - b.longitude);
+
+        const extremePoints = {
+            north: lonSorted[0],
+            south: lonSorted[lonSorted.length - 1],
+            west: latSorted[0],
+            east: latSorted[latSorted.length - 1]
+        };
+        if (shouldZoom.current && map) {
+            const southwest = [extremePoints.west?.longitude, extremePoints.south?.latitude];
+            const northeast = [extremePoints.east?.longitude, extremePoints.north?.latitude];
+            const bbox = [southwest, northeast] as LngLatBoundsLike;
+            map.setPadding({top: 50, bottom: 50, left: 50, right: 50});
+            map?.fitBounds(bbox, {
+                padding: {top: 50, bottom: 50, left: 50, right: 50},
+                duration: 2000,
+            });
+        }
+    }
+
+    function closePopup() {
+        popup?.remove();
+        setPopup(undefined);
     }
 
     const SidebarItem = (routeInfo: {
         routeInfo: RouteOutput;
     }) => {
+
+        function handleClickAdd() {
+            closePopup();
+            dispatch(setSelectedPoint(null));
+            props.onAddStop?.(
+                routeInfo.routeInfo,
+                mainCity()?.id || routeInfo.routeInfo.to.id || "",
+                mainCity()?.id ? PointType.City : routeTypeToPointType(routeInfo.routeInfo.type),
+                false
+            );
+        }
+
+
         return (
             <div className={"sidebar-destination"}>
 
@@ -197,14 +206,7 @@ const MapDisplay = (props: MapProps) => {
                             <Button
                                 size={"medium"}
                                 variant="outlined"
-                                onClick={() => {
-                                    props.onAddStop?.(
-                                        routeInfo.routeInfo,
-                                        mainCity()?.id || routeInfo.routeInfo.to.id || "",
-                                        mainCity()?.id ? PointType.City : routeTypeToPointType(routeInfo.routeInfo.type),
-                                        false
-                                    );
-                                }}
+                                onClick={handleClickAdd}
                             >
                                 <i className="icofont-ui-add"></i>
                             </Button>
@@ -241,15 +243,30 @@ const MapDisplay = (props: MapProps) => {
             ),
             name: selectedPoint?.routeInfo?.routes[0]?.to?.name || "",
         });
+
+        function shouldShow() {
+            if (
+                selectedPoint?.type === MapPointType.DESTINATION
+                || selectedPoint?.type === MapPointType.ORIGIN
+            ) {
+                return "";
+            }
+            return selectedPoint?.type ? "open" : "closed";
+        }
+
+        function handleClose() {
+            dispatch(setSelectedPoint(null));
+            popup?.remove();
+            setPopup(undefined);
+        }
+
         return (
             <div
-                className={`map-sidebar ${selectedPoint ? "open" : "closed"}`}
+                className={`map-sidebar ${shouldShow()}`}
                 hidden={!selectedPoint}
             >
                 <RoundCloseButton
-                    onClose={() => {
-                        setSelectedPoint(null);
-                    }}
+                    onClose={handleClose}
                     left={false}
                 />
                 <div className={"map-sidebar-header"}>

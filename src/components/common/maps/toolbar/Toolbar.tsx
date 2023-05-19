@@ -3,8 +3,10 @@ import React, {useState} from "react";
 import {FormControlLabel, Grid, Radio, Switch, ToggleButton, Tooltip} from "@mui/material";
 import {
     FilterName,
+    toggleAutoZoom,
     toggleFilter,
     toggleShowConnections,
+    useAutoZoom,
     useFilters,
     useShowConnections
 } from "../../../../redux/map/mapSlice";
@@ -15,6 +17,7 @@ export const Toolbar = () => {
     const dispatch = useDispatch();
     const filters = useFilters();
     const showConnections = useShowConnections();
+    const autoZoom = useAutoZoom();
 
     const filterNames: FilterName[] = ["connections", "route", "flight", "train", "bus", "ferry"];
 
@@ -28,13 +31,9 @@ export const Toolbar = () => {
         dispatch(toggleShowConnections());
     }
 
-    const styles = {
-        item: {
-            display: "flex",
-            justifyContent: "spaceBetween",
-            alignItems: "center",
-        },
-    };
+    function changeAutoZoom() {
+        dispatch(toggleAutoZoom());
+    }
 
 
     return (
@@ -75,6 +74,9 @@ export const Toolbar = () => {
                             <FormControlLabel
                                 control={<Switch checked={showConnections} onClick={changeShowConnections}/>}
                                 label="Highlight Connections"/>
+                            <FormControlLabel
+                                control={<Switch checked={autoZoom} onClick={changeAutoZoom}/>}
+                                label="Auto Zoom"/>
                         </Grid>
                     </Grid>
                 </Grid>
