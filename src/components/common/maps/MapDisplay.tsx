@@ -7,7 +7,7 @@ import {formatTime} from "../../../utils/timeFormatter";
 import {useQuery} from "@apollo/client";
 import {routeToStation, routeTypeToPointType} from "../../../utils/routeStationTranslator";
 
-import mapboxgl, {LngLatBoundsLike} from "mapbox-gl";
+import mapboxgl, {LngLatLike} from "mapbox-gl";
 import {
     FindAllCitiesFromAssociatedTransitDocument,
     FindAllCitiesFromAssociatedTransitQuery,
@@ -58,7 +58,9 @@ const MapDisplay = (props: MapProps) => {
     const shouldZoom = useRef(autoZoom);
 
     useEffect(() => {
-        initMap().then(mapBox => setMap(mapBox));
+        initMap().then(mapBox => {
+            setMap(mapBox);
+        });
     }, []);
 
     useEffect(() => {
@@ -73,23 +75,29 @@ const MapDisplay = (props: MapProps) => {
         if (filteredPoints.length < 1) {
             return;
         }
-        const searchPoints = [...filteredPoints];
-        const latSorted = searchPoints.sort((a, b) => a.latitude - b.latitude);
-        const lonSorted = searchPoints.sort((a, b) => a.longitude - b.longitude);
+        const coordinates = filteredPoints.map((point) => ({latitude: point.latitude, longitude: point.longitude}));
 
-        const extremePoints = {
-            north: lonSorted[0],
-            south: lonSorted[lonSorted.length - 1],
-            west: latSorted[0],
-            east: latSorted[latSorted.length - 1]
+        let totalLatitude = 0;
+        let totalLongitude = 0;
+
+        coordinates.forEach(function (coordinate) {
+            totalLatitude += coordinate.latitude;
+            totalLongitude += coordinate.longitude;
+        });
+
+        const averageLatitude = totalLatitude / coordinates.length;
+        const averageLongitude = totalLongitude / coordinates.length;
+
+        const center: LngLatLike = {
+            lat: averageLatitude,
+            lon: averageLongitude,
         };
         if (shouldZoom.current && map) {
-            const southwest = [extremePoints.west?.longitude, extremePoints.south?.latitude];
-            const northeast = [extremePoints.east?.longitude, extremePoints.north?.latitude];
-            const bbox = [southwest, northeast] as LngLatBoundsLike;
-            map?.fitBounds(bbox, {
-                padding: {top: 50, bottom: 50, left: 50, right: 50},
-                duration: 2000,
+            map.flyTo({
+                center: center,
+                essential: true,
+                zoom: 5,
+                padding: {top: 0, bottom: 0, left: 0, right: 0}
             });
         }
     }
