@@ -33,16 +33,8 @@ export const tripSlice = createSlice({
                 state.destination = action.payload;
             }
         },
-        resetStops: (state: TripState, action: PayloadAction<Stop>) => {
-            const stop = action.payload;
-            const {stops} = state;
-            const index = stops.indexOf(stop);
-            const tempStops = [...stops];
-            if (index === -1) {
-                state.stops = [];
-            } else {
-                state.stops = tempStops.slice(index + 1);
-            }
+        resetStops: (state: TripState, action: PayloadAction<Stop[]>) => {
+            state.stops = action.payload;
         }
     },
 });

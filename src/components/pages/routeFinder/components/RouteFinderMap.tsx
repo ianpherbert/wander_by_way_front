@@ -187,8 +187,9 @@ export const RouteFinderMap = () => {
     };
 
     const stepBack = async (stop: Stop) => {
-        dispatch(resetStops(stop));
-        !destinationCity.data && dispatch(setDestination(undefined));
+        const index = stops.findIndex((it) => it.id === stop.id);
+        const stopsReset = index === -1 ? [] : [...stops].slice(0, index + 1);
+        dispatch(resetStops(stopsReset));
         setSearchCity({id: stop?.id || "", type: routeTypeToPointType(stop.routeType), filters: apiFilters});
     };
 
