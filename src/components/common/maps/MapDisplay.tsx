@@ -63,14 +63,17 @@ const MapDisplay = (props: MapProps) => {
 
     useEffect(() => {
         zoomToAllPoints();
-    }, [filteredPoints.length]);
+    }, [filteredPoints]);
 
     useEffect(() => {
         shouldZoom.current = autoZoom;
     }, [autoZoom]);
 
     function zoomToAllPoints() {
-        const searchPoints = filteredPoints;
+        if (filteredPoints.length < 1) {
+            return;
+        }
+        const searchPoints = [...filteredPoints];
         const latSorted = searchPoints.sort((a, b) => a.latitude - b.latitude);
         const lonSorted = searchPoints.sort((a, b) => a.longitude - b.longitude);
 

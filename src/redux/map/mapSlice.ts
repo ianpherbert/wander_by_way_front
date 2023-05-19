@@ -21,6 +21,7 @@ interface Filters {
 
 export interface MapState {
     searchPoints: Point[];
+    filteredPoints: Point[];
     filters: Filters;
     showConnections: boolean;
     selectedPoint: Point | null;
@@ -31,6 +32,7 @@ const initialState: MapState = {
     autoZoom: true,
     selectedPoint: null,
     searchPoints: [],
+    filteredPoints: [],
     showConnections: true,
     filters: {
         connections: {
@@ -60,6 +62,45 @@ const initialState: MapState = {
     }
 };
 
+function applyFilters(points: Point[], filters: Filters) {
+    const {connections, route, flight, train, bus, ferry} = filters;
+
+    const acceptedTypes = [
+        flight.applied ? RouteType.Plane.valueOf() : null,
+        train.applied ? RouteType.Train.valueOf() : null,
+        bus.applied ? RouteType.Bus.valueOf() : null,
+        ferry.applied ? RouteType.Boat.valueOf() : null,
+    ];
+
+
+    const filteredPoints = points.filter((point) => {
+        if (point.id != "stop") {
+            return true;
+        }
+        const filtered = point.routeInfo?.routes.filter(route =>
+            acceptedTypes.includes(route.type.valueOf())
+        ) ?? [];
+        return filtered.length > 0;
+    }
+    );
+
+
+    const origin = points.find((it) => it.type == MapPointType.ORIGIN);
+    const destination = points.find((it) => it.type == MapPointType.DESTINATION);
+    const secondFilter = [];
+
+    //Apply Filters
+    const connectedPoints = filteredPoints.filter(it => it.match);
+    if (connections.applied) {
+        secondFilter.push(...connectedPoints);
+    }
+    const routes = filteredPoints.filter(it => !it.match);
+    if (route.applied) {
+        secondFilter.push(...routes);
+    }
+    return origin ? destination ? [origin, ...secondFilter, destination] : [origin, ...secondFilter] : secondFilter;
+}
+
 export const mapSlice = createSlice({
     name: "mapSlice",
     initialState,
@@ -70,6 +111,7 @@ export const mapSlice = createSlice({
                 state.filters.connections = {...state.filters.connections, active: true};
             }
             state.searchPoints = action.payload;
+            state.filteredPoints = applyFilters(action.payload, state.filters);
         },
         toggleFilter: (state: MapState, action: PayloadAction<FilterName>) => {
             const filter = action.payload;
@@ -136,42 +178,6 @@ export const useSelectedPoint = () => {
 
 export const useFilteredPoints = () => {
     return useSelector((state: RootState) => {
-        const {filters, searchPoints: points} = state.mapSlice;
-        const {connections, route, flight, train, bus, ferry} = filters;
-
-        const acceptedTypes = [
-            flight.applied ? RouteType.Plane.valueOf() : null,
-            train.applied ? RouteType.Train.valueOf() : null,
-            bus.applied ? RouteType.Bus.valueOf() : null,
-            ferry.applied ? RouteType.Boat.valueOf() : null,
-        ];
-
-
-        const filteredPoints = points.filter((point) => {
-            if (point.id != "stop") {
-                return true;
-            }
-            const filtered = point.routeInfo?.routes.filter(route =>
-                acceptedTypes.includes(route.type.valueOf())
-            ) ?? [];
-            return filtered.length > 0;
-        }
-        );
-
-
-        const origin = points.find((it) => it.type == MapPointType.ORIGIN);
-        const destination = points.find((it) => it.type == MapPointType.DESTINATION);
-        const secondFilter = [];
-
-        //Apply Filters
-        const connectedPoints = filteredPoints.filter(it => it.match);
-        if (connections.applied) {
-            secondFilter.push(...connectedPoints);
-        }
-        const routes = filteredPoints.filter(it => !it.match);
-        if (route.applied) {
-            secondFilter.push(...routes);
-        }
-        return origin ? destination ? [origin, ...secondFilter, destination] : [origin, ...secondFilter] : secondFilter;
+        return state.mapSlice.filteredPoints;
     });
 };
