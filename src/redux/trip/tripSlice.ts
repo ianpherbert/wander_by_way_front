@@ -50,6 +50,6 @@ export const useTripState = () => {
 export const useTrip = () => {
     return useSelector((state: RootState) => {
         const {origin, stops, destination} = state.tripSlice;
-        return [origin ?? [], ...stops, destination ?? []].flat();
+        return [origin ?? [], ...[...stops].filter(it => !it.destination), destination ?? []].flat();
     });
 };
