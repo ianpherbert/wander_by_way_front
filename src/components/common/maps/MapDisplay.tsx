@@ -71,63 +71,6 @@ const MapDisplay = (props: MapProps) => {
         shouldZoom.current = autoZoom;
     }, [autoZoom]);
 
-    // function zoomToAllPoints() {
-    //     if (filteredPoints.length < 1) {
-    //         return;
-    //     }
-    //     const coordinates = filteredPoints.map((point) => ({latitude: point.latitude, longitude: point.longitude}));
-    //
-    //     let totalLatitude = 0;
-    //     let totalLongitude = 0;
-    //
-    //     coordinates.forEach(function (coordinate) {
-    //         totalLatitude += coordinate.latitude;
-    //         totalLongitude += coordinate.longitude;
-    //     });
-    //
-    //     const averageLatitude = totalLatitude / coordinates.length;
-    //     const averageLongitude = totalLongitude / coordinates.length;
-    //
-    //     const center: LngLatLike = {
-    //         lat: averageLatitude,
-    //         lon: averageLongitude,
-    //     };
-    //     if (shouldZoom.current && map) {
-    //         map.flyTo({
-    //             center: center,
-    //             essential: true,
-    //             zoom: 5,
-    //             padding: {top: 0, bottom: 0, left: 0, right: 0}
-    //         });
-    //     }
-    // }
-
-    function zoomToAllPoints() {
-        if (filteredPoints.length < 1) {
-            return;
-        }
-        const searchPoints = [...filteredPoints];
-        const latSorted = searchPoints.sort((a, b) => a.latitude - b.latitude);
-        const lonSorted = searchPoints.sort((a, b) => a.longitude - b.longitude);
-
-        const extremePoints = {
-            north: lonSorted[0],
-            south: lonSorted[lonSorted.length - 1],
-            west: latSorted[0],
-            east: latSorted[latSorted.length - 1]
-        };
-        if (shouldZoom.current && map) {
-            const southwest = [extremePoints.west?.longitude, extremePoints.south?.latitude];
-            const northeast = [extremePoints.east?.longitude, extremePoints.north?.latitude];
-            const bbox = [southwest, northeast] as LngLatBoundsLike;
-            map.setPadding({top: 50, bottom: 50, left: 50, right: 50});
-            map?.fitBounds(bbox, {
-                padding: {top: 50, bottom: 50, left: 50, right: 50},
-                duration: 2000,
-            });
-        }
-    }
-
     useEffect(() => {
         if (map) {
             const features = mapPoints(filteredPoints, showConnections);
@@ -184,10 +127,7 @@ const MapDisplay = (props: MapProps) => {
 
                     setPopup(new mapboxgl.Popup()
                         .setLngLat(coordinates)
-                        .setHTML(description).on("close", () => {
-                            zoomToAllPoints();
-                            dispatch(setSelectedPoint(null));
-                        })
+                        .setHTML(description).on("close", closePopup)
                         .addTo(map));
                 });
 
@@ -204,9 +144,53 @@ const MapDisplay = (props: MapProps) => {
         }
     }, [filteredPoints, map, showConnections]);
 
+    function zoomToAllPoints() {
+        if (filteredPoints.length < 1) {
+            return;
+        }
+        const searchPoints = [...filteredPoints];
+        const latSorted = searchPoints.sort((a, b) => a.latitude - b.latitude);
+        const lonSorted = searchPoints.sort((a, b) => a.longitude - b.longitude);
+
+        const extremePoints = {
+            north: lonSorted[0],
+            south: lonSorted[lonSorted.length - 1],
+            west: latSorted[0],
+            east: latSorted[latSorted.length - 1]
+        };
+        if (shouldZoom.current && map) {
+            const southwest = [extremePoints.west?.longitude, extremePoints.south?.latitude];
+            const northeast = [extremePoints.east?.longitude, extremePoints.north?.latitude];
+            const bbox = [southwest, northeast] as LngLatBoundsLike;
+            map.setPadding({top: 50, bottom: 50, left: 50, right: 50});
+            map?.fitBounds(bbox, {
+                padding: {top: 50, bottom: 50, left: 50, right: 50},
+                duration: 2000,
+            });
+        }
+    }
+
+    function closePopup() {
+        popup?.remove();
+        setPopup(undefined);
+    }
+
     const SidebarItem = (routeInfo: {
         routeInfo: RouteOutput;
     }) => {
+
+        function handleClickAdd() {
+            closePopup();
+            dispatch(setSelectedPoint(null));
+            props.onAddStop?.(
+                routeInfo.routeInfo,
+                mainCity()?.id || routeInfo.routeInfo.to.id || "",
+                mainCity()?.id ? PointType.City : routeTypeToPointType(routeInfo.routeInfo.type),
+                false
+            );
+        }
+
+
         return (
             <div className={"sidebar-destination"}>
 
@@ -222,15 +206,7 @@ const MapDisplay = (props: MapProps) => {
                             <Button
                                 size={"medium"}
                                 variant="outlined"
-                                onClick={() => {
-                                    dispatch(setSelectedPoint(null));
-                                    props.onAddStop?.(
-                                        routeInfo.routeInfo,
-                                        mainCity()?.id || routeInfo.routeInfo.to.id || "",
-                                        mainCity()?.id ? PointType.City : routeTypeToPointType(routeInfo.routeInfo.type),
-                                        false
-                                    );
-                                }}
+                                onClick={handleClickAdd}
                             >
                                 <i className="icofont-ui-add"></i>
                             </Button>
