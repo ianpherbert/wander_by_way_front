@@ -74,7 +74,7 @@ function mapPoints(points: Point[], showConnections: boolean): MapFeature[] {
         }
     };
 
-    return points.map(it => {
+    return points.filter(it => !(it.longitude?.toString() === "0") || !(it.latitude?.toString() === "0")).map(it => {
         const {body, icon, scale} = mapPointInfo(it);
         return {
             type: "Feature",
