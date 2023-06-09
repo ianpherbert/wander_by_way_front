@@ -10,7 +10,7 @@ import {Container} from "@mui/material";
 const Body = () => {
     return (
         <Container
-            sx={{display: "flex", alignItems: "center", flexWrap: "wrap", marginTop: "150px"}}>
+            sx={{display: "flex", alignItems: "center", flexWrap: "wrap", marginTop: "150px"}} maxWidth={false}>
             <Router>
                 <Routes>
                     <Route path="*" element={<HomePage/>}/>

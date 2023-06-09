@@ -1,7 +1,7 @@
 import {theme} from "styles/themeProvider/theme";
 
 export const welcomeCardStyle = {
-    width: "80vw",
+    width: "90vw",
     maxWidth: "1500px",
     height: "400px",
     borderRadius: "11px",
@@ -17,4 +17,19 @@ export const welcomeCardStyle = {
 
 export const welcomeGridStyle = {
     margin: "50px"
+};
+
+export const mapContainerStyle = {
+    marginTop: "50px",
+    width: "90vw",
+    maxWidth: "1500px",
+};
+
+export const navBoxStyle = {
+    margin: "auto",
+    display: "flex",
+    justifyContent: "space-between",
+    flexWrap: "no-wrap",
+    width: "85%",
+
 };

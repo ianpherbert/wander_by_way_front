@@ -1,5 +1,4 @@
-import React, {useEffect, useState} from "react";
-import "./index.scss";
+import React, {useState} from "react";
 import {randomHello} from "../../../utils/randomHello";
 import {Box, Grid, Typography} from "@mui/material";
 import {welcomeCardStyle, welcomeGridStyle} from "./homePageStyles";
@@ -8,9 +7,7 @@ const WelcomeCard = () => {
     const [hello, setHello] = useState<string>(randomHello());
 
     setInterval(() => {
-
         setHello(randomHello());
-        //This number needs to correspond to the fadeIn animation duration
     }, 5000);
 
     const text = "Welcome to Wander by Way, your ultimate travel planning tool. Discover new and exciting destinations\n" +
@@ -19,10 +16,6 @@ const WelcomeCard = () => {
         "the beaten path and explore the world in a whole new way. Our site is designed to be a helpful\n" +
         "resource in your travel planning, providing you with all the information you need to plan your next\n" +
         "adventure.";
-
-    useEffect(() => {
-        console.log("re,der");
-    }, []);
 
     return (
         <Box sx={welcomeCardStyle} component={"div"}>
