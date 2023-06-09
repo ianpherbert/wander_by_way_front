@@ -2,7 +2,6 @@ import {createTheme, ThemeOptions} from "@mui/material";
 
 const themeOptions: ThemeOptions = {
     palette: {
-        mode: 'light',
         primary: {
             main: '#F3DDA9',
         },
@@ -42,6 +41,7 @@ const themeOptions: ThemeOptions = {
             lineHeight: 1.67,
             fontSize: '1rem',
         },
+        fontSize: 16,
     },
 };
 
