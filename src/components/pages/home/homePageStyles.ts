@@ -30,6 +30,5 @@ export const navBoxStyle = {
     display: "flex",
     justifyContent: "space-between",
     flexWrap: "no-wrap",
-    width: "85%",
-
+    width: "95%",
 };

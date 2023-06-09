@@ -11,6 +11,7 @@ import {setSearchPoints} from "../../../redux/map/mapSlice";
 import {useDispatch} from "react-redux";
 import {mapContainerStyle, navBoxStyle} from "./homePageStyles";
 import {SwapHoriz} from "@mui/icons-material";
+import {mapStyle} from "../../common/styles/mapStyle";
 
 enum InputType {
     TO,
@@ -130,7 +131,7 @@ const HomePageMap = () => {
     return (
         <Box sx={mapContainerStyle}>
             <Typography variant={"h4"}>Where do you want to wander?</Typography>
-            <div className={"map-navigation-wrapper"}>
+            <Box sx={mapStyle.navigationWrapper}>
                 <Box sx={navBoxStyle}>
                     <FormControl size="small">
                         <Autocomplete
@@ -189,10 +190,10 @@ const HomePageMap = () => {
                         submit();
                     }}/>
                 </Box>
-                <div className={"map-wrapper"}>
+                <Box sx={mapStyle.wrapper}>
                     <MapDisplay/>
-                </div>
-            </div>
+                </Box>
+            </Box>
         </Box>
     );
 };
