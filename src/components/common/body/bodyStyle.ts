@@ -1,1 +1,7 @@
-export const bodyStyle = {display: "flex", alignItems: "center", flexWrap: "wrap", marginTop: "150px"};
+export const bodyStyle = {
+    margin: "2rem auto auto auto",
+    display: "flex",
+    alignItems: "center",
+    flexWrap: "wrap",
+    width: "95vw"
+};

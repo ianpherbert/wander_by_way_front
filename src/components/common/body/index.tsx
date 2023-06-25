@@ -4,14 +4,14 @@ import HomePage from "../../pages/home";
 import RouteFinder from "../../pages/routeFinder";
 import LoginPage from "../../pages/login";
 import SignUpPage from "../../pages/signup";
-import {Container} from "@mui/material";
+import {Box} from "@mui/material";
 import {bodyStyle} from "./bodyStyle";
 
 
 const Body = () => {
     return (
-        <Container
-            sx={bodyStyle} maxWidth={false}>
+        <Box
+            sx={bodyStyle}>
             <Router>
                 <Routes>
                     <Route path="*" element={<HomePage/>}/>
@@ -22,7 +22,7 @@ const Body = () => {
                     <Route path="/test" element={<h1>Test</h1>}/>
                 </Routes>
             </Router>
-        </Container>
+        </Box>
     );
 };
 

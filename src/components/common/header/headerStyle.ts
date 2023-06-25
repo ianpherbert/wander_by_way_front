@@ -1,12 +1,9 @@
 export const headerStyle = {
     header: {
-        position: "absolute",
-        left: "90px",
-        top: "15px",
-        right: "40px",
         justifyContent: "space-between",
         borderBottom: "black 2px solid",
-        width: "90vw"
+        width: "90vw",
+        margin: "10px auto auto auto"
     },
     links: {
         languageGrid: {

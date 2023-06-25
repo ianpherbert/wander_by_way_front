@@ -2,7 +2,7 @@ import {theme} from "styles/themeProvider/theme";
 import {publicImage} from "../../../utils/publicImage";
 
 export const welcomeCardStyle = {
-    width: "90vw",
+    width: "100%",
     maxWidth: "1500px",
     height: "400px",
     borderRadius: "11px",
