@@ -3,8 +3,7 @@
 
 import React, {useEffect, useRef, useState} from "react";
 import "./map.scss";
-import {RoundCloseButton} from "../buttons/roundCloseButton";
-import {Button, Tooltip} from "@mui/material";
+import {Button, IconButton, Tooltip} from "@mui/material";
 import {mapTripIcons} from "../../../utils/mapTripIcons";
 import {formatTime} from "../../../utils/timeFormatter";
 import {useQuery} from "@apollo/client";
@@ -30,6 +29,7 @@ import {
 import {useDispatch} from "react-redux";
 import initMap from "./utils/InitMap";
 import mapPoints from "./utils/mapPointInfo";
+import {ClearSharp} from "@mui/icons-material";
 
 interface MapProps {
     onAddStop?: (
@@ -258,10 +258,9 @@ const MapDisplay = (props: MapProps) => {
                 className={`map-sidebar ${shouldShow()}`}
                 hidden={!selectedPoint}
             >
-                <RoundCloseButton
-                    onClose={handleClose}
-                    left={false}
-                />
+                <IconButton aria-label="delete" size="small" onClick={handleClose}>
+                    <ClearSharp fontSize="small"/>
+                </IconButton>
                 <div className={"map-sidebar-header"}>
                     <h2>
                         {associatedCities?.data?.findAllCitiesFromAssociatedTransit?.at(0)
