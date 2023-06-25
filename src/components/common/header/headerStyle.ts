@@ -24,10 +24,10 @@ export const headerStyle = {
         borderRadius: " 6px",
         cursor: " pointer",
         "&:hover": {
-            boxShadow: " 3px 3px 15px -2px rgba(139,190,178,0.68)",
+            boxShadow: "3px 3px 15px -2px rgba(139,190,178,0.68)",
         },
         "&:active": {
-            boxShadow: " 3px 3px 15px -2px rgb(139, 190, 178)",
+            boxShadow: "3px 3px 15px -2px rgb(139, 190, 178)",
         }
     }
 };

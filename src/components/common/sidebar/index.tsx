@@ -1,12 +1,13 @@
 import React from "react";
-import "./index.scss";
+import {Grid} from "@mui/material";
+import {sidebarStyle} from "./sidebarStyle";
 
-const Sidebar=()=>{
+const Sidebar = () => {
     return (
-        <aside id={"sideBar"}>
-            <div>
+        <aside>
+            <Grid container sx={sidebarStyle}>
 
-            </div>
+            </Grid>
         </aside>
     );
 };
