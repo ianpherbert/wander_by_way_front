@@ -1,0 +1,1 @@
+export const publicImage = (url: string) => `url(${process.env.PUBLIC_URL + url})`;

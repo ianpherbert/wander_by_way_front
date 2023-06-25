@@ -2,15 +2,14 @@ import React, {useEffect, useState} from "react";
 import "../../common/styles/map.scss";
 import MapDisplay from "../../common/maps/MapDisplay";
 import {MapPointType} from "../../common/maps/Point";
-import {WBWButton} from "../../common/buttons/wbwButton";
-import {Autocomplete, Box, FormControl, IconButton, Typography} from "@mui/material";
+import {Autocomplete, Box, Button, FormControl, Typography} from "@mui/material";
 import {useQuery} from "@apollo/client";
 import {CssTextField} from "../../common/mui/inputs";
 import {CityOutput, SearchCityDocument, SearchCityQuery, SearchCityQueryVariables} from "../../../gql/graphql";
 import {setSearchPoints} from "../../../redux/map/mapSlice";
 import {useDispatch} from "react-redux";
 import {mapContainerStyle, navBoxStyle} from "./homePageStyles";
-import {SwapHoriz} from "@mui/icons-material";
+import {Snowshoeing, SwapHoriz} from "@mui/icons-material";
 import {mapStyle} from "../../common/styles/mapStyle";
 
 enum InputType {
@@ -158,10 +157,6 @@ const HomePageMap = () => {
                                     />}
                         />
                     </FormControl>
-                    <div><IconButton onClick={swapInputs}>
-                        <SwapHoriz/>
-                    </IconButton></div>
-
                     <FormControl size="small">
                         <Autocomplete
                             getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}`}
@@ -186,9 +181,10 @@ const HomePageMap = () => {
                                     />}
                         />
                     </FormControl>
-                    <WBWButton label={"Let's go"} onNext={() => {
-                        submit();
-                    }}/>
+                    <Button variant="contained" endIcon={<SwapHoriz/>} onClick={swapInputs}>swap</Button>
+                    <Button variant="contained" endIcon={<Snowshoeing/>} onClick={submit}>
+                        {"Let's Go!"}
+                    </Button>
                 </Box>
                 <Box sx={mapStyle.wrapper}>
                     <MapDisplay/>

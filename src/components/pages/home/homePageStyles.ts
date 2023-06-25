@@ -1,4 +1,5 @@
 import {theme} from "styles/themeProvider/theme";
+import {publicImage} from "../../../utils/publicImage";
 
 export const welcomeCardStyle = {
     width: "90vw",
@@ -8,7 +9,7 @@ export const welcomeCardStyle = {
     backgroundColor: theme.palette.primary.main,
     position: "relative",
     boxShadow: "5px 5px 15px -2px rgba(58, 57, 57, 0.89)",
-    backgroundImage: `url(${process.env.PUBLIC_URL + '/graphics/man.png'})`,
+    backgroundImage: publicImage('/graphics/man.png'),
     backgroundRepeat: 'no-repeat',
     backgroundSize: 'cover',
     backgroundPositionY: "-60px",
