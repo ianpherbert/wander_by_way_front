@@ -1,0 +1,1 @@
+export const bodyStyle = {display: "flex", alignItems: "center", flexWrap: "wrap", marginTop: "150px"};

@@ -5,12 +5,13 @@ import RouteFinder from "../../pages/routeFinder";
 import LoginPage from "../../pages/login";
 import SignUpPage from "../../pages/signup";
 import {Container} from "@mui/material";
+import {bodyStyle} from "./bodyStyle";
 
 
 const Body = () => {
     return (
         <Container
-            sx={{display: "flex", alignItems: "center", flexWrap: "wrap", marginTop: "150px"}} maxWidth={false}>
+            sx={bodyStyle} maxWidth={false}>
             <Router>
                 <Routes>
                     <Route path="*" element={<HomePage/>}/>
