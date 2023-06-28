@@ -40,7 +40,7 @@ interface MapProps {
     ) => void;
 }
 
-const MapDisplay = (props: MapProps) => {
+const MapDisplay = ({onAddStop}: MapProps) => {
     const selectedPoint = useSelectedPoint();
     const dispatch = useDispatch();
     const showConnections = useShowConnections();
@@ -175,7 +175,7 @@ const MapDisplay = (props: MapProps) => {
         function handleClickAdd() {
             closePopup();
             dispatch(setSelectedPoint(null));
-            props.onAddStop?.(
+            onAddStop?.(
                 routeInfo.routeInfo,
                 mainCity()?.id || routeInfo.routeInfo.to.id || "",
                 mainCity()?.id ? PointType.City : routeTypeToPointType(routeInfo.routeInfo.type),
@@ -211,7 +211,7 @@ const MapDisplay = (props: MapProps) => {
                                 size={"medium"}
                                 variant="outlined"
                                 onClick={() => {
-                                    props.onAddStop?.(
+                                    onAddStop?.(
                                         routeInfo.routeInfo,
                                         mainCity()?.id || routeInfo.routeInfo.to.id || "",
                                         mainCity()?.id ? PointType.City : routeTypeToPointType(routeInfo.routeInfo.type),

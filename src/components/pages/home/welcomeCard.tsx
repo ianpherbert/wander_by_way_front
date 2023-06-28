@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {randomHello} from "../../../utils/randomHello";
 import {Box, Grid, Typography} from "@mui/material";
 import {welcomeCardStyle, welcomeGridStyle} from "./homePageStyles";
@@ -6,9 +6,12 @@ import {welcomeCardStyle, welcomeGridStyle} from "./homePageStyles";
 const WelcomeCard = () => {
     const [hello, setHello] = useState<string>(randomHello());
 
-    setInterval(() => {
-        setHello(randomHello());
-    }, 5000);
+    useEffect(() => {
+        setInterval(() => {
+            setHello(randomHello());
+        }, 5000);
+    }, []);
+
 
     const text = "Welcome to Wander by Way, your ultimate travel planning tool. Discover new and exciting destinations\n" +
         "with our comprehensive route planner. Find all available transportation options, including trains,\n" +

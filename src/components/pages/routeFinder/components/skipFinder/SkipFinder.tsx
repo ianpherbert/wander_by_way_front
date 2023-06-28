@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {FormEvent, useEffect, useState} from "react";
 import "./skipfinder.scss";
 import {Autocomplete, Button, FormControl} from "@mui/material";
 import {CssTextField} from "../../../../common/mui/inputs";
@@ -13,6 +13,7 @@ import {
 } from "../../../../../gql/graphql";
 import {mapTripIcons} from "../../../../../utils/mapTripIcons";
 import {truncateString} from "../../../../../utils/stringFormat";
+import getInputValue from "../../../../../utils/getInputValue";
 
 interface SkipFinderProps {
     open: boolean;
@@ -21,7 +22,7 @@ interface SkipFinderProps {
     from: string;
 }
 
-const SkipFinder = (props: SkipFinderProps) => {
+const SkipFinder = ({open, onAddStop, from}: SkipFinderProps) => {
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [selectedItem, setSelectedItem] = useState<CityOutput | null>(null);
     const [activeType, setActiveType] = useState<RouteType | null>();
@@ -32,7 +33,6 @@ const SkipFinder = (props: SkipFinderProps) => {
         }
     });
 
-    const {open, onAddStop, from} = props;
 
     useEffect(() => {
         setSearchTerm("");
@@ -67,11 +67,11 @@ const SkipFinder = (props: SkipFinderProps) => {
     };
 
     let count = 0.00;
-    const changeSearchTerm = (e: any) => {
+    const changeSearchTerm = (e: FormEvent<HTMLDivElement>) => {
         count = e.timeStamp;
         setTimeout(() => {
             if (count - e.timeStamp === 0) {
-                setSearchTerm(e.target.value);
+                setSearchTerm(getInputValue(e));
             }
         }, 400);
     };
@@ -112,8 +112,8 @@ const SkipFinder = (props: SkipFinderProps) => {
                             freeSolo
                             value={searchTerm}
                             options={citySearch.data?.searchCity as CityOutput[] || []}
-                            onInput={(e: any) => changeSearchTerm(e)}
-                            onChange={(e: any, value: string | CityOutput | null, reason: string) => selectItem(reason, value)}
+                            onInput={(e) => changeSearchTerm(e)}
+                            onChange={(e, value: string | CityOutput | null, reason: string) => selectItem(reason, value)}
                             renderInput={
                                 (params) =>
                                     <CssTextField
