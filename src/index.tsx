@@ -6,6 +6,8 @@ import reportWebVitals from './reportWebVitals';
 import {ApolloClient, ApolloProvider, InMemoryCache} from "@apollo/client";
 import {Provider} from "react-redux";
 import store from "./store";
+import {ThemeProvider} from "@mui/material";
+import {theme} from "./styles/themeProvider/theme";
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
@@ -19,7 +21,9 @@ const client = new ApolloClient({
 root.render(
     <ApolloProvider client={client}>
         <Provider store={store}>
-            <App/>
+            <ThemeProvider theme={theme}>
+                <App/>
+            </ThemeProvider>
         </Provider>
     </ApolloProvider>
 );

@@ -1,15 +1,11 @@
-import React, {useEffect, useState} from "react";
+import React, {Fragment, useEffect, useState} from "react";
 import {MapPointType, Point} from "../../../common/maps/Point";
-import "../index.scss";
 
 import {useQuery} from "@apollo/client";
 import {useParams} from "react-router-dom";
 import {Stop} from "../../../../core/trip/Stop";
-import {mapTripIcons} from "../../../../utils/mapTripIcons";
 import Loader from "../../../common/loader";
 import matchRoutes from "./routeMatcher";
-import TripOverviewItem from "./TripOverviewItem";
-import SkipFinder from "./skipFinder/SkipFinder";
 import mapRouteToStop from "../utils/mapRouteToStop";
 import {
     FindAllRoutesDocument,
@@ -36,6 +32,11 @@ import {
     useTripState
 } from "../../../../redux/trip/tripSlice";
 import {Toolbar} from "../../../common/maps/toolbar/Toolbar";
+import {Box, Grid, Typography} from "@mui/material";
+import {mapWrapperStyle, navigationStyle, routePreviewStyle} from "../routeFinderStyle";
+import SkipFinder from "./skipFinder/SkipFinder";
+import {mapTripIcons} from "../../../../utils/mapTripIcons";
+import TripOverviewItem from "./TripOverviewItem";
 
 interface SearchPoint {
     id: string,
@@ -193,43 +194,49 @@ export const RouteFinderMap = () => {
         setSearchCity({id: stop?.id || "", type: routeTypeToPointType(stop.routeType), filters: apiFilters});
     };
 
+    const transitionIcon = (routeType: RouteType) => (
+        <>
+            <i className={"icofont-double-right"}/>
+            <i
+                className={mapTripIcons(routeType)}
+                onClick={() => {
+                    setCustomDropDown(routeType === RouteType.Other && !customDropDown);
+                }}
+            />
+            <i className={"icofont-double-right"}/>
+        </>
+    );
 
     return (
-        <div id={"routeFinderMap"}>
-            <h3>{originCity.data?.findCityById?.name} to {destinationName || destinationCity.data?.findCityById?.name || "Anywhere"}</h3>
-            <div className={"map-navigation-wrapper"}>
-                <div className={"navigation"}>
-                    <div className={"route-preview"}>
+        <Grid container sx={{width: "90vw", margin: "auto"}}>
+            <Typography
+                variant={"h5"}>{originCity.data?.findCityById?.name} to {destinationName || destinationCity.data?.findCityById?.name || "Anywhere"}</Typography>
+            <Grid xs={12}>
+                <Box sx={navigationStyle}>
+                    <Box sx={routePreviewStyle}>
                         {trip.map(stop =>
-                            <React.Fragment key={stop.id}>
-                                {!stop.origin && <div className={"route-transit"}>
-                                    <i className={"icofont-double-right"}/>
-                                    <i
-                                        className={`${mapTripIcons(stop.routeType)} ${stop.routeType === RouteType.Other && "skip-stop"}`}
-                                        onClick={() => {
-                                            setCustomDropDown(stop.routeType === RouteType.Other && !customDropDown);
-                                        }}
-                                    />
-                                    <i className={"icofont-double-right"}/>
+                            <Fragment key={stop.id}>
+                                {!stop.origin && <div>
+                                    {transitionIcon(stop.routeType)}
                                 </div>}
                                 <TripOverviewItem stop={stop} restart={stepBack}/>
-                            </React.Fragment>
+                            </Fragment>
                         )}
-
-                    </div>
+                    </Box>
                     <SkipFinder open={customDropDown} onAddStop={addCustomStop}
                         from={stops?.at(-1)?.from || originCity.data?.findCityById?.name || ""}/>
-                </div>
-
-                <div className={"map-wrapper"}>
+                </Box>
+            </Grid>
+            <Grid xs={12}>
+                <Box sx={mapWrapperStyle}>
                     <Toolbar/>
                     {routesFromDestinationCity.loading && <div className={"map-notification"}>
                         <p>Searching from {destinationName || destinationCity.data?.findCityById?.name}</p>
                     </div>}
                     <MapDisplay onAddStop={addStop}/>
                     {routesFromCity.loading && <Loader/>}
-                </div>
-            </div>
-        </div>
+                </Box>
+            </Grid>
+        </Grid>
     );
 };

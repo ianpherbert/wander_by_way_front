@@ -1,12 +1,10 @@
 import React from "react";
 import {RouteFinderMap} from "./components/RouteFinderMap";
 
-const RouteFinderPage=()=>{
+const RouteFinderPage = () => {
 
-    return(
-        <div>
-            <RouteFinderMap/>
-        </div>
+    return (
+        <RouteFinderMap/>
     );
 };
 

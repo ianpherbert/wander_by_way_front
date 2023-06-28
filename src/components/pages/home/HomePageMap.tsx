@@ -1,16 +1,16 @@
 import React, {useEffect, useState} from "react";
-import "./index.scss";
 import "../../common/styles/map.scss";
 import MapDisplay from "../../common/maps/MapDisplay";
 import {MapPointType} from "../../common/maps/Point";
-import {ReverseButton} from "../../common/buttons/reverse";
-import {WBWButton} from "../../common/buttons/wbwButton";
-import {Autocomplete, FormControl} from "@mui/material";
+import {Autocomplete, Box, Button, FormControl, Typography} from "@mui/material";
 import {useQuery} from "@apollo/client";
 import {CssTextField} from "../../common/mui/inputs";
 import {CityOutput, SearchCityDocument, SearchCityQuery, SearchCityQueryVariables} from "../../../gql/graphql";
 import {setSearchPoints} from "../../../redux/map/mapSlice";
 import {useDispatch} from "react-redux";
+import {mapContainerStyle, navBoxStyle} from "./homePageStyles";
+import {Snowshoeing, SwapHoriz} from "@mui/icons-material";
+import {mapStyle} from "../../common/styles/mapStyle";
 
 enum InputType {
     TO,
@@ -128,74 +128,69 @@ const HomePageMap = () => {
     }
 
     return (
-        <div id={"homepageMap"}>
-
-            <h3>Where do you want to wander?</h3>
-            <div className={"map-navigation-wrapper"}>
-                <div className={"navigation"}>
-                    <div className={"place-input"}>
-                        <FormControl size="small">
-                            <Autocomplete
-                                id={"input-from"}
-                                getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}`}
-                                freeSolo
-                                inputValue={fromTerm || ""}
-                                onFocus={resetSearchTerm}
-                                onInput={(e: any) => changeSearchTerm(e)}
-                                options={citySearch.data?.searchCity as CityOutput[] || []}
-                                filterOptions={(options, state) => {
-                                    const regex = new RegExp(state.inputValue.replace(/[- ]/g, '[- ]'), 'i');
-                                    return options.filter(string => regex.test(string.name));
-                                }}
-                                onChange={(e: any, value: string | CityOutput | null, reason: string) => selectItem(reason, value, InputType.FROM)}
-                                renderInput={
-                                    (params) =>
-                                        <CssTextField
-                                            onBlur={() => {
-                                                selectedItems.from && setFromTerm(`${selectedItems.from.name}, ${selectedItems.from.country}`);
-                                            }}
-                                            {...params}
-                                            label={"From"}
-                                            onInputCapture={(e) => elevateTextInput(e, InputType.FROM)}
-                                        />}
-                            />
-                        </FormControl>
-                        <ReverseButton onToggle={swapInputs}/>
-                        <FormControl size="small">
-                            <Autocomplete
-                                id={"input-to"}
-                                getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}`}
-                                freeSolo
-                                onFocus={resetSearchTerm}
-                                inputValue={toTerm || ""}
-                                options={citySearch.data?.searchCity as CityOutput[] || []}
-                                onChange={(e: any, value: string | CityOutput | null, reason: string) => selectItem(reason, value, InputType.TO)}
-                                filterOptions={(options, state) => {
-                                    const regex = new RegExp(state.inputValue.replace(/[- ]/g, '[- ]'), 'i');
-                                    return options.filter(string => regex.test(string.name));
-                                }}
-                                renderInput={
-                                    (params) =>
-                                        <CssTextField
-                                            {...params}
-                                            label={"To"}
-                                            onInputCapture={(e) => elevateTextInput(e, InputType.TO)}
-                                            onBlur={() => {
-                                                selectedItems.to && setToTerm(`${selectedItems.to.name}, ${selectedItems.to.country}`);
-                                            }}
-                                        />}
-                            />
-                        </FormControl>
-                    </div>
-                    <WBWButton label={"Let's go"} onNext={() => {
-                        submit();
-                    }}/>
-                </div>
-                <div className={"map-wrapper"}>
+        <Box sx={mapContainerStyle}>
+            <Typography variant={"h4"}>Where do you want to wander?</Typography>
+            <Box sx={mapStyle.navigationWrapper}>
+                <Box sx={navBoxStyle}>
+                    <FormControl size="small">
+                        <Autocomplete
+                            getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}`}
+                            freeSolo
+                            inputValue={fromTerm || ""}
+                            onFocus={resetSearchTerm}
+                            onInput={(e: any) => changeSearchTerm(e)}
+                            options={citySearch.data?.searchCity as CityOutput[] || []}
+                            filterOptions={(options, state) => {
+                                const regex = new RegExp(state.inputValue.replace(/[- ]/g, '[- ]'), 'i');
+                                return options.filter(string => regex.test(string.name));
+                            }}
+                            onChange={(e: any, value: string | CityOutput | null, reason: string) => selectItem(reason, value, InputType.FROM)}
+                            renderInput={
+                                (params) =>
+                                    <CssTextField
+                                        onBlur={() => {
+                                            selectedItems.from && setFromTerm(`${selectedItems.from.name}, ${selectedItems.from.country}`);
+                                        }}
+                                        {...params}
+                                        label={"From"}
+                                        onInputCapture={(e) => elevateTextInput(e, InputType.FROM)}
+                                    />}
+                        />
+                    </FormControl>
+                    <FormControl size="small">
+                        <Autocomplete
+                            getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}`}
+                            freeSolo
+                            onFocus={resetSearchTerm}
+                            inputValue={toTerm || ""}
+                            options={citySearch.data?.searchCity as CityOutput[] || []}
+                            onChange={(e: any, value: string | CityOutput | null, reason: string) => selectItem(reason, value, InputType.TO)}
+                            filterOptions={(options, state) => {
+                                const regex = new RegExp(state.inputValue.replace(/[- ]/g, '[- ]'), 'i');
+                                return options.filter(string => regex.test(string.name));
+                            }}
+                            renderInput={
+                                (params) =>
+                                    <CssTextField
+                                        {...params}
+                                        label={"To"}
+                                        onInputCapture={(e) => elevateTextInput(e, InputType.TO)}
+                                        onBlur={() => {
+                                            selectedItems.to && setToTerm(`${selectedItems.to.name}, ${selectedItems.to.country}`);
+                                        }}
+                                    />}
+                        />
+                    </FormControl>
+                    <Button variant="contained" endIcon={<SwapHoriz/>} onClick={swapInputs}>swap</Button>
+                    <Button variant="contained" endIcon={<Snowshoeing/>} onClick={submit}>
+                        {"Let's Go!"}
+                    </Button>
+                </Box>
+                <Box sx={mapStyle.wrapper}>
                     <MapDisplay/>
-                </div>
-            </div>
-        </div>
+                </Box>
+            </Box>
+        </Box>
     );
 };
 

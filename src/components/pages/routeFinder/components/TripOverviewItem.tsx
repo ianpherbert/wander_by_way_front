@@ -1,56 +1,51 @@
-import React from "react";
+import React, {useMemo, useState} from "react";
 import {Stop} from "../../../../core/trip/Stop";
-import {IconButton, Tooltip} from "@mui/material";
-import {SouthWestRounded} from "@mui/icons-material";
+import {Box, Grid, Tooltip} from "@mui/material";
+import {routePreviewItem, routePreviewItemWrapper} from "../routeFinderStyle";
+import ConfirmDialog from "../../../common/dialog/ConfirmDialog";
 
-interface TripOverviewItemProps{
+interface TripOverviewItemProps {
     stop: Stop,
     restart: (stop: Stop) => void
 }
 
-const TripOverviewItem=(props: TripOverviewItemProps)=>{
-    const icon = () => {
-        if(props.stop.origin){
-            return <i className="icofont-google-map"/>;
-        } else if(props.stop.destination){
-            return <i className="icofont-racing-flag"/>;
-        } 
-        return <i className="icofont-google-map"/>;
-        
-    };
+const TripOverviewItem = ({stop, restart}: TripOverviewItemProps) => {
+    const [startOverDialog, setStartOverDialog] = useState<boolean>(false);
 
-    const className = () =>{
-        let name = "route-preview-item ";
-        if(props.stop.origin){
-            name += "preview-origin";
-        } else if(props.stop.destination){
-            name += "preview-destination";
-        }else{
-            name += "preview-stop";
+    const icon = useMemo(() => {
+        if (stop.origin) {
+            return <i className="icofont-google-map"/>;
+        } else if (stop.destination) {
+            return <i className="icofont-racing-flag"/>;
         }
-        return name;
-    };
+        return <i className="icofont-google-map"/>;
+
+    }, [stop]);
+
+    function openDialog() {
+        setStartOverDialog(true);
+    }
+
+    function closeDialog() {
+        setStartOverDialog(false);
+    }
+
+    function startOver() {
+        restart(stop);
+    }
 
     return (
-        <div className={"route-preview-item-wrapper"}>
-            {
-                <div className={className()}>
-                    {icon()}
-                    <h4>{props.stop.name || "Anywhere"}</h4>
-                    {!props.stop.destination && <div className={"preview-item-expand"}>
-                        <Tooltip title={"Start over here"}>
-                            <IconButton aria-label="delete"
-                                onClick={()=> {
-                                    props.restart(props.stop);
-                                }}
-                            >
-                                <SouthWestRounded/>
-                            </IconButton>
-                        </Tooltip>
-                    </div>}
-                </div>
-            }
-        </div>
+        <Box sx={routePreviewItemWrapper}>
+            <ConfirmDialog open={startOverDialog} body={`Are you sure you want to start over at ${stop.name}?`}
+                onConfirm={startOver}
+                onClose={closeDialog}/>
+            <Tooltip title={stop.destination ? "Your destination" : "Start over here"}>
+                <Grid style={routePreviewItem} spacing={2} onClick={openDialog}>
+                    <Grid xs={5}>{icon}</Grid>
+                    <Grid xs={5}><h4>{stop.name || "Anywhere"}</h4></Grid>
+                </Grid>
+            </Tooltip>
+        </Box>
     );
 };
 
