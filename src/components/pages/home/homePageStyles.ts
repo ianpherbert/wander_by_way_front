@@ -1,6 +1,11 @@
 import {theme} from "styles/themeProvider/theme";
 import {publicImage} from "../../../utils/publicImage";
 
+export const homePageContainerStyle = {
+    display: "flex",
+    alignItems: "center",
+    flexWrap: "wrap"
+};
 export const welcomeCardStyle = {
     width: "100%",
     maxWidth: "1500px",

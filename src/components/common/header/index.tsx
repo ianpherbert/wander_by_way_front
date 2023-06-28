@@ -10,9 +10,9 @@ interface HeaderProps {
     language: Languages
 }
 
-const Header = (props: HeaderProps) => {
+const Header = ({connected, username, language}: HeaderProps) => {
 
-    const flagLink = props.language == Languages.FR ? "/languageIcons/FR.png" : "/languageIcons/EN.png";
+    const flagLink = language == Languages.FR ? "/languageIcons/FR.png" : "/languageIcons/EN.png";
 
     function redirectLogin() {
         window.location.replace("/login");
@@ -31,14 +31,14 @@ const Header = (props: HeaderProps) => {
                     <Grid sx={headerStyle.links.connectionGrid}
                         justifyContent="center" item xs={6}>
                         <Chip icon={<PermIdentity/>}
-                            label={props.connected ? props.username || "Your account" : "Log In"}
+                            label={connected ? username || "Your account" : "Log In"}
                             onClick={redirectLogin}/>
                     </Grid>
                     <Grid xs={6} sx={headerStyle.links.languageGrid} item
                         justifyContent="center">
                         <Link href={"#"}>
                             <Avatar src={flagLink}
-                                alt={props.language == Languages.FR ? "drapeau français" : "british flag"}/>
+                                alt={language == Languages.FR ? "drapeau français" : "british flag"}/>
                         </Link>
                     </Grid>
                 </Grid>

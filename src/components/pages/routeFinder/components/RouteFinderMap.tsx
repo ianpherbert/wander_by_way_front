@@ -5,7 +5,7 @@ import {useQuery} from "@apollo/client";
 import {useParams} from "react-router-dom";
 import {Stop} from "../../../../core/trip/Stop";
 import Loader from "../../../common/loader";
-import matchRoutes from "./routeMatcher";
+import matchRoutes from "../utils/routeMatcher";
 import mapRouteToStop from "../utils/mapRouteToStop";
 import {
     FindAllRoutesDocument,

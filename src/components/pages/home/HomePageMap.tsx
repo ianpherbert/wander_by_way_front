@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {FormEvent, useEffect, useState} from "react";
 import "../../common/styles/map.scss";
 import MapDisplay from "../../common/maps/MapDisplay";
 import {MapPointType} from "../../common/maps/Point";
@@ -79,8 +79,8 @@ const HomePageMap = () => {
     }, [selectedItems.to, selectedItems.from]);
 
 
-    const elevateTextInput = async (e: any, type: InputType) => {
-        const input = e.target.value || "";
+    const elevateTextInput = async (e: FormEvent<HTMLDivElement>, type: InputType) => {
+        const input = getInputValue(e);
 
         switch (type) {
         case InputType.FROM:
@@ -114,17 +114,21 @@ const HomePageMap = () => {
     };
 
     let count = 0.00;
-    const changeSearchTerm = (e: any) => {
+    const changeSearchTerm = (e: FormEvent<HTMLDivElement>) => {
         count = e.timeStamp;
         setTimeout(() => {
             if (count - e.timeStamp === 0) {
-                setSearchTerm(e.target.value);
+                setSearchTerm(getInputValue(e));
             }
         }, 400);
     };
 
     function resetSearchTerm() {
         setSearchTerm("");
+    }
+
+    function getInputValue(e: FormEvent<HTMLDivElement | HTMLInputElement>) {
+        return (e.target as HTMLInputElement).value;
     }
 
     return (
@@ -138,13 +142,13 @@ const HomePageMap = () => {
                             freeSolo
                             inputValue={fromTerm || ""}
                             onFocus={resetSearchTerm}
-                            onInput={(e: any) => changeSearchTerm(e)}
+                            onInput={(e: FormEvent<HTMLDivElement>) => changeSearchTerm(e)}
                             options={citySearch.data?.searchCity as CityOutput[] || []}
                             filterOptions={(options, state) => {
                                 const regex = new RegExp(state.inputValue.replace(/[- ]/g, '[- ]'), 'i');
                                 return options.filter(string => regex.test(string.name));
                             }}
-                            onChange={(e: any, value: string | CityOutput | null, reason: string) => selectItem(reason, value, InputType.FROM)}
+                            onChange={(e, value: string | CityOutput | null, reason: string) => selectItem(reason, value, InputType.FROM)}
                             renderInput={
                                 (params) =>
                                     <CssTextField
@@ -153,7 +157,7 @@ const HomePageMap = () => {
                                         }}
                                         {...params}
                                         label={"From"}
-                                        onInputCapture={(e) => elevateTextInput(e, InputType.FROM)}
+                                        onInputCapture={(e: FormEvent<HTMLInputElement>) => elevateTextInput(e, InputType.FROM)}
                                     />}
                         />
                     </FormControl>
@@ -164,7 +168,7 @@ const HomePageMap = () => {
                             onFocus={resetSearchTerm}
                             inputValue={toTerm || ""}
                             options={citySearch.data?.searchCity as CityOutput[] || []}
-                            onChange={(e: any, value: string | CityOutput | null, reason: string) => selectItem(reason, value, InputType.TO)}
+                            onChange={(e, value: string | CityOutput | null, reason: string) => selectItem(reason, value, InputType.TO)}
                             filterOptions={(options, state) => {
                                 const regex = new RegExp(state.inputValue.replace(/[- ]/g, '[- ]'), 'i');
                                 return options.filter(string => regex.test(string.name));
