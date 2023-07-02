@@ -1,7 +1,7 @@
 import {RouteType} from "../../gql/graphql";
 
 
-export interface Stop{
+export interface Stop {
     id: string | undefined | null,
     name: string,
     routeType: RouteType,
@@ -10,5 +10,7 @@ export interface Stop{
     duration: string,
     latitude: string,
     longitude: string
-    from?: string
+    from?: string,
+
+    isCity: boolean
 }

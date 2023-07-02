@@ -156,7 +156,8 @@ export const RouteFinderMap = () => {
                     destination: false,
                     duration: "0:00",
                     latitude,
-                    longitude
+                    longitude,
+                    isCity: true
                 }));
             }
             dispatch(setDestination({
@@ -167,13 +168,14 @@ export const RouteFinderMap = () => {
                 destination: true,
                 duration: "0:00",
                 latitude: destinationCity.data?.findCityById?.latitude || "0",
-                longitude: destinationCity.data?.findCityById?.longitude || "0"
+                longitude: destinationCity.data?.findCityById?.longitude || "0",
+                isCity: true
             }));
         }
     }, [originCity.loading, destinationCity.loading, destinationCity.loading]);
 
-    const addStop = (route: RouteOutput, addId?: string, addPointType?: PointType, destination?: boolean) => {
-        const newStop = mapRouteToStop(route, addId, destination);
+    const addStop = (route: RouteOutput, isCity: boolean, addId?: string, addPointType?: PointType, destination?: boolean) => {
+        const newStop = mapRouteToStop(route, addId, destination, isCity);
         dispatch(addStopToTrip(newStop));
         if (destination) {
             // If the destinationName has been reached do not refetch
@@ -183,20 +185,26 @@ export const RouteFinderMap = () => {
             // Search new points from new stop
             setSearchCity({id: addId || "", type: addPointType || PointType.Other, filters: apiFilters});
         }
-
     };
 
     const addCustomStop = (stop: Stop) => {
-        setSearchCity({id: stop.id || "", type: routeTypeToPointType(stop.routeType), filters: apiFilters});
+        const searchItem = {id: stop.id || "", type: routeTypeToPointType(stop.routeType), filters: apiFilters};
+        setSearchCity(searchItem);
         dispatch(addStopToTrip(stop));
         setCustomDropDown(false);
     };
 
-    const stepBack = async (stop: Stop) => {
+    const stepBack = (stop: Stop) => {
         const index = stops.findIndex((it) => it.id === stop.id);
         const stopsReset = index === -1 ? [] : [...stops].slice(0, index + 1);
+        const searchItem = {
+            id: stop?.id || "",
+            type: stop.isCity ? PointType.City : routeTypeToPointType(stop.routeType),
+            filters: apiFilters
+        };
         dispatch(resetStops(stopsReset));
-        setSearchCity({id: stop?.id || "", type: routeTypeToPointType(stop.routeType), filters: apiFilters});
+        setSearchCity(searchItem);
+        routesFromCity.refetch(searchItem);
     };
 
     const transitionIcon = (routeType: RouteType) => (
@@ -222,7 +230,7 @@ export const RouteFinderMap = () => {
 
     return (
         <Grid container sx={{width: "90vw", margin: "auto"}}>
-            <Typography
+            <Typography onClick={() => console.log({trip, stops})}
                 variant={"h5"}>{originCity.data?.findCityById?.name} to {destinationName || destinationCity.data?.findCityById?.name || "Anywhere"}</Typography>
             <Grid xs={12}>
                 <Box sx={navigationStyle}>
