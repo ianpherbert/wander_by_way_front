@@ -63,12 +63,15 @@ export const RouteFinderMap = () => {
         variables: searchCity,
     });
     const routesFromDestinationCity = useQuery<FindAllRoutesQuery, FindAllRoutesQueryVariables>(FindAllRoutesDocument, {
+        skip: !toId,
         variables: {id: toId || "", type: PointType.City, filters: apiFilters},
     });
     const originCity = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument, {
+        skip: !fromId,
         variables: {cityId: fromId || ""}
     });
     const destinationCity = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument, {
+        skip: !toId,
         variables: {cityId: toId === "anywhere" ? "" : toId || ""}
     });
     const destinationName = destination?.name;
