@@ -31,7 +31,7 @@ const HomePageMap = () => {
 
     const dispatch = useDispatch();
 
-    const citySearch = useQuery<SearchCityQuery, SearchCityQueryVariables>(SearchCityDocument, {
+    const {data, refetch} = useQuery<SearchCityQuery, SearchCityQueryVariables>(SearchCityDocument, {
         variables: {
             query: searchTerm
         }
@@ -90,8 +90,8 @@ const HomePageMap = () => {
             setToTerm(input);
             break;
         }
-        await setSearchTerm(input);
-        await citySearch.refetch();
+        setSearchTerm(input);
+        await refetch();
     };
 
     const selectItem = (reason: string, item: string | CityOutput | null, type: InputType) => {
@@ -143,7 +143,7 @@ const HomePageMap = () => {
                             inputValue={fromTerm || ""}
                             onFocus={resetSearchTerm}
                             onInput={(e: FormEvent<HTMLDivElement>) => changeSearchTerm(e)}
-                            options={citySearch.data?.searchCity as CityOutput[] || []}
+                            options={data?.searchCity as CityOutput[] || []}
                             filterOptions={(options, state) => {
                                 const regex = new RegExp(state.inputValue.replace(/[- ]/g, '[- ]'), 'i');
                                 return options.filter(string => regex.test(string.name));
@@ -167,7 +167,7 @@ const HomePageMap = () => {
                             freeSolo
                             onFocus={resetSearchTerm}
                             inputValue={toTerm || ""}
-                            options={citySearch.data?.searchCity as CityOutput[] || []}
+                            options={data?.searchCity as CityOutput[] || []}
                             onChange={(e, value: string | CityOutput | null, reason: string) => selectItem(reason, value, InputType.TO)}
                             filterOptions={(options, state) => {
                                 const regex = new RegExp(state.inputValue.replace(/[- ]/g, '[- ]'), 'i');
