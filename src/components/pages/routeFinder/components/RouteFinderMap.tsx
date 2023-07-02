@@ -1,4 +1,4 @@
-import React, {Fragment, useEffect, useMemo, useState} from "react";
+import React, {Fragment, useCallback, useEffect, useMemo, useState} from "react";
 import {MapPointType, Point} from "../../../common/maps/Point";
 
 import {useQuery} from "@apollo/client";
@@ -61,26 +61,43 @@ export const RouteFinderMap = () => {
     });
     const [customDropDown, setCustomDropDown] = useState<boolean>(false);
 
-    const routesFromCity = useQuery<FindAllRoutesQuery, FindAllRoutesQueryVariables>(FindAllRoutesDocument, {
+    const {
+        data: routesFromCurrent,
+        refetch: refetchCurrentRoutes,
+        loading: loadingCurrentRoutes
+    } = useQuery<FindAllRoutesQuery, FindAllRoutesQueryVariables>(FindAllRoutesDocument, {
         variables: searchCity,
     });
-    const routesFromDestinationCity = useQuery<FindAllRoutesQuery, FindAllRoutesQueryVariables>(FindAllRoutesDocument, {
+
+    const {
+        data: routesFromDestination,
+        loading: loadingFromDestination
+    } = useQuery<FindAllRoutesQuery, FindAllRoutesQueryVariables>(FindAllRoutesDocument, {
         skip: !toId,
         variables: {id: toId || "", type: PointType.City, filters: apiFilters},
     });
-    const originCity = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument, {
+
+    const {
+        data: originInfo,
+        loading: originInfoLoading
+    } = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument, {
         skip: !fromId,
         variables: {cityId: fromId || ""}
     });
-    const destinationCity = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument, {
+
+    const {
+        data: destinationInfo,
+        loading: destinationInfoLoading
+    } = useQuery<FindCityByIdQuery, FindCityByIdQueryVariables>(FindCityByIdDocument, {
         skip: !toId,
         variables: {cityId: toId === "anywhere" ? "" : toId || ""}
     });
+
     const destinationName = destination?.name;
 
     // Set points from stops and search points
     useEffect(() => {
-        const searchRoutes = routesFromCity.data?.findAllRoutes?.map((item) =>
+        const searchRoutes: Point[] = routesFromCurrent?.findAllRoutes?.map((item) =>
             (
                 {
                     id: stop.name,
@@ -98,10 +115,10 @@ export const RouteFinderMap = () => {
         ) || [];
         const origin = {
             id: stop.name,
-            longitude: parseFloat(originCity.data?.findCityById?.longitude || "0"),
-            latitude: parseFloat(originCity.data?.findCityById?.latitude || "0"),
+            longitude: parseFloat(originInfo?.findCityById?.longitude || "0"),
+            latitude: parseFloat(originInfo?.findCityById?.latitude || "0"),
             type: MapPointType.ORIGIN,
-            label: originCity.data?.findCityById?.name || ""
+            label: originInfo?.findCityById?.name || ""
         };
         const routeStops = stops.map(stop => (
             {
@@ -121,16 +138,16 @@ export const RouteFinderMap = () => {
         if (toId !== "anywhere") {
             const destinationPoint = {
                 id: stop.name,
-                longitude: parseFloat(destinationCity.data?.findCityById?.longitude || "0"),
-                latitude: parseFloat(destinationCity.data?.findCityById?.latitude || "0"),
+                longitude: parseFloat(destinationInfo?.findCityById?.longitude || "0"),
+                latitude: parseFloat(destinationInfo?.findCityById?.latitude || "0"),
                 type: MapPointType.DESTINATION,
-                label: destinationCity.data?.findCityById?.name || ""
+                label: destinationInfo?.findCityById?.name || ""
             };
             tempPoints.push(destinationPoint);
         }
 
-        if (routesFromDestinationCity.data && routesFromCity.data && tempPoints.length > 0) {
-            const matches = matchRoutes(routesFromDestinationCity.data, routesFromCity.data);
+        if (routesFromDestination && routesFromCurrent && tempPoints.length > 0) {
+            const matches = matchRoutes(routesFromDestination, routesFromCurrent);
             const matchedPoints = tempPoints.map((point: Point) => {
                 if (matches.includes(point.label)) {
                     return {...point, match: true};
@@ -141,15 +158,15 @@ export const RouteFinderMap = () => {
         } else {
             dispatch(setSearchPoints(tempPoints));
         }
-    }, [routesFromCity.data, stops]);
+    }, [routesFromCurrent, stops]);
 
     //Initialize page once the origin and destination cities are loaded
     useEffect(() => {
-        if (!originCity.loading && !destinationCity.loading) {
-            if (originCity?.data?.findCityById) {
-                const {name, latitude, longitude} = originCity.data.findCityById;
+        if (!originInfoLoading && !destinationInfoLoading) {
+            if (originInfo?.findCityById) {
+                const {name, latitude, longitude} = originInfo.findCityById;
                 dispatch(setOrigin({
-                    id: fromId,
+                    id: fromId ?? "",
                     name,
                     routeType: RouteType.Other,
                     origin: true,
@@ -161,18 +178,18 @@ export const RouteFinderMap = () => {
                 }));
             }
             dispatch(setDestination({
-                id: toId,
-                name: destinationCity.data?.findCityById?.name || "",
+                id: toId ?? "",
+                name: destinationInfo?.findCityById?.name || "",
                 routeType: RouteType.Other,
                 origin: false,
                 destination: true,
                 duration: "0:00",
-                latitude: destinationCity.data?.findCityById?.latitude || "0",
-                longitude: destinationCity.data?.findCityById?.longitude || "0",
+                latitude: destinationInfo?.findCityById?.latitude || "0",
+                longitude: destinationInfo?.findCityById?.longitude || "0",
                 isCity: true
             }));
         }
-    }, [originCity.loading, destinationCity.loading, destinationCity.loading]);
+    }, [originInfoLoading, destinationInfoLoading]);
 
     const addStop = (route: RouteOutput, isCity: boolean, addId?: string, addPointType?: PointType, destination?: boolean) => {
         const newStop = mapRouteToStop(route, addId, destination, isCity);
@@ -190,7 +207,7 @@ export const RouteFinderMap = () => {
     const addCustomStop = (stop: Stop) => {
         const searchItem = {id: stop.id || "", type: routeTypeToPointType(stop.routeType), filters: apiFilters};
         setSearchCity(searchItem);
-        routesFromCity.refetch(searchItem);
+        refetchCurrentRoutes(searchItem);
         dispatch(addStopToTrip(stop));
         setCustomDropDown(false);
     };
@@ -200,15 +217,16 @@ export const RouteFinderMap = () => {
         const stopsReset = index === -1 ? [] : [...stops].slice(0, index + 1);
         const searchItem = {
             id: stop?.id || "",
+            // if isCity is true, that means that the ID corresponds to a city, and not the route type
             type: stop.isCity ? PointType.City : routeTypeToPointType(stop.routeType),
             filters: apiFilters
         };
         dispatch(resetStops(stopsReset));
         setSearchCity(searchItem);
-        routesFromCity.refetch(searchItem);
+        refetchCurrentRoutes(searchItem);
     };
 
-    const transitionIcon = (routeType: RouteType) => (
+    const transitionIcon = useCallback((routeType: RouteType) => (
         <>
             <i className={"icofont-double-right"}/>
             <i
@@ -219,20 +237,20 @@ export const RouteFinderMap = () => {
             />
             <i className={"icofont-double-right"}/>
         </>
-    );
+    ), [customDropDown]);
 
     const mapNotifications = useMemo(() => {
         const notifs = [];
-        if (destinationName && routesFromDestinationCity.loading) {
+        if (destinationName && loadingFromDestination) {
             notifs.push({id: "2", text: `Getting data for ${destinationName}`, severity: "info"} as MapNotification);
         }
         return notifs;
-    }, [destinationName, routesFromDestinationCity.loading, routesFromCity.loading, originCity.data?.findCityById?.name, searchCity]);
+    }, [destinationName, loadingFromDestination, loadingCurrentRoutes, originInfo?.findCityById?.name, searchCity]);
 
     return (
         <Grid container sx={{width: "90vw", margin: "auto"}}>
-            <Typography onClick={() => console.log({trip, stops})}
-                variant={"h5"}>{originCity.data?.findCityById?.name} to {destinationName || destinationCity.data?.findCityById?.name || "Anywhere"}</Typography>
+            <Typography
+                variant={"h5"}>{originInfo?.findCityById?.name} to {destinationName || destinationInfo?.findCityById?.name || "Anywhere"}</Typography>
             <Grid xs={12}>
                 <Box sx={navigationStyle}>
                     <Box sx={routePreviewStyle}>
@@ -246,17 +264,14 @@ export const RouteFinderMap = () => {
                         )}
                     </Box>
                     <SkipFinder open={customDropDown} onAddStop={addCustomStop}
-                        from={stops?.at(-1)?.from || originCity.data?.findCityById?.name || ""}/>
+                        from={stops?.at(-1)?.from || originInfo?.findCityById?.name || ""}/>
                 </Box>
             </Grid>
             <Grid xs={12}>
                 <Box sx={mapWrapperStyle}>
                     <Toolbar/>
-                    {routesFromDestinationCity.loading && <div className={"map-notification"}>
-                        <p>Searching from {destinationName || destinationCity.data?.findCityById?.name}</p>
-                    </div>}
                     <MapDisplay onAddStop={addStop}/>
-                    {routesFromCity.loading && <Loader/>}
+                    {loadingCurrentRoutes && <Loader/>}
                     <NotificationContainer notifications={mapNotifications}/>
                 </Box>
             </Grid>
