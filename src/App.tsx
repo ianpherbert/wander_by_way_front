@@ -5,6 +5,7 @@ import {Languages} from "./utils/Languages";
 import {CookieConsentObject} from "./components/cookies/CookieConstent";
 import {Box, Grid} from "@mui/material";
 import {Outlet} from "react-router-dom";
+import Footer from "./components/common/footer";
 
 const bodyStyle = {
     margin: "2rem auto auto auto",
@@ -19,7 +20,7 @@ function App() {
     return (
         <>
             <CookieConsentObject/>
-            <Grid>
+            <Grid sx={{minHeight: "95vh", marginBottom: "5vh"}}>
                 <Grid item xs={12}>
                     <Header language={Languages.EN} connected={false}/>
                 </Grid>
@@ -30,6 +31,7 @@ function App() {
                     </Box>
                 </Grid>
             </Grid>
+            <Footer/>
         </>
     );
 }

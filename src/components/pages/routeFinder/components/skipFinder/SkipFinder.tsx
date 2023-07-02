@@ -60,7 +60,8 @@ const SkipFinder = ({open, onAddStop, from}: SkipFinderProps) => {
                 duration: "0",
                 latitude: selectedItem.latitude,
                 longitude: selectedItem.longitude,
-                from
+                from,
+                isCity: true
             };
             onAddStop(stop);
         }

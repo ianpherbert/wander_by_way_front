@@ -11,6 +11,7 @@ import {routeToStation, routeTypeToPointType} from "../../../utils/routeStationT
 
 import mapboxgl, {LngLatBoundsLike} from "mapbox-gl";
 import {
+    CityOutput,
     FindAllCitiesFromAssociatedTransitDocument,
     FindAllCitiesFromAssociatedTransitQuery,
     FindAllCitiesFromAssociatedTransitQueryVariables,
@@ -34,9 +35,10 @@ import {ClearSharp} from "@mui/icons-material";
 interface MapProps {
     onAddStop?: (
         route: RouteOutput,
+        isCity: boolean,
         addId: string,
         addPointType: PointType,
-        destination: boolean
+        destination: boolean,
     ) => void;
 }
 
@@ -51,9 +53,8 @@ const MapDisplay = ({onAddStop}: MapProps) => {
     const [popup, setPopup] = useState<mapboxgl.Popup>();
 
     const associatedCities = useQuery<FindAllCitiesFromAssociatedTransitQuery, FindAllCitiesFromAssociatedTransitQueryVariables>(FindAllCitiesFromAssociatedTransitDocument);
-    const mainCity = () => {
-        const cities = associatedCities?.data?.findAllCitiesFromAssociatedTransit || [];
-        return cities[0];
+    const mainCity = (): CityOutput | undefined => {
+        return associatedCities?.data?.findAllCitiesFromAssociatedTransit?.[0];
     };
 
     const shouldZoom = useRef(autoZoom);
@@ -173,12 +174,14 @@ const MapDisplay = ({onAddStop}: MapProps) => {
     }) => {
 
         function handleClickAdd() {
+            const {id} = mainCity();
             closePopup();
             dispatch(setSelectedPoint(null));
             onAddStop?.(
                 routeInfo.routeInfo,
-                mainCity()?.id || routeInfo.routeInfo.to.id || "",
-                mainCity()?.id ? PointType.City : routeTypeToPointType(routeInfo.routeInfo.type),
+                !!id,
+                id || routeInfo.routeInfo.to.id || "",
+                id ? PointType.City : routeTypeToPointType(routeInfo.routeInfo.type),
                 false
             );
         }

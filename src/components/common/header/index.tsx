@@ -1,8 +1,7 @@
 import React from "react";
 import {Languages} from "../../../utils/Languages";
-import {Avatar, Chip, Grid, Link, Typography} from "@mui/material";
+import {Grid, Link, Typography} from "@mui/material";
 import {headerStyle} from "./headerStyle";
-import {PermIdentity} from "@mui/icons-material";
 
 interface HeaderProps {
     connected: boolean,
@@ -28,19 +27,19 @@ const Header = ({connected, username, language}: HeaderProps) => {
                 </Grid>
                 <Grid container xs={2} justifyContent="space-evenly"
                     alignItems="center">
-                    <Grid sx={headerStyle.links.connectionGrid}
-                        justifyContent="center" item xs={6}>
-                        <Chip icon={<PermIdentity/>}
-                            label={connected ? username || "Your account" : "Log In"}
-                            onClick={redirectLogin}/>
-                    </Grid>
-                    <Grid xs={6} sx={headerStyle.links.languageGrid} item
-                        justifyContent="center">
-                        <Link href={"#"}>
-                            <Avatar src={flagLink}
-                                alt={language == Languages.FR ? "drapeau français" : "british flag"}/>
-                        </Link>
-                    </Grid>
+                    {/*<Grid sx={headerStyle.links.connectionGrid}*/}
+                    {/*    justifyContent="center" item xs={6}>*/}
+                    {/*    <Chip icon={<PermIdentity/>}*/}
+                    {/*        label={connected ? username || "Your account" : "Log In"}*/}
+                    {/*        onClick={redirectLogin}/>*/}
+                    {/*</Grid>*/}
+                    {/*<Grid xs={6} sx={headerStyle.links.languageGrid} item*/}
+                    {/*    justifyContent="center">*/}
+                    {/*    <Link href={"#"}>*/}
+                    {/*        <Avatar src={flagLink}*/}
+                    {/*            alt={language == Languages.FR ? "drapeau français" : "british flag"}/>*/}
+                    {/*    </Link>*/}
+                    {/*</Grid>*/}
                 </Grid>
             </Grid>
         </header>
