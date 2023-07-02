@@ -1,4 +1,4 @@
-import React, {Fragment, useEffect, useState} from "react";
+import React, {Fragment, useEffect, useMemo, useState} from "react";
 import {MapPointType, Point} from "../../../common/maps/Point";
 
 import {useQuery} from "@apollo/client";
@@ -37,6 +37,8 @@ import {mapWrapperStyle, navigationStyle, routePreviewStyle} from "../routeFinde
 import SkipFinder from "./skipFinder/SkipFinder";
 import {mapTripIcons} from "../../../../utils/mapTripIcons";
 import TripOverviewItem from "./TripOverviewItem";
+import NotificationContainer from "../../../common/maps/notifications/NotificationContainer";
+import {MapNotification} from "../../../common/maps/notifications/MapNotification";
 
 interface SearchPoint {
     id: string,
@@ -168,7 +170,7 @@ export const RouteFinderMap = () => {
                 longitude: destinationCity.data?.findCityById?.longitude || "0"
             }));
         }
-    }, [originCity.loading, destinationCity.loading]);
+    }, [originCity.loading, destinationCity.loading, destinationCity.loading]);
 
     const addStop = (route: RouteOutput, addId?: string, addPointType?: PointType, destination?: boolean) => {
         const newStop = mapRouteToStop(route, addId, destination);
@@ -210,6 +212,14 @@ export const RouteFinderMap = () => {
         </>
     );
 
+    const mapNotifications = useMemo(() => {
+        const notifs = [];
+        if (destinationName && routesFromDestinationCity.loading) {
+            notifs.push({id: "2", text: `Getting data for ${destinationName}`, severity: "info"} as MapNotification);
+        }
+        return notifs;
+    }, [destinationName, routesFromDestinationCity.loading, routesFromCity.loading, originCity.data?.findCityById?.name, searchCity]);
+
     return (
         <Grid container sx={{width: "90vw", margin: "auto"}}>
             <Typography
@@ -238,6 +248,7 @@ export const RouteFinderMap = () => {
                     </div>}
                     <MapDisplay onAddStop={addStop}/>
                     {routesFromCity.loading && <Loader/>}
+                    <NotificationContainer notifications={mapNotifications}/>
                 </Box>
             </Grid>
         </Grid>
