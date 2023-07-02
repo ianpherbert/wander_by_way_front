@@ -186,7 +186,7 @@ const HomePageMap = () => {
                         />
                     </FormControl>
                     <Button variant="contained" endIcon={<SwapHoriz/>}
-                        disabled={!selectedItems.from && !selectedItems.from} onClick={swapInputs}>swap</Button>
+                        disabled={!selectedItems.from && !selectedItems.to} onClick={swapInputs}>swap</Button>
                     <Button variant="contained"
                         endIcon={<Snowshoeing/>} onClick={submit}
                         disabled={!selectedItems.from}>
