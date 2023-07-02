@@ -24,7 +24,7 @@ const Footer = () => {
                     <Typography>Help us keep this project going:</Typography>
                     <Divider/>
                     <Link underline="hover" color={"info"}
-                        href={"#"}>fundingsite.com</Link>
+                        href={"https://bmc.link/ianpatrickherbert"}>Buy me a coffee</Link>
                 </Box>
             </Grid>
         </Grid>
