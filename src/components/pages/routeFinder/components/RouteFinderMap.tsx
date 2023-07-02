@@ -190,6 +190,7 @@ export const RouteFinderMap = () => {
     const addCustomStop = (stop: Stop) => {
         const searchItem = {id: stop.id || "", type: routeTypeToPointType(stop.routeType), filters: apiFilters};
         setSearchCity(searchItem);
+        routesFromCity.refetch(searchItem);
         dispatch(addStopToTrip(stop));
         setCustomDropDown(false);
     };
