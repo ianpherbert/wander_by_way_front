@@ -174,7 +174,7 @@ const MapDisplay = ({onAddStop}: MapProps) => {
     }) => {
 
         function handleClickAdd() {
-            const {id} = mainCity();
+            const {id} = mainCity() ?? {};
             closePopup();
             dispatch(setSelectedPoint(null));
             onAddStop?.(
