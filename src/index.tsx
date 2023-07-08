@@ -1,4 +1,4 @@
-import React, {PropsWithChildren} from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
@@ -62,19 +62,14 @@ const router = createBrowserRouter([
     },
 ]);
 
-export const AppProviders = ({children}: PropsWithChildren) =>
+root.render(
     <ApolloProvider client={client}>
         <Provider store={store}>
             <ThemeProvider theme={theme}>
-                {children}
+                <RouterProvider router={router}/>
             </ThemeProvider>
-        </Provider>
-    </ApolloProvider>;
-
-root.render(
-    <AppProviders>
-        <RouterProvider router={router}/>
-    </AppProviders>
+        </Provider>;
+    </ApolloProvider>
 );
 
 reportWebVitals();

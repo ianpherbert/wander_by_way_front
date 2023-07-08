@@ -193,9 +193,12 @@ const HomePageMap = () => {
                         {"Let's Go!"}
                     </Button>
                 </Box>
-                <Box sx={mapStyle.wrapper}>
-                    <MapDisplay/>
-                </Box>
+                {process.env.REACT_APP_TEST_ENV !== 'true' &&
+                    <Box sx={mapStyle.wrapper}>
+                        <MapDisplay/>
+                    </Box>
+                }
+
             </Box>
         </Box>
     );
