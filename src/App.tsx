@@ -24,7 +24,7 @@ function App() {
                 <Grid item xs={12}>
                     <Header language={Languages.EN} connected={false}/>
                 </Grid>
-                <Grid xs={12}>
+                <Grid item xs={12}>
                     <Box
                         sx={bodyStyle}>
                         <Outlet/>

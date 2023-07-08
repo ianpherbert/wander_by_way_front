@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropsWithChildren} from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
@@ -24,48 +24,57 @@ const client = new ApolloClient({
     cache: new InMemoryCache(),
 });
 
+const routes = {
+    main: [
+        {
+            path: "",
+            element: <HomePage/>,
+        },
+        {
+            path: "/home",
+            element: <HomePage/>,
+        },
+        {
+            path: "/login",
+            element: <LoginPage/>,
+        },
+        {
+            path: "/signup",
+            element: <SignUpPage/>,
+        },
+        {
+            path: "/routeFinder/:fromId/:toId",
+            element: <RouteFinder/>,
+        },
+        {
+            path: "/test",
+            element: <h1>Test</h1>,
+        },
+    ]
+};
+
 const router = createBrowserRouter([
     {
         path: "",
         element: <App/>,
         errorElement: <ErrorElement/>,
-        children: [
-            {
-                path: "",
-                element: <HomePage/>,
-            },
-            {
-                path: "/home",
-                element: <HomePage/>,
-            },
-            {
-                path: "/login",
-                element: <LoginPage/>,
-            },
-            {
-                path: "/signup",
-                element: <SignUpPage/>,
-            },
-            {
-                path: "/routeFinder/:fromId/:toId",
-                element: <RouteFinder/>,
-            },
-            {
-                path: "/test",
-                element: <h1>Test</h1>,
-            },
-        ]
+        children: routes.main
     },
 ]);
 
-root.render(
+export const AppProviders = ({children}: PropsWithChildren) =>
     <ApolloProvider client={client}>
         <Provider store={store}>
             <ThemeProvider theme={theme}>
-                <RouterProvider router={router}/>
+                {children}
             </ThemeProvider>
         </Provider>
-    </ApolloProvider>
+    </ApolloProvider>;
+
+root.render(
+    <AppProviders>
+        <RouterProvider router={router}/>
+    </AppProviders>
 );
 
 reportWebVitals();
