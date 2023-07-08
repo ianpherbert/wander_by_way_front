@@ -23,3 +23,9 @@ mapboxgl.Map.prototype = {
 mapboxgl.Popup.prototype = {
     remove: jest.fn(),
 };
+
+beforeAll(() => {
+    jest.spyOn(console, 'error').mockImplementation(() => {
+        return;
+    });
+});
