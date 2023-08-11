@@ -5,15 +5,15 @@ import {Box, Divider, Grid, Link, Typography} from "@mui/material";
 const Footer = () => {
     return <footer style={footerStyle}>
         <Grid container justifyContent={"center"} padding={"1rem"}>
-            <Grid xs={3} textAlign={"center"}>
-                <img src={"/logo192.png"}/>
+            <Grid item xs={3} textAlign={"center"}>
+                <img src={"/logo192.png"} alt={"wander by way logo"}/>
                 <div>
                     <Typography variant={"caption"}>Wander by Way ©2023</Typography>
                 </div>
             </Grid>
-            <Grid xs={3}></Grid>
-            <Grid xs={3}></Grid>
-            <Grid xs={3}>
+            <Grid item xs={3}></Grid>
+            <Grid item xs={3}></Grid>
+            <Grid item xs={3}>
                 <Box>
                     <Typography>Contact Us:</Typography>
                     <Divider/>

@@ -24,37 +24,41 @@ const client = new ApolloClient({
     cache: new InMemoryCache(),
 });
 
+const routes = {
+    main: [
+        {
+            path: "",
+            element: <HomePage/>,
+        },
+        {
+            path: "/home",
+            element: <HomePage/>,
+        },
+        {
+            path: "/login",
+            element: <LoginPage/>,
+        },
+        {
+            path: "/signup",
+            element: <SignUpPage/>,
+        },
+        {
+            path: "/routeFinder/:fromId/:toId",
+            element: <RouteFinder/>,
+        },
+        {
+            path: "/test",
+            element: <h1>Test</h1>,
+        },
+    ]
+};
+
 const router = createBrowserRouter([
     {
         path: "",
         element: <App/>,
         errorElement: <ErrorElement/>,
-        children: [
-            {
-                path: "",
-                element: <HomePage/>,
-            },
-            {
-                path: "/home",
-                element: <HomePage/>,
-            },
-            {
-                path: "/login",
-                element: <LoginPage/>,
-            },
-            {
-                path: "/signup",
-                element: <SignUpPage/>,
-            },
-            {
-                path: "/routeFinder/:fromId/:toId",
-                element: <RouteFinder/>,
-            },
-            {
-                path: "/test",
-                element: <h1>Test</h1>,
-            },
-        ]
+        children: routes.main
     },
 ]);
 
@@ -64,7 +68,7 @@ root.render(
             <ThemeProvider theme={theme}>
                 <RouterProvider router={router}/>
             </ThemeProvider>
-        </Provider>
+        </Provider>;
     </ApolloProvider>
 );
 
