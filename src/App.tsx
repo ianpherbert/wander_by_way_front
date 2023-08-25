@@ -5,7 +5,7 @@ import {Languages} from "./utils/Languages";
 import {CookieConsentObject} from "./components/cookies/CookieConstent";
 import {Box, Grid} from "@mui/material";
 import {Outlet} from "react-router-dom";
-import Footer from "./components/common/footer";
+import Footer from "./components/footer";
 
 const bodyStyle = {
     margin: "2rem auto auto auto",

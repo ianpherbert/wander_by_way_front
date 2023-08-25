@@ -13,7 +13,7 @@ import HomePage from "./components/pages/home";
 import LoginPage from "./components/pages/login";
 import SignUpPage from "./components/pages/signup";
 import RouteFinder from "./components/pages/routeFinder";
-import ErrorElement from "./components/common/error";
+import ErrorElement from "./components/pages/error";
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement

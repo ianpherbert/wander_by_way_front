@@ -32,10 +32,10 @@ import {
     useTripState
 } from "../../../../redux/trip/tripSlice";
 import {Toolbar} from "../../../common/maps/toolbar/Toolbar";
-import {Box, Grid, Typography} from "@mui/material";
-import {mapWrapperStyle, navigationStyle, routePreviewStyle} from "../routeFinderStyle";
+import {Box, Stack, Typography} from "@mui/material";
+import {mapWrapperStyle, navigationStyle} from "../routeFinderStyle";
 import SkipFinder from "./skipFinder/SkipFinder";
-import {mapTripIcons} from "../../../../utils/mapTripIcons";
+import {mapTripIconsIcofont} from "../../../../utils/mapTripIconsIcofont";
 import TripOverviewItem from "./TripOverviewItem";
 import NotificationContainer from "../../../common/maps/notifications/NotificationContainer";
 import {MapNotification} from "../../../common/maps/notifications/MapNotification";
@@ -59,7 +59,7 @@ export const RouteFinderMap = () => {
         type: PointType.City,
         filters: apiFilters
     });
-    const [customDropDown, setCustomDropDown] = useState<boolean>(false);
+    const [skipFinderOpen, setSkipFinderOpen] = useState<boolean>(false);
 
     const {
         data: routesFromCurrent,
@@ -209,7 +209,7 @@ export const RouteFinderMap = () => {
         setSearchCity(searchItem);
         refetchCurrentRoutes(searchItem);
         dispatch(addStopToTrip(stop));
-        setCustomDropDown(false);
+        setSkipFinderOpen(false);
     };
 
     const stepBack = (stop: Stop) => {
@@ -230,14 +230,14 @@ export const RouteFinderMap = () => {
         <>
             <i className={"icofont-double-right"}/>
             <i
-                className={mapTripIcons(routeType)}
+                className={mapTripIconsIcofont(routeType)}
                 onClick={() => {
-                    setCustomDropDown(routeType === RouteType.Other && !customDropDown);
+                    setSkipFinderOpen(routeType === RouteType.Other && !skipFinderOpen);
                 }}
             />
             <i className={"icofont-double-right"}/>
         </>
-    ), [customDropDown]);
+    ), [skipFinderOpen]);
 
     const mapNotifications = useMemo(() => {
         const notifs = [];
@@ -247,34 +247,36 @@ export const RouteFinderMap = () => {
         return notifs;
     }, [destinationName, loadingFromDestination, loadingCurrentRoutes, originInfo?.findCityById?.name, searchCity]);
 
+    const closeSkipFinder = useCallback(() => setSkipFinderOpen(false), [setSkipFinderOpen]);
+
     return (
-        <Grid container sx={{width: "90vw", margin: "auto"}}>
+        <Stack sx={{width: "90vw", margin: "auto"}}>
             <Typography
                 variant={"h5"}>{originInfo?.findCityById?.name} to {destinationName || destinationInfo?.findCityById?.name || "Anywhere"}</Typography>
-            <Grid xs={12}>
-                <Box sx={navigationStyle}>
-                    <Box sx={routePreviewStyle}>
-                        {trip.map(stop =>
-                            <Fragment key={stop.id}>
-                                {!stop.origin && <div>
-                                    {transitionIcon(stop.routeType)}
-                                </div>}
-                                <TripOverviewItem stop={stop} restart={stepBack}/>
-                            </Fragment>
-                        )}
-                    </Box>
-                    <SkipFinder open={customDropDown} onAddStop={addCustomStop}
-                        from={stops?.at(-1)?.from || originInfo?.findCityById?.name || ""}/>
-                </Box>
-            </Grid>
-            <Grid xs={12}>
+            <Box sx={navigationStyle}>
+                <Stack direction="row" width="100%" alignItems="center">
+                    {trip.map(stop =>
+                        <Fragment key={stop.id}>
+                            {!stop.origin && <div>
+                                {transitionIcon(stop.routeType)}
+                            </div>}
+                            <TripOverviewItem stop={stop} restart={stepBack}/>
+                        </Fragment>
+                    )}
+                </Stack>
+                <SkipFinder open={skipFinderOpen} onAddStop={addCustomStop}
+                    from={stops?.at(-1)?.from || originInfo?.findCityById?.name || ""}
+                    onClose={closeSkipFinder}/>
+            </Box>
+
+            <Box>
                 <Box sx={mapWrapperStyle}>
                     <Toolbar/>
                     <MapDisplay onAddStop={addStop}/>
                     {loadingCurrentRoutes && <Loader/>}
                     <NotificationContainer notifications={mapNotifications}/>
                 </Box>
-            </Grid>
-        </Grid>
+            </Box>
+        </Stack>
     );
 };

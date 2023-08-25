@@ -28,19 +28,6 @@ export const navigationStyle = {
     backgroundSize: 'cover',
 };
 
-export const routePreviewStyle = {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    justifyContent: "stretch",
-    alignItems: "center",
-    overflowX: "auto",
-    padding: "0px 10px 0px 10px",
-    flex: "1",
-    margin: "5px",
-    flexWrap: "no-wrap",
-};
-
 export const routePreviewItemWrapper = {
     flexWrap: "wrap",
     minWidth: "140px",

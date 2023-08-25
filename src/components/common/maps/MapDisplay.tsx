@@ -4,7 +4,7 @@
 import React, {useEffect, useRef, useState} from "react";
 import "./map.scss";
 import {Button, IconButton, Tooltip} from "@mui/material";
-import {mapTripIcons} from "../../../utils/mapTripIcons";
+import {mapTripIconsIcofont} from "../../../utils/mapTripIconsIcofont";
 import {formatTime} from "../../../utils/timeFormatter";
 import {useQuery} from "@apollo/client";
 import {routeToStation, routeTypeToPointType} from "../../../utils/routeStationTranslator";
@@ -193,7 +193,7 @@ const MapDisplay = ({onAddStop}: MapProps) => {
                 <h3>{mainCity()?.name || routeInfo.routeInfo.to.name}</h3>
                 <div>From: {routeInfo.routeInfo.from.name}</div>
                 <div className={"sidebar-destination-icon"}>
-                    <i className={mapTripIcons(routeInfo.routeInfo.type)}/>
+                    <i className={mapTripIconsIcofont(routeInfo.routeInfo.type)}/>
                     {formatTime(routeInfo?.routeInfo?.durationTotal || 0)}
                 </div>
                 <div className={"add-to-trip-wrapper"}>

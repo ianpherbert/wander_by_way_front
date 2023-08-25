@@ -1,4 +1,4 @@
-import {theme} from "../../../styles/themeProvider/theme";
+import {theme} from "../../styles/themeProvider/theme";
 import {lighten} from "@mui/material";
 
 export const footerStyle = {
