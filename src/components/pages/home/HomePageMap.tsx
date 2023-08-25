@@ -10,6 +10,7 @@ import {mapContainerStyle} from "./homePageStyles";
 import {ExploreOutlined, SwapHoriz} from "@mui/icons-material";
 import {mapStyle} from "../../common/styles/mapStyle";
 import CitySearchInput from "../../common/Input/CitySearchInput";
+import {useNavigate} from "react-router-dom";
 
 enum InputType {
     TO,
@@ -28,16 +29,18 @@ const HomePageMap = () => {
 
     const dispatch = useDispatch();
 
-    const submit = () => {
-        window.location.href = `/routefinder/${fromCity?.id}/${toCity?.id || "anywhere"}`;
-    };
+    const navigate = useNavigate();
 
-    const swapInputs = () => {
+    const submit = useCallback(() => {
+        navigate(`/routefinder/${fromCity?.id}/${toCity?.id || "anywhere"}`);
+    }, [fromCity, toCity]);
+
+    const swapInputs = useCallback(() => {
         const tempTo = toCity;
         const tempFrom = fromCity;
         setFromCity(tempTo);
         setToCity(tempFrom);
-    };
+    }, [fromCity, toCity]);
 
     useEffect(() => {
         const route = [];
@@ -69,7 +72,7 @@ const HomePageMap = () => {
 
 
     return (
-        <Box sx={mapContainerStyle}>
+        <Box sx={mapContainerStyle}>s
             <Typography variant={"h4"}>Where do you want to wander?</Typography>
             <Box sx={mapStyle.navigationWrapper}>
                 <Stack direction="row" spacing={1} mx={2}>
