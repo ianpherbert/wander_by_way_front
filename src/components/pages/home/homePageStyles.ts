@@ -30,11 +30,3 @@ export const mapContainerStyle = {
     width: "90vw",
     maxWidth: "1500px",
 };
-
-export const navBoxStyle = {
-    margin: "auto",
-    display: "flex",
-    justifyContent: "space-between",
-    flexWrap: "no-wrap",
-    width: "95%",
-};

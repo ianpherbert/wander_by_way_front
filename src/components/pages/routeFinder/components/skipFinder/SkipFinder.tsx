@@ -1,6 +1,5 @@
-import React, {FormEvent, useEffect, useMemo, useState} from "react";
+import React, {SyntheticEvent, useCallback, useEffect, useMemo, useState} from "react";
 import {
-    Autocomplete,
     Button,
     ButtonGroup,
     Dialog,
@@ -8,23 +7,14 @@ import {
     DialogContent,
     DialogTitle,
     FormControl,
-    Stack,
-    TextField
+    Stack
 } from "@mui/material";
-import {useQuery} from "@apollo/client";
 import {Stop} from "../../../../../core/trip/Stop";
-import {
-    CityOutput,
-    RouteType,
-    SearchCityDocument,
-    SearchCityQuery,
-    SearchCityQueryVariables
-} from "../../../../../gql/graphql";
+import {CityOutput, RouteType,} from "../../../../../gql/graphql";
 import {mapTripIcons} from "../../../../../utils/mapTripIconsIcofont";
 import {truncateString} from "../../../../../utils/stringFormat";
-import getInputValue from "../../../../../utils/getInputValue";
 import _toLower from "lodash/toLower";
-import {debounce} from "lodash";
+import CitySearchInput from "../../../../common/Input/CitySearchInput";
 
 interface SkipFinderProps {
     open: boolean;
@@ -35,29 +25,8 @@ interface SkipFinderProps {
 
 
 const SkipFinder = ({open, onAddStop, from, onClose}: SkipFinderProps) => {
-    const [searchTerm, setSearchTerm] = useState<string>("");
     const [selectedItem, setSelectedItem] = useState<CityOutput | null>(null);
     const [activeType, setActiveType] = useState<RouteType | null>();
-    const citySearch = useQuery<SearchCityQuery, SearchCityQueryVariables>(SearchCityDocument, {
-        variables: {
-            query: searchTerm
-        }
-    });
-
-
-    useEffect(() => {
-        setSearchTerm("");
-        setSelectedItem(null);
-        setActiveType(null);
-    }, [open]);
-
-    const selectItem = (reason: string, item: string | CityOutput | null) => {
-        if (typeof item === "string") {
-            setSelectedItem(null);
-        } else {
-            setSelectedItem(item);
-        }
-    };
 
     const addStop = () => {
         if (selectedItem && activeType) {
@@ -77,9 +46,9 @@ const SkipFinder = ({open, onAddStop, from, onClose}: SkipFinderProps) => {
         }
     };
 
-    const changeSearchTerm = debounce((e: FormEvent<HTMLDivElement>) => {
-        setSearchTerm(getInputValue(e));
-    }, 400);
+    const selectItem = useCallback((_: SyntheticEvent, value: CityOutput | null) => {
+        setSelectedItem(value);
+    }, [setSelectedItem]);
 
     const titleText = useMemo(() => {
         const activeTypeLabel = activeType && _toLower(activeType);
@@ -99,30 +68,20 @@ const SkipFinder = ({open, onAddStop, from, onClose}: SkipFinderProps) => {
 
     const buttonDisabled = useMemo(() => activeType === null || selectedItem === null, [activeType, selectedItem]);
 
+    useEffect(() => {
+        setSelectedItem(null);
+        setActiveType(null);
+    }, [open]);
+
     return (
         <Dialog open={open} maxWidth="xl">
             <DialogTitle sx={{textAlign: 'center', color: '#4a4a4a'}}>{titleText}</DialogTitle>
             <DialogContent>
                 <Stack direction="row" display="flex" spacing={2} mt={2}>
                     <FormControl size="small" fullWidth>
-                        <Autocomplete
-                            id={"input-from"}
-                            getOptionLabel={option => typeof option === "string" ? option : `${option?.name}, ${option?.country}`}
-                            freeSolo
-                            size="small"
-                            value={searchTerm}
-                            options={citySearch.data?.searchCity as CityOutput[] || []}
-                            onInput={(e) => changeSearchTerm(e)}
-                            onChange={(e, value: string | CityOutput | null, reason: string) => selectItem(reason, value)}
-                            renderInput={(params) => (
-                                <TextField
-                                    {...params}
-                                    label={"Where to?"}
-                                    variant="outlined"
-                                />
-                            )}
-                        />
-
+                        <CitySearchInput value={selectedItem}
+                            onChange={selectItem}
+                            id={"input-from"} size="small" label="Where to?"/>
                     </FormControl>
                     <Button fullWidth size="small" onClick={addStop}
                         disabled={buttonDisabled}
