@@ -9,11 +9,12 @@ import {ThemeProvider} from "@mui/material";
 import {theme} from "./styles/themeProvider/theme";
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import App from "./App";
-import HomePage from "./components/pages/home";
-import LoginPage from "./components/pages/login";
-import SignUpPage from "./components/pages/signup";
-import RouteFinder from "./components/pages/routeFinder";
+import HomePage from "./pages/home";
+import LoginPage from "./pages/login";
+import SignUpPage from "./pages/signup";
+import RouteFinder from "./pages/routeFinder";
 import ErrorElement from "./components/common/error";
+import TestMap from "./components/map/TestMap";
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
@@ -48,7 +49,7 @@ const routes = {
         },
         {
             path: "/test",
-            element: <h1>Test</h1>,
+            element: <TestMap/>,
         },
     ]
 };

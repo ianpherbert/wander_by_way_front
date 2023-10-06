@@ -1,16 +1,16 @@
 import React, {FormEvent, useEffect, useState} from "react";
-import "../../common/styles/map.scss";
-import MapDisplay from "../../common/maps/MapDisplay";
-import {MapPointType} from "../../common/maps/Point";
+import "../../components/common/styles/map.scss";
+import MapDisplay from "../../components/common/maps/MapDisplay";
+import {MapPointType} from "../../components/common/maps/Point";
 import {Autocomplete, Box, Button, FormControl, Typography} from "@mui/material";
 import {useQuery} from "@apollo/client";
-import {CssTextField} from "../../common/mui/inputs";
-import {CityOutput, SearchCityDocument, SearchCityQuery, SearchCityQueryVariables} from "../../../gql/graphql";
-import {setSearchPoints} from "../../../redux/map/mapSlice";
+import {CssTextField} from "../../components/common/mui/inputs";
+import {CityOutput, SearchCityDocument, SearchCityQuery, SearchCityQueryVariables} from "../../gql/graphql";
+import {setSearchPoints} from "../../redux/map/mapSlice";
 import {useDispatch} from "react-redux";
 import {mapContainerStyle, navBoxStyle} from "./homePageStyles";
 import {Snowshoeing, SwapHoriz} from "@mui/icons-material";
-import {mapStyle} from "../../common/styles/mapStyle";
+import {mapStyle} from "../../components/common/styles/mapStyle";
 
 enum InputType {
     TO,

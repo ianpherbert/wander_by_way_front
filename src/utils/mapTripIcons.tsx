@@ -1,5 +1,6 @@
 import {RouteType} from "../gql/graphql";
-
+import {DirectionsBoat, DirectionsBus, DirectionsCar, DirectionsTransit, Flight, Hiking} from "@mui/icons-material";
+import React from "react";
 
 export function mapTripIcons(type: RouteType): string {
     let iconClass;
@@ -23,4 +24,22 @@ export function mapTripIcons(type: RouteType): string {
         iconClass = "icofont-travelling";
     }
     return iconClass;
+}
+
+export function mapTripIconsMui(type: RouteType): JSX.Element {
+
+    switch (type) {
+    case RouteType.Bus:
+        return <DirectionsBus/>;
+    case RouteType.Train:
+        return <DirectionsTransit/>;
+    case RouteType.Plane:
+        return <Flight/>;
+    case RouteType.Boat:
+        return <DirectionsBoat/>;
+    case RouteType.Car:
+        return <DirectionsCar/>;
+    default:
+        return <Hiking/>;
+    }
 }

@@ -1,5 +1,5 @@
 import {theme} from "styles/themeProvider/theme";
-import {publicImage} from "../../../utils/publicImage";
+import {publicImage} from "../../utils/publicImage";
 
 export const homePageContainerStyle = {
     display: "flex",

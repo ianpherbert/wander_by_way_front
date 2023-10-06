@@ -1,8 +1,8 @@
 import React, {useMemo, useState} from "react";
-import {Stop} from "../../../../core/trip/Stop";
+import {Stop} from "../../../core/trip/Stop";
 import {Box, Grid, Tooltip} from "@mui/material";
 import {routePreviewItem, routePreviewItemWrapper} from "../routeFinderStyle";
-import ConfirmDialog from "../../../common/dialog/ConfirmDialog";
+import ConfirmDialog from "../../../components/common/dialog/ConfirmDialog";
 
 interface TripOverviewItemProps {
     stop: Stop,

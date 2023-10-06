@@ -1,19 +1,19 @@
 import React, {FormEvent, useEffect, useState} from "react";
 import "./skipfinder.scss";
 import {Autocomplete, Button, FormControl} from "@mui/material";
-import {CssTextField} from "../../../../common/mui/inputs";
+import {CssTextField} from "../../../../components/common/mui/inputs";
 import {useQuery} from "@apollo/client";
-import {Stop} from "../../../../../core/trip/Stop";
+import {Stop} from "../../../../core/trip/Stop";
 import {
     CityOutput,
     RouteType,
     SearchCityDocument,
     SearchCityQuery,
     SearchCityQueryVariables
-} from "../../../../../gql/graphql";
-import {mapTripIcons} from "../../../../../utils/mapTripIcons";
-import {truncateString} from "../../../../../utils/stringFormat";
-import getInputValue from "../../../../../utils/getInputValue";
+} from "../../../../gql/graphql";
+import {mapTripIcons} from "../../../../utils/mapTripIcons";
+import {truncateString} from "../../../../utils/stringFormat";
+import getInputValue from "../../../../utils/getInputValue";
 
 interface SkipFinderProps {
     open: boolean;

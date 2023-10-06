@@ -29,7 +29,7 @@ import {
 } from "../../../redux/map/mapSlice";
 import {useDispatch} from "react-redux";
 import initMap from "./utils/InitMap";
-import mapPoints from "./utils/mapPointInfo";
+import mapPoints from "../../map/mapPointInfo";
 import {ClearSharp} from "@mui/icons-material";
 
 interface MapProps {
@@ -103,7 +103,7 @@ const MapDisplay = ({onAddStop}: MapProps) => {
                     }
                 });
                 map.on('click', "points", (e) => {
-                    const coordinates = e.features?.[0].geometry?.coordinates.slice();
+                    const coordinates = e.features?.[0].geometry?.coordinates;
                     const description = e?.features?.[0]?.properties?.description;
                     if (shouldZoom.current) {
                         map.flyTo({

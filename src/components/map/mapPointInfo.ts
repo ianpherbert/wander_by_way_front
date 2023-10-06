@@ -1,10 +1,10 @@
-import {MapPointType, Point, PointInfo} from "../Point";
-import SearchItemPopup from "../popups/SearchItemPopup";
-import OriginPopup from "../popups/OriginPopup";
-import StopPopup from "../popups/StopPopup";
-import DestinationPopup from "../popups/DestinationPopup";
-import {mapIcons} from "../icons";
-import {RouteType} from "../../../../gql/graphql";
+import {MapPointType, Point, PointInfo} from "../common/maps/Point";
+import SearchItemPopup from "../common/maps/popups/SearchItemPopup";
+import OriginPopup from "../common/maps/popups/OriginPopup";
+import StopPopup from "../common/maps/popups/StopPopup";
+import DestinationPopup from "../common/maps/popups/DestinationPopup";
+import {mapIcons} from "./icons";
+import {RouteType} from "../../gql/graphql";
 
 export interface MapFeature {
     type: "Feature";
@@ -13,6 +13,7 @@ export interface MapFeature {
         icon: string;
         size: number;
         point: Point;
+        id: string;
     }
     geometry: {
         type: "Point",
@@ -82,7 +83,8 @@ function mapPoints(points: Point[], showConnections: boolean): MapFeature[] {
                 description: body,
                 icon: icon,
                 size: scale,
-                point: it
+                point: it,
+                id: it.id
             },
             geometry: {
                 type: "Point",

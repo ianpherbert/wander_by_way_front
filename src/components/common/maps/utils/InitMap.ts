@@ -1,5 +1,5 @@
 import mapboxgl from "mapbox-gl";
-import {mapIcons} from "../icons";
+import {mapIcons} from "../../../map/icons";
 
 
 function initMap(): Promise<mapboxgl.Map> {

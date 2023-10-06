@@ -1,10 +1,10 @@
 import React, {Fragment, useCallback, useEffect, useMemo, useState} from "react";
-import {MapPointType, Point} from "../../../common/maps/Point";
+import {MapPointType, Point} from "../../../components/common/maps/Point";
 
 import {useQuery} from "@apollo/client";
 import {useParams} from "react-router-dom";
-import {Stop} from "../../../../core/trip/Stop";
-import Loader from "../../../common/loader";
+import {Stop} from "../../../core/trip/Stop";
+import Loader from "../../../components/common/loader";
 import matchRoutes from "../utils/routeMatcher";
 import mapRouteToStop from "../utils/mapRouteToStop";
 import {
@@ -18,11 +18,11 @@ import {
     RouteOutput,
     RouteSearchFilterInput,
     RouteType
-} from "../../../../gql/graphql";
-import {routeTypeToPointType} from "../../../../utils/routeStationTranslator";
-import MapDisplay from "../../../common/maps/MapDisplay";
+} from "../../../gql/graphql";
+import {routeTypeToPointType} from "../../../utils/routeStationTranslator";
+import MapDisplay from "../../../components/common/maps/MapDisplay";
 import {useDispatch} from "react-redux";
-import {setSearchPoints, useApiFilters} from "../../../../redux/map/mapSlice";
+import {setSearchPoints, useApiFilters} from "../../../redux/map/mapSlice";
 import {
     addStopToTrip,
     resetStops,
@@ -30,15 +30,15 @@ import {
     setOrigin,
     useTrip,
     useTripState
-} from "../../../../redux/trip/tripSlice";
-import {Toolbar} from "../../../common/maps/toolbar/Toolbar";
+} from "../../../redux/trip/tripSlice";
+import {Toolbar} from "../../../components/common/maps/toolbar/Toolbar";
 import {Box, Grid, Typography} from "@mui/material";
 import {mapWrapperStyle, navigationStyle, routePreviewStyle} from "../routeFinderStyle";
 import SkipFinder from "./skipFinder/SkipFinder";
-import {mapTripIcons} from "../../../../utils/mapTripIcons";
+import {mapTripIcons} from "../../../utils/mapTripIcons";
 import TripOverviewItem from "./TripOverviewItem";
-import NotificationContainer from "../../../common/maps/notifications/NotificationContainer";
-import {MapNotification} from "../../../common/maps/notifications/MapNotification";
+import NotificationContainer from "../../../components/common/maps/notifications/NotificationContainer";
+import {MapNotification} from "../../../components/common/maps/notifications/MapNotification";
 
 interface SearchPoint {
     id: string,

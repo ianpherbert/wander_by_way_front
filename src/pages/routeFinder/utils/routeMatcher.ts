@@ -1,4 +1,4 @@
-import {FindAllRoutesQuery} from "../../../../gql/graphql";
+import {FindAllRoutesQuery} from "../../../gql/graphql";
 
 /**
  * This function matches routes based on their destination name or destination id from two sets of routes.

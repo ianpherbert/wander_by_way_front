@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {randomHello} from "../../../utils/randomHello";
+import {randomHello} from "../../utils/randomHello";
 import {Box, Grid, Typography} from "@mui/material";
 import {welcomeCardStyle, welcomeGridStyle} from "./homePageStyles";
 

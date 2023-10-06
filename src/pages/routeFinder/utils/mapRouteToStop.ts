@@ -1,7 +1,7 @@
-import {Stop} from "../../../../core/trip/Stop";
+import {Stop} from "../../../core/trip/Stop";
 
-import {formatTime} from "../../../../utils/timeFormatter";
-import {RouteOutput, RouteType} from "../../../../gql/graphql";
+import {formatTime} from "../../../utils/timeFormatter";
+import {RouteOutput, RouteType} from "../../../gql/graphql";
 
 /**
  * This function maps a Route object to a Stop Object
