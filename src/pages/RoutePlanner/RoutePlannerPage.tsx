@@ -6,6 +6,7 @@ import {useParams} from "react-router-dom";
 import {MapPointType, Point} from "../../components/common/maps/Point";
 import useRouteSearchPoints from "../../components/RoutePlanner/useRouteSearchPoints";
 import useCity from "../../components/RoutePlanner/useCity";
+import MapLoader from "../../components/map/MapLoader";
 
 export type Filter = {
     active: boolean,
@@ -104,6 +105,7 @@ export default function RoutePlannerPage() {
             }}>
             <Box m="auto">
                 <RoutePlannerMap/>
+                {searchLoading && <MapLoader loadingText="Finding routes" color="info"/>}
             </Box>
         </RoutePlannerContext.Provider>);
 }
