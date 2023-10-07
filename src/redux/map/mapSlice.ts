@@ -179,6 +179,7 @@ export const useSelectedPoint = () => {
 
 export const useFilteredPoints = () => {
     return useSelector((state: RootState) => {
+        console.log(state.mapSlice.filteredPoints);
         return state.mapSlice.filteredPoints;
     });
 };

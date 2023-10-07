@@ -1,6 +1,6 @@
-import Map from "./Map";
-import {MapPointType, Point} from "../common/maps/Point";
-import {RouteOutput, RouteStopOutput, RouteType} from "../../gql/graphql";
+import Map from "../map/Map";
+import {Point} from "../common/maps/Point";
+import {RouteOutput, RouteStopOutput} from "../../gql/graphql";
 import React, {useCallback, useMemo, useState} from "react";
 import {
     Box,
@@ -18,74 +18,7 @@ import {
 } from "@mui/material";
 import {mapTripIconsMui} from "../../utils/mapTripIcons";
 import {AddLocation, Close} from "@mui/icons-material";
-
-const points = [{
-    id: '1',
-    longitude: -1.554136,
-    latitude: 47.218637,
-    type: MapPointType.SEARCH_ITEM,
-    label: 'Nantes Station',
-    routeInfo: {
-        routes: [
-            {
-                durationHours: 0,
-                durationMinutes: 20,
-                durationTotal: 20,
-                from: {
-                    country: 'France',
-                    id: '2',
-                    latitude: '47.207779',
-                    longitude: '-1.560047',
-                    name: 'Commerce',
-                },
-                lineDistance: 5.5,
-                to: {
-                    country: 'France',
-                    id: '1',
-                    latitude: '47.218637',
-                    longitude: '-1.554136',
-                    name: 'Nantes Station',
-                },
-                type: RouteType.Bus,
-            },
-            {
-                durationHours: 0,
-                durationMinutes: 20,
-                durationTotal: 20,
-                from: {
-                    country: 'France',
-                    id: '2',
-                    latitude: '47.207779',
-                    longitude: '-1.560047',
-                    name: 'Pinel',
-                },
-                lineDistance: 5.5,
-                to: {
-                    country: 'France',
-                    id: '1',
-                    latitude: '47.218637',
-                    longitude: '-1.554136',
-                    name: 'Nantes Station',
-                },
-                type: RouteType.Bus,
-            }
-        ],
-        durationAverage: 20,
-        lineDistanceAverage: 10,
-    },
-},
-{
-    id: '2',
-    longitude: -1.560047,
-    latitude: 47.207779,
-    type: MapPointType.DESTINATION,
-    label: 'Commerce',
-    stopRouteInfo: {
-        durationMinutes: 5,
-        fromName: 'Nantes Station',
-        type: RouteType.Train,
-    },
-}];
+import {useRoutePlannerContext} from "../../pages/RoutePlanner/RoutePlannerPage";
 
 const style = {
     height: "70vh",
@@ -129,8 +62,10 @@ function PanelItem({route, onAdd}: { route: RouteOutput, onAdd: (to: RouteStopOu
     );
 }
 
-export default function TestMap() {
+
+export default function RoutePlannerMap() {
     const [selectedPoint, setSelectedPoint] = useState<Point>();
+    const {points, addStop} = useRoutePlannerContext();
 
     const deselectPoint = useCallback(() => setSelectedPoint(undefined), [setSelectedPoint]);
 
@@ -140,14 +75,14 @@ export default function TestMap() {
         return uniqueNames.join("/");
     }, [selectedPoint]);
 
-    const addStop = useCallback((stop: RouteStopOutput) => {
-        console.log(stop);
+    const handleAddStop = useCallback((stop: RouteStopOutput) => {
         setSelectedPoint(undefined);
+        addStop(stop);
     }, [setSelectedPoint, selectedPoint]);
 
     return (
         <Stack sx={style} direction="row">
-            <Map points={points} onSelectPoint={setSelectedPoint} selectedPoint={selectedPoint}/>
+            <Map points={points} onSelectPoint={setSelectedPoint} selectedPoint={selectedPoint} showConnections={true}/>
             <Box flex={1} display="flex">
                 <Collapse orientation={"horizontal"} in={Boolean(selectedPoint?.routeInfo?.routes.length)}>
                     <Paper sx={styles.panelList} elevation={3}>
@@ -160,10 +95,12 @@ export default function TestMap() {
                             </Box>
                         </Stack>
                         <List>
-                            {selectedPoint?.routeInfo?.routes.map((it) => <PanelItem route={it} key={it.from.id}
-                                onAdd={addStop}/>)}
+                            {selectedPoint?.routeInfo?.routes.map((it) =>
+                                <PanelItem route={it} key={it.from.id}
+                                    onAdd={handleAddStop}
+                                />
+                            )}
                         </List>
-
                     </Paper>
                 </Collapse>
             </Box>

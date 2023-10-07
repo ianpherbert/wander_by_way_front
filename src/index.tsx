@@ -14,7 +14,7 @@ import LoginPage from "./pages/login";
 import SignUpPage from "./pages/signup";
 import RouteFinder from "./pages/routeFinder";
 import ErrorElement from "./components/common/error";
-import TestMap from "./components/map/TestMap";
+import RoutePlannerPage from "./pages/RoutePlanner/RoutePlannerPage";
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
@@ -48,8 +48,8 @@ const routes = {
             element: <RouteFinder/>,
         },
         {
-            path: "/test",
-            element: <TestMap/>,
+            path: "/test/:fromId/:toId",
+            element: <RoutePlannerPage/>,
         },
     ]
 };

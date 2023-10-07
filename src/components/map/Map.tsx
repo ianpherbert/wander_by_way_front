@@ -35,7 +35,7 @@ async function initMap(): Promise<mapboxgl.Map> {
     });
 }
 
-function addPointsLayer(map: mapboxgl.Map, onSelectPoint: (id: string) => void, onClosePopup: () => void) {
+function addPointsLayer(map: mapboxgl.Map, onSelectPoint: (id: string) => void) {
     map.addSource("points", {
         type: "geojson",
         data: {
@@ -82,10 +82,7 @@ function addPointsLayer(map: mapboxgl.Map, onSelectPoint: (id: string) => void, 
             zoom: 12,
             padding: {top: 0, bottom: 0, left: 0, right: 0}
         });
-
-
         onSelectPoint(id);
-
     });
 }
 
@@ -93,12 +90,14 @@ function addPointsLayer(map: mapboxgl.Map, onSelectPoint: (id: string) => void, 
 function Map({autoZoom, points, onSelectPoint, selectedPoint, showConnections, ...props}: MapProps) {
     const [map, setMap] = useState<mapboxgl.Map>();
     const [popup, setPopup] = useState<mapboxgl.Popup>();
+    const [selectedId, setSelectedId] = useState<string>();
+
     // Initialise map
     useEffect(() => {
         if (!map) {
             initMap().then(mapBox => {
                 setMap(mapBox);
-                addPointsLayer(mapBox, selectPoint, clearSelectedPoint);
+                addPointsLayer(mapBox, setSelectedId);
             });
         }
     }, []);
@@ -107,16 +106,19 @@ function Map({autoZoom, points, onSelectPoint, selectedPoint, showConnections, .
         onSelectPoint?.(undefined);
         popup?.remove();
         setPopup(undefined);
+        setSelectedId(undefined);
     }, [onSelectPoint]);
 
     const features = useMemo(() => points ? mapPoints(points, Boolean(showConnections)) : [], [points, showConnections]);
 
     const selectedFeature = useMemo(() => features.find(it => it.properties.id === selectedPoint?.id), [features, selectedPoint]);
 
-    const selectPoint = useCallback((id: string) => {
-        const selectedPoint = points?.find(it => it.id === id);
-        if (onSelectPoint && selectedPoint) onSelectPoint(selectedPoint);
-    }, [onSelectPoint]);
+    // Here we have to have selectedId as a dep instead of passing a function to an init function
+    // The action needs to be set off on the React side
+    useEffect(() => {
+        const selectPoint = points?.find(it => it.id === selectedId);
+        if (onSelectPoint && selectPoint) onSelectPoint(selectPoint);
+    }, [selectedId]);
 
     useEffect(() => {
         if (selectedFeature && map) {
@@ -143,7 +145,7 @@ function Map({autoZoom, points, onSelectPoint, selectedPoint, showConnections, .
 
     //if Map and points exist and autozoom is true zoom to points
     useEffect(() => {
-        if (!points || selectedPoint) {
+        if (!points || selectedId || points.length === 0) {
             return;
         }
         const searchPoints = [...points];
