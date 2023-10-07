@@ -1,6 +1,6 @@
 import Map from "../map/Map";
 import {Point} from "../common/maps/Point";
-import {RouteOutput, RouteStopOutput} from "../../gql/graphql";
+import {PointType, RouteOutput} from "../../gql/graphql";
 import React, {useCallback, useMemo, useState} from "react";
 import {
     Box,
@@ -19,6 +19,8 @@ import {
 import {mapTripIconsMui} from "../../utils/mapTripIcons";
 import {AddLocation, Close} from "@mui/icons-material";
 import {useRoutePlannerContext} from "../../pages/RoutePlanner/RoutePlannerPage";
+import useFindCityByTransit from "./useFindCityByTransit";
+import {routeToStation, routeTypeToPointType} from "../../utils/routeStationTranslator";
 
 const style = {
     height: "70vh",
@@ -26,7 +28,7 @@ const style = {
     margin: "auto"
 };
 
-function PanelItem({route, onAdd}: { route: RouteOutput, onAdd: (to: RouteStopOutput) => void }) {
+function PanelItem({route, onAdd}: { route: RouteOutput, onAdd: (to: RouteOutput) => void }) {
     const subtitle = useMemo(() => {
         const {durationHours, durationMinutes, from} = route;
         const hourString = durationHours ? durationHours : "0";
@@ -35,7 +37,7 @@ function PanelItem({route, onAdd}: { route: RouteOutput, onAdd: (to: RouteStopOu
         return `${hourString}:${minuteString} from ${from.name}`;
     }, [route]);
 
-    const addStop = useCallback(() => route.to && onAdd(route.to), [onAdd, route]);
+    const addStop = useCallback(() => route && onAdd(route), [onAdd, route]);
 
     return (
         <>
@@ -67,18 +69,40 @@ export default function RoutePlannerMap() {
     const [selectedPoint, setSelectedPoint] = useState<Point>();
     const {points, addStop} = useRoutePlannerContext();
 
+    const {cities} = useFindCityByTransit(selectedPoint?.id ?? "", routeToStation(selectedPoint?.routeInfo?.routes[0]?.type), String(selectedPoint?.routeInfo?.routes[0]?.to?.name), !selectedPoint);
+
     const deselectPoint = useCallback(() => setSelectedPoint(undefined), [setSelectedPoint]);
 
     const selectedPointName = useMemo(() => {
-        const names = selectedPoint?.routeInfo?.routes.map(it => it.to.name);
-        const uniqueNames = Array.from(new Set(names));
-        return uniqueNames.join("/");
-    }, [selectedPoint]);
+        const nameList = selectedPoint?.routeInfo?.routes.map(it => it.to.name);
+        const names = Array.from(new Set(nameList)).join("/");
+        if (cities?.[0]?.name && cities?.[0]?.name === String(names)) {
+            return cities[0].name;
+        }
+        if (cities?.[0]?.name && cities?.[0]?.name !== String(names)) {
+            return `${names} (${cities[0].name})`;
+        }
+        return names;
 
-    const handleAddStop = useCallback((stop: RouteStopOutput) => {
+    }, [selectedPoint, cities]);
+
+    const handleAddStop = useCallback((stop: RouteOutput) => {
         setSelectedPoint(undefined);
-        addStop(stop);
-    }, [setSelectedPoint, selectedPoint]);
+        const city = cities?.[0];
+        if (city) {
+            addStop({
+                id: city.id,
+                latitude: city.latitude,
+                longitude: city.longitude,
+                name: city.name,
+                type: PointType.City
+            });
+        } else {
+            addStop({...stop.to, type: routeTypeToPointType(stop.type)});
+        }
+
+    }, [setSelectedPoint, selectedPoint, cities]);
+
 
     return (
         <Stack sx={style} direction="row">

@@ -16,7 +16,7 @@ export const stationToRoute = (stationType: StationType) => {
     }
 };
 
-export const routeToStation = (routeType: RouteType) => {
+export const routeToStation = (routeType?: RouteType) => {
     switch (routeType) {
     case RouteType.Plane:
         return StationType.Airport;
@@ -31,7 +31,7 @@ export const routeToStation = (routeType: RouteType) => {
     }
 };
 
-export const routeTypeToPointType = (routeType: RouteType): PointType => {
+export const routeTypeToPointType = (routeType?: RouteType): PointType => {
     switch (routeType) {
     case RouteType.Plane:
         return PointType.Airport;

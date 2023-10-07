@@ -6,6 +6,15 @@ import {Point} from "../common/maps/Point";
 import mapPoints from "./mapPointInfo";
 import {Feature} from "geojson";
 
+/**
+ * Type definition for Map component props
+ * @typedef {object} MapProps
+ * @property {Point[]} [points] - Array of points to display on the map
+ * @property {boolean} [showConnections] - Flag to show connections between points
+ * @property {boolean} [autoZoom] - Flag to automatically zoom the map to fit points
+ * @property {Point} [selectedPoint] - The selected point on the map
+ * @property {(point?: Point) => void} [onSelectPoint] - Callback when a point is selected
+ */
 type MapProps = BoxProps & {
     points?: Point[];
     showConnections?: boolean;
@@ -14,6 +23,10 @@ type MapProps = BoxProps & {
     onSelectPoint?: (point?: Point) => void;
 }
 
+/**
+ * Initializes the mapbox map.
+ * @returns {Promise<mapboxgl.Map>} Returns a promise that resolves with the initialized mapbox map
+ */
 async function initMap(): Promise<mapboxgl.Map> {
     return new Promise((resolve, reject) => {
         mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY || "";
@@ -35,6 +48,11 @@ async function initMap(): Promise<mapboxgl.Map> {
     });
 }
 
+/**
+ * Adds a layer to the map for displaying points.
+ * @param {mapboxgl.Map} map - The mapbox map instance
+ * @param {(id: string) => void} onSelectPoint - Callback for when a point is selected
+ */
 function addPointsLayer(map: mapboxgl.Map, onSelectPoint: (id: string) => void) {
     map.addSource("points", {
         type: "geojson",
@@ -86,7 +104,10 @@ function addPointsLayer(map: mapboxgl.Map, onSelectPoint: (id: string) => void) 
     });
 }
 
-
+/**
+ * React component for rendering a map with points and optional connections.
+ * @param {MapProps} props - Props for the component
+ */
 function Map({autoZoom, points, onSelectPoint, selectedPoint, showConnections, ...props}: MapProps) {
     const [map, setMap] = useState<mapboxgl.Map>();
     const [popup, setPopup] = useState<mapboxgl.Popup>();
@@ -117,9 +138,10 @@ function Map({autoZoom, points, onSelectPoint, selectedPoint, showConnections, .
     // The action needs to be set off on the React side
     useEffect(() => {
         const selectPoint = points?.find(it => it.id === selectedId);
-        if (onSelectPoint && selectPoint) onSelectPoint(selectPoint);
+        if (onSelectPoint) onSelectPoint(selectPoint);
     }, [selectedId]);
 
+    // Add/remove popup when selectedFeature changes
     useEffect(() => {
         if (selectedFeature && map) {
             const popup = new mapboxgl.Popup()
@@ -129,10 +151,12 @@ function Map({autoZoom, points, onSelectPoint, selectedPoint, showConnections, .
             setPopup(popup);
         }
         if (!selectedFeature && map) {
+            setSelectedId(undefined);
             popup?.remove();
         }
     }, [selectedFeature, map]);
 
+    // Add points data to map
     useEffect(() => {
         if (map && features) {
             const source = map.getSource("points") as GeoJSONSource;
@@ -169,7 +193,7 @@ function Map({autoZoom, points, onSelectPoint, selectedPoint, showConnections, .
                 maxZoom: 7
             });
         }
-    }, [map, points, autoZoom, selectedPoint]);
+    }, [map, points, autoZoom, selectedPoint, selectedId]);
 
     return (
         <Box sx={styles.container} {...props} >

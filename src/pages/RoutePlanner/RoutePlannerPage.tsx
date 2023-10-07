@@ -3,8 +3,9 @@ import RoutePlannerMap from "../../components/RoutePlanner/RoutePlannerMap";
 import {createContext, useCallback, useContext, useMemo, useState} from "react";
 import {PointType, RouteStopOutput} from "../../gql/graphql";
 import {useParams} from "react-router-dom";
-import {Point} from "../../components/common/maps/Point";
-import useRouteSearchPoints, {SearchPoint} from "../../components/RoutePlanner/useRouteSearchPoints";
+import {MapPointType, Point} from "../../components/common/maps/Point";
+import useRouteSearchPoints from "../../components/RoutePlanner/useRouteSearchPoints";
+import useCity from "../../components/RoutePlanner/useCity";
 
 export type Filter = {
     active: boolean,
@@ -35,11 +36,15 @@ const defaultFilters = {
     // route: defaultFilter
 };
 
+type TripPoint = RouteStopOutput & {
+    type: PointType
+}
+
 type RoutePlannerContextState = {
     points: Point[];
     filters: Filters;
     setFilters: (filters: Filters) => void;
-    addStop: (stop: RouteStopOutput) => void;
+    addStop: (stop: TripPoint) => void;
 }
 
 const RoutePlannerContext = createContext<RoutePlannerContextState>({} as RoutePlannerContextState);
@@ -59,25 +64,34 @@ function matchPoints(searchPoints: Point[], destinationPoints?: Point[]): Point[
 export default function RoutePlannerPage() {
     const {fromId, toId} = useParams();
     const [filters, setFilters] = useState<Filters>(defaultFilters);
-    const [searchPoint, setSearchPoint] = useState<RouteStopOutput>();
+    const [searchPoint, setSearchPoint] = useState<TripPoint>();
 
-    const routesFromDestinationObject: SearchPoint = useMemo(() => ({
+    const {points: destinationRoutes, loading: destinationLoading} = useRouteSearchPoints({
         skip: !toId,
         variables: {id: toId || "", type: PointType.City, filters},
-    }), [toId, filters]);
-    const {points: destinationRoutes, loading: destinationLoading} = useRouteSearchPoints(routesFromDestinationObject);
+    });
 
-    const routesFromSelectedObject: SearchPoint = useMemo(() => ({
-        variables: {id: searchPoint?.id ?? fromId ?? "", type: PointType.City, filters},
-    }), [fromId, searchPoint, filters]);
-    const {points: searchPoints, loading: searchLoading} = useRouteSearchPoints(routesFromSelectedObject);
+    const {cityPoint: originPoint} = useCity(fromId ?? "", MapPointType.DESTINATION, !fromId);
+    const {cityPoint: destinationPoint} = useCity(toId ?? "", MapPointType.DESTINATION, !toId);
+
+    const {points: searchPoints, loading: searchLoading} = useRouteSearchPoints({
+        skip: !(searchPoint ?? fromId),
+        variables: {
+            id: searchPoint?.id ?? fromId ?? "",
+            type: fromId ? PointType.City : searchPoint?.type ?? PointType.Other,
+            filters
+        },
+    });
 
 
-    const addStop = useCallback((stop: RouteStopOutput) => {
-        console.log(stop);
-    }, []);
+    const addStop = useCallback((stop: TripPoint) => {
+        setSearchPoint(stop);
+    }, [setSearchPoint]);
 
-    const points = useMemo(() => matchPoints(searchPoints ?? [], destinationRoutes), [searchPoints, destinationRoutes]);
+    const points = useMemo(() => {
+        const matchedSearchPoints = matchPoints(searchPoints ?? [], destinationRoutes);
+        return [...originPoint ? [originPoint] : [], ...matchedSearchPoints, ...destinationPoint ? [destinationPoint] : []];
+    }, [searchPoints, destinationRoutes]);
 
 
     return (
