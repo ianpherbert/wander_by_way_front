@@ -51,7 +51,6 @@ export type TripPoint = RouteStopOutput & {
     origin?: boolean;
     destination?: boolean;
     trip?: Trip
-
 }
 
 type RoutePlannerContextState = {
@@ -80,7 +79,7 @@ export default function RoutePlannerPage() {
     const {fromId, toId} = useParams();
     const [filters, setFilters] = useState<Filters>(defaultFilters);
     const [searchPoint, setSearchPoint] = useState<TripPoint>();
-    const [addedPoints, setAddedPoints] = useState<TripPoint[]>([]);
+    const [addedTripPoints, setAddedTripPoints] = useState<TripPoint[]>([]);
 
     const {points: destinationRoutes, loading: destinationLoading} = useRouteSearchPoints({
         skip: !toId,
@@ -107,7 +106,7 @@ export default function RoutePlannerPage() {
             pointType: PointType.Point,
             origin: true
         });
-        tripTable.push(...addedPoints);
+        tripTable.push(...addedTripPoints);
         if (destinationPoint) tripTable.push({
             id: destinationPoint.id,
             name: destinationPoint.label,
@@ -115,17 +114,25 @@ export default function RoutePlannerPage() {
             destination: true
         });
         return tripTable;
-    }, [addedPoints, originPoint, destinationPoint]);
+    }, [addedTripPoints, originPoint, destinationPoint]);
 
     const addStop = useCallback((stop: TripPoint) => {
-        setAddedPoints((value) => [...value, stop]);
+        setAddedTripPoints((value) => [...value, stop]);
         setSearchPoint(stop);
-    }, [setSearchPoint, setAddedPoints]);
+    }, [setSearchPoint, setAddedTripPoints]);
 
     const points = useMemo(() => {
         const matchedSearchPoints = matchPoints(searchPoints ?? [], destinationRoutes);
-        return [...originPoint ? [originPoint] : [], ...matchedSearchPoints, ...destinationPoint ? [destinationPoint] : []];
-    }, [searchPoints, destinationRoutes]);
+        const tripPoints: Point[] = addedTripPoints.map(it => ({
+            id: it.id as string,
+            longitude: parseFloat(it.longitude!),
+            latitude: parseFloat(it.latitude!),
+            type: MapPointType.INTERMEDIATE,
+            label: it.name as string,
+
+        } as Point));
+        return [...originPoint ? [originPoint] : [], ...matchedSearchPoints, ...tripPoints, ...destinationPoint ? [destinationPoint] : []];
+    }, [searchPoints, destinationRoutes, addedTripPoints]);
 
     return (
         <RoutePlannerContext.Provider
