@@ -22,11 +22,6 @@ import {useRoutePlannerContext} from "../../pages/RoutePlanner/RoutePlannerPage"
 import useFindCityByTransit from "./useFindCityByTransit";
 import {routeToStation, routeTypeToPointType} from "../../utils/routeStationTranslator";
 
-const style = {
-    height: "70vh",
-    width: "90vw",
-    margin: "auto"
-};
 
 function PanelItem({route, onAdd}: { route: RouteOutput, onAdd: (to: RouteOutput) => void }) {
     const subtitle = useMemo(() => {
@@ -88,6 +83,12 @@ export default function RoutePlannerMap() {
 
     const handleAddStop = useCallback((stop: RouteOutput) => {
         setSelectedPoint(undefined);
+        const trip = {
+            routeType: stop.type,
+            durationHours: stop.durationHours as number,
+            durationMinutes: stop.durationMinutes as number,
+            durationTotal: stop.durationTotal as number
+        };
         const city = cities?.[0];
         if (city) {
             addStop({
@@ -95,17 +96,18 @@ export default function RoutePlannerMap() {
                 latitude: city.latitude,
                 longitude: city.longitude,
                 name: city.name,
-                type: PointType.City
+                pointType: PointType.City,
+                trip
             });
         } else {
-            addStop({...stop.to, type: routeTypeToPointType(stop.type)});
+            addStop({...stop.to, pointType: routeTypeToPointType(stop.type), trip});
         }
 
     }, [setSelectedPoint, selectedPoint, cities]);
 
 
     return (
-        <Stack sx={style} direction="row">
+        <Stack sx={styles.wrapper} direction="row">
             <Map points={points} onSelectPoint={setSelectedPoint} selectedPoint={selectedPoint} showConnections={true}/>
             <Box flex={1} display="flex">
                 <Collapse orientation={"horizontal"} in={Boolean(selectedPoint?.routeInfo?.routes.length)}>
@@ -133,6 +135,10 @@ export default function RoutePlannerMap() {
 }
 
 const styles = {
+    wrapper: {
+        height: "70vh",
+        width: "100%",
+    },
     panelList: {
         width: 400,
         flex: 1,

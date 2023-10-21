@@ -1,6 +1,15 @@
-import {RouteType} from "../gql/graphql";
-import {DirectionsBoat, DirectionsBus, DirectionsCar, DirectionsTransit, Flight, Hiking} from "@mui/icons-material";
+import {PointType, RouteType} from "../gql/graphql";
+import {
+    DirectionsBoat,
+    DirectionsBus,
+    DirectionsCar,
+    DirectionsTransit,
+    Flight,
+    Hiking,
+    LocationCity,
+} from "@mui/icons-material";
 import React from "react";
+import {SvgIconProps} from "@mui/material";
 
 export function mapTripIcons(type: RouteType): string {
     let iconClass;
@@ -26,20 +35,47 @@ export function mapTripIcons(type: RouteType): string {
     return iconClass;
 }
 
-export function mapTripIconsMui(type: RouteType): JSX.Element {
+export function mapTripIconsMui(type: RouteType | PointType, props?: SvgIconProps): JSX.Element {
 
     switch (type) {
     case RouteType.Bus:
-        return <DirectionsBus/>;
+        return <DirectionsBus {...props}/>;
     case RouteType.Train:
-        return <DirectionsTransit/>;
+    case PointType.Station:
+        return <DirectionsTransit {...props}/>;
+    case PointType.Airport:
     case RouteType.Plane:
-        return <Flight/>;
+        return <Flight {...props}/>;
+    case PointType.Port:
     case RouteType.Boat:
-        return <DirectionsBoat/>;
+        return <DirectionsBoat {...props}/>;
     case RouteType.Car:
-        return <DirectionsCar/>;
+        return <DirectionsCar {...props}/>;
+    case PointType.City:
+        return <LocationCity {...props}/>;
     default:
-        return <Hiking/>;
+        return <Hiking {...props}/>;
+    }
+}
+
+export function TransitIcon({type, ...props}: { type: RouteType | PointType } & SvgIconProps) {
+    switch (type) {
+    case RouteType.Bus:
+        return <DirectionsBus {...props}/>;
+    case RouteType.Train:
+    case PointType.Station:
+        return <DirectionsTransit {...props}/>;
+    case PointType.Airport:
+    case RouteType.Plane:
+        return <Flight {...props}/>;
+    case PointType.Port:
+    case RouteType.Boat:
+        return <DirectionsBoat {...props}/>;
+    case RouteType.Car:
+        return <DirectionsCar {...props}/>;
+    case PointType.City:
+        return <LocationCity {...props}/>;
+    default:
+        return <Hiking {...props}/>;
     }
 }
