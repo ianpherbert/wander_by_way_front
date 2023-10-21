@@ -45,11 +45,11 @@ const routes = {
         },
         {
             path: "/routeFinder/:fromId/:toId",
-            element: <RouteFinder/>,
+            element: <RoutePlannerPage/>,
         },
         {
             path: "/test/:fromId/:toId",
-            element: <RoutePlannerPage/>,
+            element: <RouteFinder/>,
         },
     ]
 };
